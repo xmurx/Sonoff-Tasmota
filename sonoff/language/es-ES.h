@@ -257,6 +257,7 @@
 #define D_MODULE_PARAMETERS "Parámetros del módulo"
 #define D_MODULE_TYPE "Tipo de módulo"
 #define D_PULLUP_ENABLE "Botón/Llave sin pull-up"
+#define D_ADC "ADC"
 #define D_GPIO "GPIO"
 #define D_SERIAL_IN "Serial In"
 #define D_SERIAL_OUT "Serial Out"
@@ -308,6 +309,8 @@
 #define D_TEMPLATE_FLAGS "Opciones"
 #define D_ALLOW_ADC0 "Entrada ADC0"
 #define D_ALLOW_ADC0_TEMP "Temperatura por ADC0"
+#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
+#define D_ALLOW_ADC0_BUTTON "ADC0 button"
 #define D_ALLOW_PULLUP "Habilitar pull-up"
 
 #define D_SAVE_CONFIGURATION "Grabar configuración"

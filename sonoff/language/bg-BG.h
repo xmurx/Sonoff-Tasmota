@@ -257,6 +257,7 @@
 #define D_MODULE_PARAMETERS "Параметри на модула"
 #define D_MODULE_TYPE "Тип на модула"
 #define D_PULLUP_ENABLE "Без pull-up за бутон/ключ"
+#define D_ADC "ADC"
 #define D_GPIO "GPIO"
 #define D_SERIAL_IN "Сериен вход"
 #define D_SERIAL_OUT "Сериен изход"
@@ -308,6 +309,8 @@
 #define D_TEMPLATE_FLAGS "Опции"
 #define D_ALLOW_ADC0 "ADC0 вход"
 #define D_ALLOW_ADC0_TEMP "Температура от ADC0"
+#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
+#define D_ALLOW_ADC0_BUTTON "ADC0 button"
 #define D_ALLOW_PULLUP "Потребителски избор на pull-up"
 
 #define D_SAVE_CONFIGURATION "Запазване на конфигурацията"

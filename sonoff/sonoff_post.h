@@ -216,6 +216,7 @@ void KNX_CB_Action(message_t const &msg, void *arg);
 #ifndef USE_KNX
 #define USE_KNX                               // Enable KNX IP Protocol Support (+23k code, +3k3 mem)
 #endif
+//#undef USE_ADC_VCC                            // Add Analog input on selected devices
 #undef USE_EMULATION                          // Disable Belkin WeMo and Hue Bridge emulation for Alexa (-16k code, -2k mem)
 #endif  // FIRMWARE_KNX_NO_EMULATION
 
@@ -237,6 +238,8 @@ void KNX_CB_Action(message_t const &msg, void *arg);
 #undef USE_EMULATION                          // Disable Belkin WeMo and Hue Bridge emulation for Alexa (-16k code, -2k mem)
 #undef USE_DOMOTICZ                           // Disable Domoticz
 #undef USE_HOME_ASSISTANT                     // Disable Home Assistant
+
+//#undef USE_ADC_VCC                            // Add Analog input on selected devices
 
 #define USE_I2C                               // I2C using library wire (+10k code, 0k2 mem, 124 iram)
   #define USE_DISPLAY                         // Add I2C Display Support (+2k code)
@@ -277,6 +280,7 @@ void KNX_CB_Action(message_t const &msg, void *arg);
 #undef APP_SLEEP
 #define APP_SLEEP 1                          // Default to sleep = 1 for FIRMWARE_BASIC
 
+#define USE_ADC_VCC                           // Display Vcc in Power status
 //#undef USE_ENERGY_SENSOR                      // Disable energy sensors
 #undef USE_ARDUINO_OTA                        // Disable support for Arduino OTA
 #undef USE_WPS                                // Disable support for WPS as initial wifi configuration tool
@@ -343,6 +347,7 @@ void KNX_CB_Action(message_t const &msg, void *arg);
 #undef CODE_IMAGE
 #define CODE_IMAGE 1
 
+#define USE_ADC_VCC                           // Display Vcc in Power status
 #undef USE_ENERGY_SENSOR                      // Disable energy sensors
 #undef USE_ARDUINO_OTA                        // Disable support for Arduino OTA
 #undef USE_WPS                                // Disable support for WPS as initial wifi configuration tool
