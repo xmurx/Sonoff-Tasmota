@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "שם"
 #define D_BASE_TYPE "מבוסס על"
 #define D_TEMPLATE_FLAGS "אפשריות"
-#define D_ALLOW_ADC0 "ADC0 כניסת"
-#define D_ALLOW_ADC0_TEMP "ADC0 temperature"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "pull-up בחירת משתמש עבור"
 
 #define D_SAVE_CONFIGURATION "שמירת הגדרות"
 #define D_CONFIGURATION_SAVED "הגדרות נשמרו"

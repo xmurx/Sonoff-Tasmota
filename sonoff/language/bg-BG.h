@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "Име"
 #define D_BASE_TYPE "Базиран на"
 #define D_TEMPLATE_FLAGS "Опции"
-#define D_ALLOW_ADC0 "ADC0 вход"
-#define D_ALLOW_ADC0_TEMP "Температура от ADC0"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "Потребителски избор на pull-up"
 
 #define D_SAVE_CONFIGURATION "Запазване на конфигурацията"
 #define D_CONFIGURATION_SAVED "Конфигурацията е запазена"

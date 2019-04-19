@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "Nombre"
 #define D_BASE_TYPE "Basada en"
 #define D_TEMPLATE_FLAGS "Opciones"
-#define D_ALLOW_ADC0 "Entrada ADC0"
-#define D_ALLOW_ADC0_TEMP "Temperatura por ADC0"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "Habilitar pull-up"
 
 #define D_SAVE_CONFIGURATION "Grabar configuración"
 #define D_CONFIGURATION_SAVED "Configuración grabada"

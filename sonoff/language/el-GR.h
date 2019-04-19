@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "Name"
 #define D_BASE_TYPE "Based on"
 #define D_TEMPLATE_FLAGS "Options"
-#define D_ALLOW_ADC0 "ADC0 input"
-#define D_ALLOW_ADC0_TEMP "ADC0 temperature"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "User pull-up selection"
 
 #define D_SAVE_CONFIGURATION "Αποθήκευση ρυθμίσεων"
 #define D_CONFIGURATION_SAVED "Οι ρυθμίσεις αποθηκεύτηκαν"

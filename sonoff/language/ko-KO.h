@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "이름"
 #define D_BASE_TYPE "Based on"
 #define D_TEMPLATE_FLAGS "옵션"
-#define D_ALLOW_ADC0 "ADC0 입력"
-#define D_ALLOW_ADC0_TEMP "ADC0 temperature"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "User pull-up selection"
 
 #define D_SAVE_CONFIGURATION "설정 저장"
 #define D_CONFIGURATION_SAVED "설정 저장 완료"

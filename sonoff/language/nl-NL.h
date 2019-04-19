@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "Naam"
 #define D_BASE_TYPE "Op basis van"
 #define D_TEMPLATE_FLAGS "Opties"
-#define D_ALLOW_ADC0 "ADC0 ingang"
-#define D_ALLOW_ADC0_TEMP "ADC0 temperatuur"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "User pull-up selection"
 
 #define D_SAVE_CONFIGURATION "Bewaar configuratie"
 #define D_CONFIGURATION_SAVED "Configuratie opgeslagen"

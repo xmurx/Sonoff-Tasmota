@@ -307,11 +307,6 @@
 #define D_TEMPLATE_NAME "名称"
 #define D_BASE_TYPE "基于"
 #define D_TEMPLATE_FLAGS "选项"
-#define D_ALLOW_ADC0 "ADC0 输入"
-#define D_ALLOW_ADC0_TEMP "ADC0 temperature"
-#define D_ALLOW_ADC0_BUTTON_I "ADC0 inverted button"
-#define D_ALLOW_ADC0_BUTTON "ADC0 button"
-#define D_ALLOW_PULLUP "用户上拉选择"
 
 #define D_SAVE_CONFIGURATION "保存设置"
 #define D_CONFIGURATION_SAVED "设置已保存"
