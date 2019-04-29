@@ -141,6 +141,7 @@ void KNX_CB_Action(message_t const &msg, void *arg);
 //  #define USE_THEO_V2                         // Add support for decoding Theo V2 sensors as documented on https://sidweb.nl using 434MHz RF sensor receiver (+1k4 code)
   #define USE_ALECTO_V2                       // Add support for decoding Alecto V2 sensors like ACH2010, WS3000 and DKW2012 using 868MHz RF sensor receiver (+1k7 code)
 #define USE_HRE                               // Add support for Badger HR-E Water Meter (+1k4 code)
+#define USE_DISTANCE_MEASUREMENT              // Add support for virtual distant measurement sensor
 #endif  // FIRMWARE_SENSORS
 
 /*********************************************************************************************\
