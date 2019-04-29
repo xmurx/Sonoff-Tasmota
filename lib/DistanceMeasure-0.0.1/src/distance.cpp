@@ -31,6 +31,7 @@ double Distance::Read()
 
 bool Distance::Write()
 {
+    //no write possible
     return false;
 }
 
