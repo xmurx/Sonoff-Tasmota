@@ -32,7 +32,7 @@ double Distance::Read()
 bool Distance::Write()
 {
     //no write possible
-    return _false;
+    return false;
 }
 
 string Distance::ToString(double value)
