@@ -22,7 +22,6 @@
 // The interface between sensors and webserver are global accessable variables (mqtt_data)
 
 const char _HTTP_SNS_DISTANCE[] PROGMEM = "{s}%s " D_DISTANCE "{m}%s %s{e}";
-
 static Distance sensor;
 
 #define XSNS_44
@@ -37,7 +36,7 @@ bool Xsns44(uint8_t function)
     case FUNC_WEB_SENSOR:
     {
       std::string distance = sensor.ToString(_lastSensorValue_);
-      Response::Append( _HTTP_SNS_DISTANCE, sensor.Name().c_str(), distance.c_str(), "cm");
+      WSContentSend_PD( _HTTP_SNS_DISTANCE, sensor.Name().c_str(), distance.c_str(), "cm");
       Log::Info("Xsns44 WEB-APPEND data: %s", Response::Get());
       break;
     }
@@ -51,7 +50,7 @@ bool Xsns44(uint8_t function)
     {
       _lastSensorValue_ = sensor.Read();
       std::string distance = sensor.ToString(_lastSensorValue_);
-      Response::Append( PSTR(",\"%s\":{\"" D_JSON_DISTANCE "\":%s}"), sensor.Name().c_str(), distance.c_str() );
+      ResponseAppend_P( PSTR(",\"%s\":{\"" D_JSON_DISTANCE "\":%s}"), sensor.Name().c_str(), distance.c_str() );
 
       if(0 == tele_period)
       {
