@@ -37,8 +37,7 @@ bool Xsns44(uint8_t function)
     case FUNC_WEB_SENSOR:
     {
       std::string distance = sensor.ToString(_lastSensorValue_);
-      Response::Append( _HTTP_SNS_DISTANCE, sensor.Name().c_str(), distance.c_str(), "cm");
-      Log::Info("Xsns44 WEB-APPEND data: %s", Response::Get());
+      WebServer::SendContent( _HTTP_SNS_DISTANCE, sensor.Name().c_str(), distance.c_str(), "cm");
       break;
     }
 #endif    
@@ -51,13 +50,14 @@ bool Xsns44(uint8_t function)
     {
       _lastSensorValue_ = sensor.Read();
       std::string distance = sensor.ToString(_lastSensorValue_);
-      Response::Append( PSTR(",\"%s\":{\"" D_JSON_DISTANCE "\":%s}"), sensor.Name().c_str(), distance.c_str() );
+      MQTTResponse::Append( PSTR(",\"%s\":{\"" D_JSON_DISTANCE "\":%s}"), sensor.Name().c_str(), distance.c_str() );
 
       if(0 == tele_period)
       {
         DomoticzSensor(DZ_COUNT, (char*)distance.c_str());
       }
-      Log::Info("Xsns44 JSON-APPEND data: %s", Response::Get());
+
+      Log::Info("Xsns44 JSON-APPEND data: %s", MQTTResponse::Get());
       break;
     }
   }
