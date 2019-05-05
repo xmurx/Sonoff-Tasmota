@@ -22,7 +22,6 @@
 // The interface between sensors and webserver are global accessable variables (mqtt_data)
 
 const char _HTTP_SNS_DISTANCE[] PROGMEM = "{s}%s " D_DISTANCE "{m}%s %s{e}";
-
 static Distance sensor;
 
 #define XSNS_44
