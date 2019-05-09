@@ -4,9 +4,14 @@
 class Log
 {
 public:    
-    static void Debug( const char* format, ... );
-    static void Info(  const char* format, ... );
-    static void Error( const char* format, ... );
+    template<typename... Args>
+    static void Debug( const char* format, Args... args );
+
+    template<typename... Args>
+    static void Info(  const char* format, Args... args );
+
+    template<typename... Args>
+    static void Error( const char* format, Args... args );
 };
 
 #endif

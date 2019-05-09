@@ -21,7 +21,7 @@
 //                       The webserver will shows the given values - MqttData::Append - does not need the previos string (content remains unchanged)
 // The interface between sensors and webserver are global accessable variables (mqtt_data)
 
-const char _HTTP_SNS_DISTANCE[] PROGMEM = "{s}%s " D_DISTANCE "{m}%s %s{e}";
+const char _HTTP_SNS_DISTANCE[] PROGMEM = "{s}%s " D_DISTANCE "{m}%s %s {e}";
 static Distance sensor;
 
 #define XSNS_44
@@ -42,7 +42,8 @@ bool Xsns44(uint8_t function)
 #endif    
     case FUNC_INIT:
     {
-      sensor.Init(0,20,30);
+      sensor.Init(360,20,30);
+      _lastSensorValue_ = sensor.Read();
       break;
     }
     case FUNC_JSON_APPEND:
@@ -50,13 +51,10 @@ bool Xsns44(uint8_t function)
       _lastSensorValue_ = sensor.Read();
       std::string distance = sensor.ToString(_lastSensorValue_);
       MQTTResponse::Append( PSTR(",\"%s\":{\"" D_JSON_DISTANCE "\":%s}"), sensor.Name().c_str(), distance.c_str() );
-
       if(0 == tele_period)
       {
         DomoticzSensor(DZ_COUNT, (char*)distance.c_str());
       }
-
-      Log::Info("Xsns44 JSON-APPEND data: %s", MQTTResponse::Get());
       break;
     }
   }

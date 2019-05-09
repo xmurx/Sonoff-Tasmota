@@ -14,32 +14,25 @@
  * @brief print Debug log
  * 
  * @param format - format string
- * @param ... - variable parameter list
+ * @param args - variable parameter list
  */
-void Log::Debug( const char* format, ...)
-{
-  va_list args;
-  va_start (args, format);
-  vsnprintf (log_data, sizeof(log_data),format, args);
-  va_end (args);
 
-  AddLog(LOG_LEVEL_DEBUG);
+template<typename... Args>
+void Log::Debug( const char* format, Args... args)
+{
+  AddLog_P2(LOG_LEVEL_DEBUG, format, args...);
 }
 
 /**
  * @brief print Info log
  * 
  * @param format - format string
- * @param ... - variable parameter list
+ * @param args - variable parameter list
  */
-void Log::Info( const char* format, ...)
+template<typename... Args>
+void Log::Info( const char* format, Args... args)
 {
-  va_list args;
-  va_start (args, format);
-  vsnprintf (log_data, sizeof(log_data),format, args);
-  va_end (args);
-
-  AddLog(LOG_LEVEL_INFO);
+  AddLog_P2(LOG_LEVEL_INFO, format, args...);
 }
 
 /**
@@ -48,14 +41,10 @@ void Log::Info( const char* format, ...)
  * @param format - format string
  * @param ... - variable parameter list
  */
-void Log::Error( const char* format, ...)
+template<typename... Args>
+void Log::Error( const char* format, Args... args)
 {
-  va_list args;
-  va_start (args, format);
-  vsnprintf (log_data, sizeof(log_data),format, args);
-  va_end (args);  
-
-  AddLog(LOG_LEVEL_ERROR);
+  AddLog_P2(LOG_LEVEL_ERROR, format, args...);
 }
 
 /*********************************************************************************************\
@@ -66,44 +55,24 @@ void Log::Error( const char* format, ...)
  * @brief AppendP - appends formated data to the MQTT send buffer 
  * 
  * @param formatP - format string localted in internal flash
- * @param ... - variable parameter list
+ * @param args - variable parameter list
  */
-void MQTTResponse::AppendP( PGM_P formatP, ... )
+template<typename... Args>
+void MQTTResponse::AppendP( PGM_P formatP, Args... args )
 {
-  size_t len = strlen(MQTTResponse::Get());
-  char* nextDataStart = &mqtt_data[len];
-
-  va_list args;
-  va_start (args, formatP);
-  vsnprintf_P (nextDataStart,(sizeof(mqtt_data)-len),formatP, args);
-  va_end (args);
+  ResponseAppend_P(formatP, args...);
 }
 
 /**
  * @brief Appends formated data to the MQTT send buffer
  * 
  * @param format - format string located in RAM
- * @param ... - variable parameter list
+ * @param args - variable parameter list
  */
-void MQTTResponse::Append( const char* format, ... )
+template<typename... Args>
+void MQTTResponse::Append( const char* format, Args... args )
 {
-  size_t len = strlen(MQTTResponse::Get());
-  char* nextDataStart = &mqtt_data[len];
-
-  va_list args;
-  va_start (args, format);
-  vsnprintf_P (nextDataStart,(sizeof(mqtt_data)-len),format, args);
-  va_end (args);
-}
-
-/**
- * @brief Get - returns the pointer to the MQTT-buffer for read access
- * 
- * @return const char* 
- */
-const char* MQTTResponse::Get()
-{
-  return mqtt_data;
+  ResponseAppend_P(format, args...);
 }
 
 /*********************************************************************************************\
