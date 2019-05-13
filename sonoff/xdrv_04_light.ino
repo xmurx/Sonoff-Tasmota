@@ -1448,6 +1448,10 @@ void LightUpdateColorMapping(void)
   //AddLog_P2(LOG_LEVEL_DEBUG, PSTR("%d colors: %d %d %d %d %d") ,Settings.param[P_RGB_REMAP], light_color_remap[0],light_color_remap[1],light_color_remap[2],light_color_remap[3],light_color_remap[4]);
 }
 
+void LightSetDimmer(uint8_t dimmer) {
+  light_controller.changeDimmer(dimmer);
+}
+
 void LightSetColorTemp(uint16_t ct)
 {
 /* Color Temperature (https://developers.meethue.com/documentation/core-concepts)
@@ -1554,7 +1558,7 @@ void LightState(uint8_t append)
     ResponseAppend_P(PSTR(",\"" D_CMND_FADE "\":\"%s\",\"" D_CMND_SPEED "\":%d,\"" D_CMND_LEDTABLE "\":\"%s\""),
       GetStateText(Settings.light_fade), Settings.light_speed, GetStateText(Settings.light_correction));
   } else {
-    ResponseAppend_P(PSTR("}"));
+    ResponseJsonEnd();
   }
 }
 
