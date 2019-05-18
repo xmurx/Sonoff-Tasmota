@@ -437,6 +437,21 @@ char* NoAlNumToUnderscore(char* dest, const char* source)
   return dest;
 }
 
+char IndexSeparator()
+{
+/*
+  // 20 bytes more costly !?!
+  const char separators[] = { "-_" };
+
+  return separators[Settings.flag3.use_underscore];
+*/
+  if (Settings.flag3.use_underscore) {
+    return '_';
+  } else {
+    return '-';
+  }
+}
+
 void SetShortcut(char* str, uint8_t action)
 {
   if ('\0' != str[0]) {     // There must be at least one character in the buffer
@@ -639,7 +654,7 @@ double FastPrecisePow(double a, double b)
 {
   // https://martin.ankerl.com/2012/01/25/optimized-approximative-pow-in-c-and-cpp/
   // calculate approximation with fraction of the exponent
-  int e = (int)b;
+  int e = abs((int)b);
   union {
     double d;
     int x[2];
