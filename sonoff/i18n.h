@@ -262,6 +262,7 @@
 #define D_CMND_RESET "Reset"
   #define D_JSON_RESET_AND_RESTARTING "Reset and Restarting"
   #define D_JSON_ONE_TO_RESET "1 to reset"
+#define D_CMND_TIME "Time"
 #define D_CMND_TIMEZONE "Timezone"
 #define D_CMND_TIMESTD "TimeStd"
 #define D_CMND_TIMEDST "TimeDst"
@@ -373,6 +374,7 @@
   #define D_JSON_IR_BITS "Bits"
   #define D_JSON_IR_DATA "Data"
   #define D_JSON_IR_RAWDATA "RawData"
+  #define D_JSON_IR_REPEAT "Repeat"
 #define D_CMND_IRHVAC "IRHVAC"
   #define D_JSON_IRHVAC_VENDOR "VENDOR"
   #define D_JSON_IRHVAC_POWER "POWER"
@@ -428,7 +430,6 @@
 
 /********************************************************************************************/
 
-#define D_ASTERIX "********"
 #define D_ASTERISK_PWD "****"
 
 #ifndef MY_LANGUAGE
@@ -501,13 +502,13 @@ const char S_JSON_COMMAND_NVALUE_ACTIVE_NVALUE[] PROGMEM =    "{\"%s\":\"%d (" D
 const char S_JSON_COMMAND_NVALUE[] PROGMEM =                  "{\"%s\":%d}";
 const char S_JSON_COMMAND_LVALUE[] PROGMEM =                  "{\"%s\":%lu}";
 const char S_JSON_COMMAND_SVALUE[] PROGMEM =                  "{\"%s\":\"%s\"}";
-const char S_JSON_COMMAND_ASTERIX[] PROGMEM =                 "{\"%s\":\"" D_ASTERIX "\"}";
+const char S_JSON_COMMAND_ASTERISK[] PROGMEM =                "{\"%s\":\"" D_ASTERISK_PWD "\"}";
 const char S_JSON_COMMAND_XVALUE[] PROGMEM =                  "{\"%s\":%s}";  // %s must provide quotes on non-number
 
 const char S_JSON_COMMAND_INDEX_NVALUE[] PROGMEM =            "{\"%s%d\":%d}";
 const char S_JSON_COMMAND_INDEX_LVALUE[] PROGMEM =            "{\"%s%d\":%lu}";
 const char S_JSON_COMMAND_INDEX_SVALUE[] PROGMEM =            "{\"%s%d\":\"%s\"}";
-const char S_JSON_COMMAND_INDEX_ASTERIX[] PROGMEM =           "{\"%s%d\":\"" D_ASTERIX "\"}";
+const char S_JSON_COMMAND_INDEX_ASTERISK[] PROGMEM =          "{\"%s%d\":\"" D_ASTERISK_PWD "\"}";
 const char S_JSON_COMMAND_INDEX_SVALUE_SVALUE[] PROGMEM =     "{\"%s%d\":\"%s%s\"}";
 const char S_JSON_COMMAND_INDEX_NVALUE_ACTIVE_NVALUE[] PROGMEM = "{\"%s%d\":\"%d (" D_JSON_ACTIVE " %d)\"}";
 

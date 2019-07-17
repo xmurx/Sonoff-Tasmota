@@ -222,7 +222,7 @@
 
 // xdrv_02_webserver.ino
 #define D_NOSCRIPT "Разрешете JavaScript, за да използвате Tasmota"
-#define D_MINIMAL_FIRMWARE_PLEASE_UPGRADE "Минимален фърмуер<br/>моля надградете го"
+#define D_MINIMAL_FIRMWARE_PLEASE_UPGRADE "Минимален фърмуер<br>моля надградете го"
 #define D_WEBSERVER_ACTIVE_ON "Уеб сървърът е активен на"
 #define D_WITH_IP_ADDRESS "с IP адрес"
 #define D_WEBSERVER_STOPPED "Уеб сървърът е спрян"
@@ -513,6 +513,7 @@
 #define D_SENSOR_BUTTON        "Бутон"      // Suffix "1"
 #define D_SENSOR_RELAY         "Реле"       // Suffix "1i"
 #define D_SENSOR_LED           "Led"        // Suffix "1i"
+#define D_SENSOR_LED_LINK      "LedLink"    // Suffix "i"
 #define D_SENSOR_PWM           "PWM"        // Suffix "1"
 #define D_SENSOR_COUNTER       "Брояч"      // Suffix "1"
 #define D_SENSOR_IRRECV        "IRrecv"
@@ -578,12 +579,14 @@
 #define D_SENSOR_MY92X1_DI     "MY92x1 DI"
 #define D_SENSOR_MY92X1_DCKI   "MY92x1 DCKI"
 #define D_SENSOR_ARIRFRCV      "ALux IrRcv"
+#define D_SENSOR_ARIRFSEL      "ALux IrSel"
 #define D_SENSOR_TXD           "Serial Tx"
 #define D_SENSOR_RXD           "Serial Rx"
 #define D_SENSOR_ROTARY        "Rotary"     // Suffix "1A"
 #define D_SENSOR_HRE_CLOCK     "HRE Clock"
 #define D_SENSOR_HRE_DATA      "HRE Data"
 #define D_SENSOR_ADE7953_IRQ   "ADE7953 IRQ"
+#define D_SENSOR_BUZZER        "Buzzer"
 
 // Units
 #define D_UNIT_AMPERE "A"

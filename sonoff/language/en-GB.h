@@ -222,7 +222,7 @@
 
 // xdrv_02_webserver.ino
 #define D_NOSCRIPT "To use Tasmota, please enable JavaScript"
-#define D_MINIMAL_FIRMWARE_PLEASE_UPGRADE "MINIMAL firmware<br/>please upgrade"
+#define D_MINIMAL_FIRMWARE_PLEASE_UPGRADE "MINIMAL firmware<br>please upgrade"
 #define D_WEBSERVER_ACTIVE_ON "Web server active on"
 #define D_WITH_IP_ADDRESS "with IP address"
 #define D_WEBSERVER_STOPPED "Web server stopped"
@@ -512,6 +512,7 @@
 #define D_SENSOR_BUTTON        "Button"     // Suffix "1"
 #define D_SENSOR_RELAY         "Relay"      // Suffix "1i"
 #define D_SENSOR_LED           "Led"        // Suffix "1i"
+#define D_SENSOR_LED_LINK      "LedLink"    // Suffix "i"
 #define D_SENSOR_PWM           "PWM"        // Suffix "1"
 #define D_SENSOR_COUNTER       "Counter"    // Suffix "1"
 #define D_SENSOR_IRRECV        "IRrecv"
@@ -577,12 +578,14 @@
 #define D_SENSOR_MY92X1_DI     "MY92x1 DI"
 #define D_SENSOR_MY92X1_DCKI   "MY92x1 DCKI"
 #define D_SENSOR_ARIRFRCV      "ALux IrRcv"
+#define D_SENSOR_ARIRFSEL      "ALux IrSel"
 #define D_SENSOR_TXD           "Serial Tx"
 #define D_SENSOR_RXD           "Serial Rx"
 #define D_SENSOR_ROTARY        "Rotary"     // Suffix "1A"
 #define D_SENSOR_HRE_CLOCK     "HRE Clock"
 #define D_SENSOR_HRE_DATA      "HRE Data"
 #define D_SENSOR_ADE7953_IRQ   "ADE7953 IRQ"
+#define D_SENSOR_BUZZER        "Buzzer"
 
 // Units
 #define D_UNIT_AMPERE "A"

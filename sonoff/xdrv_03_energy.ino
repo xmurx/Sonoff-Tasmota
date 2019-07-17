@@ -27,7 +27,7 @@
 
 #define ENERGY_NONE          0
 
-#define ENERGY_OVERTEMP      73.0     // Industry standard lowest overtemp in Celsius
+#define ENERGY_WATCHDOG      4        // Allow up to 4 seconds before deciding no valid data present
 
 #define FEATURE_POWER_LIMIT  true
 
@@ -71,6 +71,7 @@ unsigned long energy_period = 0;    // 12312312 Wh * 10^-2 (deca milli Watt hour
 
 float energy_power_last[3] = { 0 };
 uint8_t energy_power_delta = 0;
+uint8_t energy_data_valid = 0;
 
 bool energy_voltage_available = true;  // Enable if voltage is measured
 bool energy_current_available = true;  // Enable if current is measured
@@ -310,7 +311,7 @@ void EnergyMarginCheck(void)
 void EnergyMqttShow(void)
 {
 // {"Time":"2017-12-16T11:48:55","ENERGY":{"Total":0.212,"Yesterday":0.000,"Today":0.014,"Period":2.0,"Power":22.0,"Factor":1.00,"Voltage":213.6,"Current":0.100}}
-  Response_P(PSTR("{\"" D_JSON_TIME "\":\"%s\""), GetDateAndTime(DT_LOCAL).c_str());
+  ResponseBeginTime();
   int tele_period_save = tele_period;
   tele_period = 2;
   EnergyShow(true);
@@ -323,8 +324,20 @@ void EnergyMqttShow(void)
 void EnergyOverTempCheck()
 {
   if (global_update) {
-    if (power && (global_temperature > ENERGY_OVERTEMP)) {  // Device overtemp, turn off relays
+    if (power && (global_temperature != 9999) && (global_temperature > Settings.param[P_OVER_TEMP])) {  // Device overtemp, turn off relays
       SetAllPower(POWER_ALL_OFF, SRC_OVERTEMP);
+    }
+  }
+  if (energy_data_valid <= ENERGY_WATCHDOG) {
+    energy_data_valid++;
+    if (energy_data_valid > ENERGY_WATCHDOG) {
+      // Reset energy registers
+      energy_voltage = 0;
+      energy_current = 0;
+      energy_active_power = 0;
+      if (!isnan(energy_frequency)) { energy_frequency = 0; }
+      if (!isnan(energy_power_factor)) { energy_power_factor = 0; }
+      energy_start = 0;
     }
   }
 }
@@ -349,7 +362,7 @@ bool EnergyCommand(void)
   }
   else if (CMND_POWERDELTA == command_code) {
     if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload < 101)) {
-      Settings.energy_power_delta = (1 == XdrvMailbox.payload) ? DEFAULT_POWER_DELTA : XdrvMailbox.payload;
+      Settings.energy_power_delta = XdrvMailbox.payload;
     }
     nvalue = Settings.energy_power_delta;
     unit = UNIT_PERCENTAGE;

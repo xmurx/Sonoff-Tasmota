@@ -116,11 +116,19 @@ IRrecv *irrecv = nullptr;
 
 unsigned long ir_lasttime = 0;
 
+void IrReceiveUpdateThreshold()
+{
+  if (irrecv != nullptr) {
+    if (Settings.param[P_IR_UNKNOW_THRESHOLD] < 6) { Settings.param[P_IR_UNKNOW_THRESHOLD] = 6; }
+    irrecv->setUnknownThreshold(Settings.param[P_IR_UNKNOW_THRESHOLD]);
+  }
+}
+
 void IrReceiveInit(void)
 {
   // an IR led is at GPIO_IRRECV
   irrecv = new IRrecv(pin[GPIO_IRRECV], IR_RCV_BUFFER_SIZE, IR_RCV_TIMEOUT, IR_RCV_SAVE_BUFFER);
-  irrecv->setUnknownThreshold(IR_RCV_MIN_UNKNOWN_SIZE);
+  irrecv->setUnknownThreshold(Settings.param[P_IR_UNKNOW_THRESHOLD]);
   irrecv->enableIRIn();                  // Start the receiver
 
   //  AddLog_P(LOG_LEVEL_DEBUG, PSTR("IrReceive initialized"));
@@ -169,7 +177,7 @@ void IrReceiveCheck(void)
           if (strlen(mqtt_data) > sizeof(mqtt_data) - 40) { break; }  // Quit if char string becomes too long
         }
         uint16_t extended_length = results.rawlen - 1;
-        for (uint16_t j = 0; j < results.rawlen - 1; j++) {
+        for (uint32_t j = 0; j < results.rawlen - 1; j++) {
           uint32_t usecs = results.rawbuf[j] * kRawTick;
           // Add two extra entries for multiple larger than UINT16_MAX it is.
           extended_length += (usecs / (UINT16_MAX + 1)) * 2;
@@ -255,7 +263,7 @@ uint8_t IrHvacToshiba(const char *HVAC_Mode, const char *HVAC_FanMode, bool HVAC
   data[5] = (uint8_t)(Temp - 17) << 4;
 
   data[HVAC_TOSHIBA_DATALEN - 1] = 0;
-  for (int x = 0; x < HVAC_TOSHIBA_DATALEN - 1; x++) {
+  for (uint32_t x = 0; x < HVAC_TOSHIBA_DATALEN - 1; x++) {
     data[HVAC_TOSHIBA_DATALEN - 1] = (uint8_t)data[x] ^ data[HVAC_TOSHIBA_DATALEN - 1]; // CRC is a simple bits addition
   }
 
@@ -267,7 +275,7 @@ uint8_t IrHvacToshiba(const char *HVAC_Mode, const char *HVAC_FanMode, bool HVAC
   rawdata[i++] = HVAC_TOSHIBA_HDR_SPACE;
 
   //data
-  for (int b = 0; b < HVAC_TOSHIBA_DATALEN; b++) {
+  for (uint32_t b = 0; b < HVAC_TOSHIBA_DATALEN; b++) {
     for (mask = B10000000; mask > 0; mask >>= 1) { //iterate through bit mask
       if (data[b] & mask) { // Bit ONE
         rawdata[i++] = HVAC_TOSHIBA_BIT_MARK;
@@ -441,7 +449,7 @@ uint8_t IrHvacLG(const char *HVAC_Mode, const char *HVAC_FanMode, bool HVAC_Powe
   }
   // Build LG IR code
   LG_Code = data[0] << 4;
-  for (int i = 1; i < 6; i++) {
+  for (uint32_t i = 1; i < 6; i++) {
     LG_Code = (LG_Code + data[i]) << 4;
   }
   LG_Code = LG_Code + data[6];
@@ -562,7 +570,7 @@ bool IrSendCommand(void)
               error = IE_INVALID_RAWDATA;
             } else {
               uint16_t parm[count];
-              for (uint8_t i = 0; i < count; i++) {
+              for (uint32_t i = 0; i < count; i++) {
                 parm[i] = strtol(strtok_r(nullptr, ", ", &p), nullptr, 0);
                 if (!parm[i]) {
                   if (!i) {
@@ -633,12 +641,32 @@ bool IrSendCommand(void)
             } else {  // At least two raw data values
               // IRsend 0,896,876,900,888,894,876,1790,874,872,1810,1736,948,872,880,872,936,872,1792,900,888,1734
               count++;
-              uint16_t raw_array[count];  // It's safe to use stack for up to 240 packets (limited by mqtt_data length)
-              for (uint16_t i = 0; i < count; i++) {
-                raw_array[i] = strtol(strtok_r(nullptr, ", ", &p), nullptr, 0);  // Allow decimal (20496) and hexadecimal (0x5010) input
+              if (count < 200) {
+                uint16_t raw_array[count];  // It's safe to use stack for up to 200 packets (limited by mqtt_data length)
+                for (uint32_t i = 0; i < count; i++) {
+                  raw_array[i] = strtol(strtok_r(nullptr, ", ", &p), nullptr, 0);  // Allow decimal (20496) and hexadecimal (0x5010) input
+                }
+
+//              AddLog_P2(LOG_LEVEL_DEBUG, PSTR("DBG: stack count %d"), count);
+
+                irsend_active = true;
+                irsend->sendRaw(raw_array, count, freq);
+              } else {
+                uint16_t *raw_array = reinterpret_cast<uint16_t*>(malloc(count * sizeof(uint16_t)));
+                if (raw_array == nullptr) {
+                  error = IE_INVALID_RAWDATA;
+                } else {
+                  for (uint32_t i = 0; i < count; i++) {
+                    raw_array[i] = strtol(strtok_r(nullptr, ", ", &p), nullptr, 0);  // Allow decimal (20496) and hexadecimal (0x5010) input
+                  }
+
+//              AddLog_P2(LOG_LEVEL_DEBUG, PSTR("DBG: heap count %d"), count);
+
+                  irsend_active = true;
+                  irsend->sendRaw(raw_array, count, freq);
+                  free(raw_array);
+                }
               }
-              irsend_active = true;
-              irsend->sendRaw(raw_array, count, freq);
             }
           }
         }
@@ -655,38 +683,39 @@ bool IrSendCommand(void)
             error = IE_INVALID_JSON;
           } else {
             // IRsend { "protocol": "SAMSUNG", "bits": 32, "data": 551502015 }
+            // IRsend { "protocol": "NEC", "bits": 32, "data":"0x02FDFE80", "repeat": 2 }
             char parm_uc[10];
             const char *protocol = root[UpperCase_P(parm_uc, PSTR(D_JSON_IR_PROTOCOL))];
             uint16_t bits = root[UpperCase_P(parm_uc, PSTR(D_JSON_IR_BITS))];
             uint64_t data = strtoull(root[UpperCase_P(parm_uc, PSTR(D_JSON_IR_DATA))], nullptr, 0);
+            uint16_t repeat = root[UpperCase_P(parm_uc, PSTR(D_JSON_IR_REPEAT))];
             if (protocol && bits) {
               char protocol_text[20];
               int protocol_code = GetCommandCode(protocol_text, sizeof(protocol_text), protocol, kIrRemoteProtocols);
 
               char dvalue[64];
               char hvalue[64];
-              AddLog_P2(LOG_LEVEL_DEBUG, PSTR("IRS: protocol_text %s, protocol %s, bits %d, data %s (%s), protocol_code %d"),
-                protocol_text, protocol, bits, ulltoa(data, dvalue, 10), IrUint64toHex(data, hvalue, bits), protocol_code);
+              AddLog_P2(LOG_LEVEL_DEBUG, PSTR("IRS: protocol_text %s, protocol %s, bits %d, data %s (%s), repeat %d, protocol_code %d"),
+                protocol_text, protocol, bits, ulltoa(data, dvalue, 10), IrUint64toHex(data, hvalue, bits), repeat, protocol_code);
 
               irsend_active = true;
               switch (protocol_code) {
                 case NEC:
-                  irsend->sendNEC(data, (bits > NEC_BITS) ? NEC_BITS : bits); break;
+                  irsend->sendNEC(data, (bits > NEC_BITS) ? NEC_BITS : bits, repeat); break;
                 case SONY:
-                  irsend->sendSony(data, (bits > SONY_20_BITS) ? SONY_20_BITS : bits, 2); break;
+                  irsend->sendSony(data, (bits > SONY_20_BITS) ? SONY_20_BITS : bits, repeat > kSonyMinRepeat ? repeat : kSonyMinRepeat); break;
                 case RC5:
-                  irsend->sendRC5(data, bits); break;
+                  irsend->sendRC5(data, bits, repeat); break;
                 case RC6:
-                  irsend->sendRC6(data, bits); break;
+                  irsend->sendRC6(data, bits, repeat); break;
                 case DISH:
-                  irsend->sendDISH(data, (bits > DISH_BITS) ? DISH_BITS : bits); break;
+                  irsend->sendDISH(data, (bits > DISH_BITS) ? DISH_BITS : bits, repeat > kDishMinRepeat ? repeat : kDishMinRepeat); break;
                 case JVC:
-                  irsend->sendJVC(data, (bits > JVC_BITS) ? JVC_BITS : bits, 1); break;
+                  irsend->sendJVC(data, (bits > JVC_BITS) ? JVC_BITS : bits, repeat > 1 ? repeat : 1); break;
                 case SAMSUNG:
-                  irsend->sendSAMSUNG(data, (bits > SAMSUNG_BITS) ? SAMSUNG_BITS : bits); break;
+                  irsend->sendSAMSUNG(data, (bits > SAMSUNG_BITS) ? SAMSUNG_BITS : bits, repeat); break;
                 case PANASONIC:
-//                  irsend->sendPanasonic(bits, data); break;
-                  irsend->sendPanasonic64(data, bits); break;
+                  irsend->sendPanasonic64(data, bits, repeat); break;
                 default:
                   irsend_active = false;
                   Response_P(S_JSON_COMMAND_SVALUE, command, D_JSON_PROTOCOL_NOT_SUPPORTED);
