@@ -459,7 +459,7 @@
 #define USE_SM16716                              // Add support for SM16716 RGB LED controller (+0k7 code)
 
 //#define USE_HRE                                  // Add support for Badger HR-E Water Meter (+1k4 code)
-#define USE_DISTANCE_MEASUREMENT                // Add support for virtual distance measurement
+#define USE_VIRTUAL_DISTANCE_MEASUREMENT           // Add support for virtual distance measurement
 
 /*********************************************************************************************\
  * Debug features are only supported in development branch
