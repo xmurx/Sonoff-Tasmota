@@ -2,7 +2,7 @@
 #include "logging.h"
 #include "xsns_support.h"
 
-#ifdef USE_DISTANCE_MEASUREMENT
+#ifdef USE_VIRTUAL_DISTANCE_MEASUREMENT
 
 // wrapper for appending formated data 
 // to the global tasmota mqtt data
@@ -24,14 +24,13 @@
 const char _HTTP_SNS_DISTANCE[] PROGMEM = "{s}%s " D_DISTANCE "{m}%s %s {e}";
 static Distance sensor;
 
-#define XSNS_44
-bool Xsns44(uint8_t function)
+#define XSNS_91
+bool Xsns91(uint8_t function)
 {
   boolean result = true;
   static double _lastSensorValue_ = 0;
   switch (function)
   {
-    
 #ifdef USE_WEBSERVER
     case FUNC_WEB_SENSOR:
     {
