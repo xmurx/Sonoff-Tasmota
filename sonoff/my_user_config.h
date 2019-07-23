@@ -436,6 +436,7 @@
 //  #define USE_IR_SEND_MITSUBISHI                 // Support IRsend Mitsubishi protocol
   #define USE_IR_SEND_NEC                        // Support IRsend NEC protocol
   #define USE_IR_SEND_PANASONIC                  // Support IRsend Panasonic protocol
+  #define USE_IR_SEND_PIONEER                    // Support IRsend Pioneer protocol
   #define USE_IR_SEND_RC5                        // Support IRsend Philips RC5 protocol
   #define USE_IR_SEND_RC6                        // Support IRsend Philips RC6 protocol
   #define USE_IR_SEND_SAMSUNG                    // Support IRsend Samsung protocol
