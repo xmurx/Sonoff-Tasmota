@@ -118,6 +118,7 @@
 #define D_JSON_PROGRAMSIZE "ProgramSize"
 #define D_JSON_REFERENCETEMPERATURE "ReferenceTemperature"
 #define D_JSON_RESET "Reset"
+#define D_JSON_RESISTANCE "Resistance"
 #define D_JSON_RESOLUTION "Resolution"
 #define D_JSON_RESTARTING "Restarting"
 #define D_JSON_RESTARTREASON "RestartReason"
@@ -289,6 +290,7 @@
 #define D_CMND_MQTTCLIENT "MqttClient"
 #define D_CMND_MQTTUSER "MqttUser"
 #define D_CMND_MQTTPASSWORD "MqttPassword"
+#define D_CMND_TLSKEY "TLSKey"
 #define D_CMND_FULLTOPIC "FullTopic"
 #define D_CMND_PREFIX "Prefix"
   #define PRFX_MAX_STRING_LENGTH 5

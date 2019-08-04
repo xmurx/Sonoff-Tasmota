@@ -392,15 +392,14 @@ struct TIME_T {
 } RtcTime;
 
 struct XDRVMAILBOX {
-  uint16_t      valid;
-  uint16_t      index;
-  uint16_t      data_len;
-  uint16_t      payload16;
-  int16_t       payload;
   bool          grpflg;
-  uint8_t       notused;
+  bool          usridx;
+  uint32_t      index;
+  uint32_t      data_len;
+  int32_t       payload;
   char         *topic;
   char         *data;
+  char         *command;
 } XdrvMailbox;
 
 const uint8_t MAX_RULES_FLAG = 8;          // Number of bits used in RulesBitfield (tricky I know...)

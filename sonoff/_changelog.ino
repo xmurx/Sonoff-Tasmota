@@ -1,5 +1,17 @@
 /*********************************************************************************************\
+ * 6.6.0.3 20190725
+ * Change filename of configuration backup from using FriendlyName1 to Hostname solving diacritic issues (#2422)
+ * Upgrade library IRRemoteEsp8266 to 2.6.4, now using sendPioneer()
+ * Add support for MAX31865 Thermocouple sensor by Alberto Lopez Siemens
+ * Add option 0 to Width1 (Marker), Width2 (Second), Width3 (Minute) and Width4 (Hour) disabling display (#6152)
+ * Add MqttCount metric to STATE (#6155)
+ * Add define USE_ENERGY_MARGIN_DETECTION to disable Energy Margin and Power Limit detection
+ * Add define USE_ENERGY_POWER_LIMIT to disable Energy Power Limit detection while Energy Margin detection is active
+ * Add allow repeat/longpress for IRSend raw, introduced IRSend<r> option (#6074)
+ * Change Store AWS IoT Private Key and Certificate in SPI Flash avoiding device-specific compilations
+ *
  * 6.6.0.2 20190714
+ * Change commands Var and Mem to show all parameters when no index is given (#6107)
  * Add command SetOption67 0/1 to disable or enable a buzzer as used in iFan03
  * Add command DisplayWidth to set pixel width on supported devices
  * Add command DisplayHeight to set pixel height on supported devices

@@ -238,7 +238,7 @@
 //#define MY_LANGUAGE            sk-SK           // Slovak in Slovakia
 //#define MY_LANGUAGE            sv-SE           // Swedish in Sweden
 //#define MY_LANGUAGE            tr-TR           // Turkish in Turkey
-//#define MY_LANGUAGE            uk-UK           // Ukrainian in Ukrain
+//#define MY_LANGUAGE            uk-UK           // Ukrainian in Ukraine
 //#define MY_LANGUAGE            zh-CN           // Chinese (Simplified) in China
 //#define MY_LANGUAGE            zh-TW           // Chinese (Traditional) in Taiwan
 
@@ -267,7 +267,7 @@
 //#define USE_MQTT_TLS                             // Use TLS for MQTT connection (+34.5k code, +7.0k mem and +4.8k additional during connection handshake)
 //  #define USE_MQTT_TLS_CA_CERT                   // Force full CA validation instead of fingerprints, slower, but simpler to use (+2.2k code, +1.9k mem during connection handshake)
 //  #define USE_MQTT_TLS_FORCE_EC_CIPHER           // Force Elliptic Curve cipher (higher security) required by some servers (automatically enabled with USE_MQTT_AWS_IOT) (+11.4k code, +0.4k mem)
-//  #define USE_MQTT_AWS_IOT                       // Enable MQTT for AWS IoT - requires a private key (+11.4k code, +0.4k mem)
+//  #define USE_MQTT_AWS_IOT                       // Enable MQTT for AWS IoT - requires a private key (+11.9k code, +0.4k mem)
                                                  //   Note: you need to generate a private key + certificate per device and update 'sonoff/sonoff_aws_iot.cpp'
                                                  //   Full documentation here: https://github.com/arendst/Sonoff-Tasmota/wiki/AWS-IoT
 
@@ -417,6 +417,8 @@
 //  #define USE_PN532_DATA_RAW                     // Allow DATA block to be used by non-alpha-numberic data (+ 80 bytes code, 48 bytes ram)
 
 // Power monitoring sensors -----------------------
+#define USE_ENERGY_MARGIN_DETECTION              // Add support for Energy Margin detection (+1k6 code)
+  #define USE_ENERGY_POWER_LIMIT                 // Add additional support for Energy Power Limit detection (+1k2 code)
 #define USE_PZEM004T                             // Add support for PZEM004T Energy monitor (+2k code)
 #define USE_PZEM_AC                              // Add support for PZEM014,016 Energy monitor (+1k1 code)
 #define USE_PZEM_DC                              // Add support for PZEM003,017 Energy monitor (+1k1 code)
@@ -426,6 +428,11 @@
 #define USE_DHT                                  // Add support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor (1k6 code)
 
 //#define USE_MAX31855                             // Add support for MAX31855 K-Type thermocouple sensor using softSPI
+//#define USE_MAX31865                             // Add support for MAX31865 RTD sensors using softSPI
+  #define MAX31865_PTD_WIRES  2                 // PTDs come in several flavors. Pick yours
+  #define MAX31865_PTD_RES    100               // Nominal PTD resistance at 0°C (100Ω for a PT100, 1000Ω for a PT1000, YMMV!)
+  #define MAX31865_REF_RES    430               // Reference resistor (Usually 430Ω for a PT100, 4300Ω for a PT1000)
+  #define MAX31865_PTD_BIAS   0                 // To calibrate your not-so-good PTD
 
 // -- IR Remote features --------------------------
 #define USE_IR_REMOTE                            // Send IR remote commands using library IRremoteESP8266 and ArduinoJson (+4k3 code, 0k3 mem, 48 iram)
