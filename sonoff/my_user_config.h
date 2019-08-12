@@ -304,6 +304,7 @@
 //  #define SUPPORT_MQTT_EVENT                     // Support trigger event with MQTT subscriptions (+3k5 code)
 
 // -- Optional modules ----------------------------
+#define USE_BUZZER                               // Add support for a buzzer (+0k6 code)
 #define USE_SONOFF_IFAN                          // Add support for Sonoff iFan02 and iFan03 (+2k code)
 #define USE_TUYA_DIMMER                          // Add support for Tuya Serial Dimmer
   #define TUYA_DIMMER_ID       0                 // Default dimmer Id
@@ -367,6 +368,7 @@
   #define USE_ADE7953                            // Enable ADE7953 Energy monitor as used on Shelly 2.5 (I2C address 0x38) (+1k5)
 //  #define USE_VL53L0X                            // Enable VL53L0x time of flight sensor (I2C address 0x29) (+4k code)
 //  #define USE_MLX90614                           // Enable MLX90614 ir temp sensor (I2C address 0x5a) (+0.6k code)
+//  #define USE_CHIRP                              // Enable CHIRP soil moisture sensor (variable I2C address, default 0x20)
 
 #define USE_DISPLAY                            // Add I2C Display Support (+2k code)
     #define USE_DISPLAY_MODES1TO5                // Enable display mode 1 to 5 in addition to mode 0
@@ -403,11 +405,6 @@
 #define USE_NOVA_SDS                             // Add support for SDS011 and SDS021 particle concentration sensor (+0k7 code)
   #define WORKING_PERIOD       5                 // Working period of the SDS Sensor, Takes a reading every X Minutes
 #define USE_SERIAL_BRIDGE                        // Add support for software Serial Bridge (+0k8 code)
-//#define USE_SDM120                               // Add support for Eastron SDM120-Modbus energy meter (+1k7 code)
-  #define SDM120_SPEED         2400              // SDM120-Modbus RS485 serial speed (default: 2400 baud)
-  #define USE_SDM220                             // Add extra parameters for SDM220 (+0k1 code)
-//#define USE_SDM630                               // Add support for Eastron SDM630-Modbus energy meter (+2k code)
-  #define SDM630_SPEED         9600              // SDM630-Modbus RS485 serial speed (default: 9600 baud)
 //#define USE_MP3_PLAYER                           // Use of the DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
   #define MP3_VOLUME           10                // Set the startup volume on init, the range can be 0..30(max)
 //#define USE_AZ7798                               // Add support for AZ-Instrument 7798 CO2 datalogger (+1k6 code)
@@ -423,6 +420,15 @@
 #define USE_PZEM_AC                              // Add support for PZEM014,016 Energy monitor (+1k1 code)
 #define USE_PZEM_DC                              // Add support for PZEM003,017 Energy monitor (+1k1 code)
 #define USE_MCP39F501                            // Add support for MCP39F501 Energy monitor as used in Shelly 2 (+3k1 code)
+
+//#define USE_SDM120                               // Add support for Eastron SDM120-Modbus energy meter (+1k7 code)
+  #define SDM120_SPEED         2400              // SDM120-Modbus RS485 serial speed (default: 2400 baud)
+  #define USE_SDM220                             // Add extra parameters for SDM220 (+0k1 code)
+//#define USE_SDM630                               // Add support for Eastron SDM630-Modbus energy meter (+2k code)
+  #define SDM630_SPEED         9600              // SDM630-Modbus RS485 serial speed (default: 9600 baud)
+//#define USE_SOLAX_X1                             // Add support for Solax X1 series Modbus log info (+4k1 code)
+  #define SOLAXX1_SPEED        9600              // Solax X1 Modbus RS485 serial speed (default: 9600 baud)
+  #define SOLAXX1_PV2                            // Solax X1 using second PV
 
 // -- Low level interface devices -----------------
 #define USE_DHT                                  // Add support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor (1k6 code)
@@ -463,6 +469,10 @@
     #define IR_RCV_BUFFER_SIZE      100          // Max number of packets allowed in capture buffer (default 100 (*2 bytes ram))
     #define IR_RCV_TIMEOUT          15           // Number of milli-Seconds of no-more-data before we consider a message ended (default 15)
     #define IR_RCV_MIN_UNKNOWN_SIZE 6            // Set the smallest sized "UNKNOWN" message packets we actually care about (default 6, max 255)
+
+// -- Zigbee interface ----------------------------
+//#define USE_ZIGBEE                               // Enable serial communication with Zigbee CC2530 flashed with ZNP
+
 // ------------------------------------------------
 
 #define USE_WS2812                               // WS2812 Led string using library NeoPixelBus (+5k code, +1k mem, 232 iram) - Disable by //
@@ -495,9 +505,12 @@
 #define USE_VL53L0X                               // Add support for VL53L0X
 
 /*********************************************************************************************\
- * Debug features are only supported in development branch
+ * Debug features
 \*********************************************************************************************/
 
+//#define DEBUG_TASMOTA_CORE                       // Enable core debug messages
+//#define DEBUG_TASMOTA_DRIVER                     // Enable driver debug messages
+//#define DEBUG_TASMOTA_SENSOR                     // Enable sensor debug messages
 //#define USE_DEBUG_DRIVER                         // Use xdrv_99_debug.ino providing commands CpuChk, CfgXor, CfgDump, CfgPeek and CfgPoke
 
 /*********************************************************************************************\
