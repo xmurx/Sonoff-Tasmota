@@ -133,7 +133,6 @@ uint8_t led_inverted = 0;                   // LED inverted flag (1 = (0 = On, 1
 uint8_t led_power = 0;                      // LED power state
 uint8_t ledlnk_inverted = 0;                // Link LED inverted flag (1 = (0 = On, 1 = Off))
 uint8_t pwm_inverted = 0;                   // PWM inverted flag (1 = inverted)
-uint8_t counter_no_pullup = 0;              // Counter input pullup flag (1 = No pullup)
 uint8_t energy_flg = 0;                     // Energy monitor configured
 uint8_t light_type = 0;                     // Light types
 uint8_t serial_in_byte;                     // Received byte
@@ -152,7 +151,6 @@ bool stop_flash_rotate = false;             // Allow flash configuration rotatio
 bool blinkstate = false;                    // LED state
 //bool latest_uptime_flag = true;             // Signal latest uptime
 bool pwm_present = false;                   // Any PWM channel configured with SetOption15 0
-bool dht_flg = false;                       // DHT configured
 bool i2c_flg = false;                       // I2C configured
 bool spi_flg = false;                       // SPI configured
 bool soft_spi_flg = false;                  // Software SPI configured
@@ -631,13 +629,13 @@ void MqttShowState(void)
   ResponseAppend_P(PSTR(",\"" D_JSON_HEAPSIZE "\":%d,\"SleepMode\":\"%s\",\"Sleep\":%u,\"LoadAvg\":%u,\"MqttCount\":%u"),
     ESP.getFreeHeap()/1024, GetTextIndexed(stemp1, sizeof(stemp1), Settings.flag3.sleep_normal, kSleepMode), sleep, loop_load_avg, MqttConnectCount());
 
-  for (uint32_t i = 0; i < devices_present; i++) {
+  for (uint32_t i = 1; i <= devices_present; i++) {
 #ifdef USE_LIGHT
-    if (i == light_device -1) {
-      LightState(1);
+    if ((LightDevice()) && (i >= LightDevice())) {
+      if (i == LightDevice())  { LightState(1); }    // call it only once
     } else {
 #endif
-      ResponseAppend_P(PSTR(",\"%s\":\"%s\""), GetPowerDevice(stemp1, i +1, sizeof(stemp1), Settings.flag.device_index_enable), GetStateText(bitRead(power, i)));
+      ResponseAppend_P(PSTR(",\"%s\":\"%s\""), GetPowerDevice(stemp1, i, sizeof(stemp1), Settings.flag.device_index_enable), GetStateText(bitRead(power, i-1)));
 #ifdef USE_SONOFF_IFAN
       if (IsModuleIfan()) {
         ResponseAppend_P(PSTR(",\"" D_CMND_FANSPEED "\":%d"), GetFanspeed());
@@ -856,7 +854,7 @@ void Every250mSeconds(void)
       if (200 == blinks) blinks = 0;                      // Disable blink
     }
   }
-  else if (Settings.ledstate &1) {
+  if (Settings.ledstate &1 && (pin[GPIO_LEDLNK] < 99 || !(blinks || restart_flag || ota_state_flag)) ) {
     bool tstate = power & Settings.ledmask;
     if ((SONOFF_TOUCH == my_module_type) || (SONOFF_T11 == my_module_type) || (SONOFF_T12 == my_module_type) || (SONOFF_T13 == my_module_type)) {
       tstate = (!power) ? 1 : 0;                          // As requested invert signal for Touch devices to find them in the dark
@@ -1179,7 +1177,7 @@ void SerialInput(void)
     serial_in_buffer[serial_in_byte_counter] = 0;                                // Serial data completed
     char hex_char[(serial_in_byte_counter * 2) + 2];
     Response_P(PSTR("{\"" D_JSON_SERIALRECEIVED "\":\"%s\"}"),
-      (Settings.flag.mqtt_serial_raw) ? ToHex((unsigned char*)serial_in_buffer, serial_in_byte_counter, hex_char, sizeof(hex_char)) : serial_in_buffer);
+      (Settings.flag.mqtt_serial_raw) ? ToHex_P((unsigned char*)serial_in_buffer, serial_in_byte_counter, hex_char, sizeof(hex_char)) : serial_in_buffer);
     MqttPublishPrefixTopic_P(RESULT_OR_TELE, PSTR(D_JSON_SERIALRECEIVED));
     XdrvRulesProcess();
     serial_in_byte_counter = 0;
@@ -1245,6 +1243,7 @@ void GpioInit(void)
 
     if (mpin) {
       XdrvMailbox.index = mpin;
+      XdrvMailbox.payload = i;
 
       if ((mpin >= GPIO_SWT1_NP) && (mpin < (GPIO_SWT1_NP + MAX_SWITCHES))) {
         SwitchPullupFlag(mpin - GPIO_SWT1_NP);
@@ -1279,20 +1278,6 @@ void GpioInit(void)
         bitSet(pwm_inverted, mpin - GPIO_PWM1_INV);
         mpin -= (GPIO_PWM1_INV - GPIO_PWM1);
       }
-      else if ((mpin >= GPIO_CNTR1_NP) && (mpin < (GPIO_CNTR1_NP + MAX_COUNTERS))) {
-        bitSet(counter_no_pullup, mpin - GPIO_CNTR1_NP);
-        mpin -= (GPIO_CNTR1_NP - GPIO_CNTR1);
-      }
-#ifdef USE_DHT
-      else if ((mpin >= GPIO_DHT11) && (mpin <= GPIO_SI7021)) {
-        if (DhtSetup(i, mpin)) {
-          dht_flg = true;
-          mpin = GPIO_DHT11;
-        } else {
-          mpin = 0;
-        }
-      }
-#endif  // USE_DHT
       else if (XdrvCall(FUNC_PIN_STATE)) {
         mpin = XdrvMailbox.index;
       }
@@ -1326,7 +1311,9 @@ void GpioInit(void)
 
 #ifdef USE_I2C
   i2c_flg = ((pin[GPIO_I2C_SCL] < 99) && (pin[GPIO_I2C_SDA] < 99));
-  if (i2c_flg) { Wire.begin(pin[GPIO_I2C_SDA], pin[GPIO_I2C_SCL]); }
+  if (i2c_flg) {
+    Wire.begin(pin[GPIO_I2C_SDA], pin[GPIO_I2C_SCL]);
+  }
 #endif  // USE_I2C
 
   devices_present = 1;
@@ -1339,11 +1326,6 @@ void GpioInit(void)
     }
   }
 #endif  // USE_LIGHT
-
-  if (SONOFF_BRIDGE == my_module_type) {
-    Settings.flag.mqtt_serial = 0;
-    baudrate = 19200;
-  }
 
   if (XdrvCall(FUNC_MODULE_INIT)) {
     // Serviced

@@ -1,4 +1,14 @@
 /*********************************************************************************************\
+ * 6.6.0.6 20190819
+ * Add I2C display driver for SH1106 oled by Gerhard Mutz
+ * Add SPI display drivers for epaper 4.2 inch, ILI9488 TFT, SSD1351 Color oled and RA8876 TFT by Gerhard Mutz
+ *
+ * 6.6.0.5 20190816
+ * Add command WebSensor<sensor number> 0/1 to control display of sensor data in web GUI (#6085)
+ * Change some table locations from RAM to Flash
+ * Fix wrong telemetry message when SetOption68 1 (#6191)
+ * Add support for RDM6300 125kHz RFID Reader by Gerhard Mutz
+ *
  * 6.6.0.4 20190806
  * Add support for CHIRP soil moisture sensor by Christian Baars
  * Add debug compile features using defines DEBUG_TASMOTA_CORE, DEBUG_TASMOTA_DRIVER and DEBUG_TASMOTA_SENSOR.
@@ -6,6 +16,7 @@
  * Add support for Solax X1 inverter by Pablo Zerón
  * Add ZigBee support phase 1 - low level MQTT ZNP messages for CC2530 devices
  * Add command Buzzer with optional parameters <number of beeps>,<duration of beep in 100mS steps>,<duration of silence in 100mS steps> enabled when a buzzer is configured (#5988)
+ * Add support for PAJ7620 gesture sensor by Christian Baars
  *
  * 6.6.0.3 20190725
  * Change filename of configuration backup from using FriendlyName1 to Hostname solving diacritic issues (#2422)

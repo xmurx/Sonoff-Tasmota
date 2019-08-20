@@ -474,9 +474,9 @@ void CmndCfgShow(void)
 void CmndCfgXor(void)
 {
   if (XdrvMailbox.data_len > 0) {
-    config_xor_on_set = XdrvMailbox.payload;
+    Web.config_xor_on_set = XdrvMailbox.payload;
   }
-  ResponseCmndNumber(config_xor_on_set);
+  ResponseCmndNumber(Web.config_xor_on_set);
 }
 #endif  // USE_WEBSERVER
 
@@ -508,13 +508,15 @@ void CmndFreemem(void)
 void CmndSetSensor(void)
 {
   if (XdrvMailbox.index < MAX_XSNS_DRIVERS) {
-    if ((XdrvMailbox.payload >= 0) && XsnsPresent(XdrvMailbox.index)) {
+    if (XdrvMailbox.payload >= 0) {
       bitWrite(Settings.sensors[XdrvMailbox.index / 32], XdrvMailbox.index % 32, XdrvMailbox.payload &1);
       if (1 == XdrvMailbox.payload) {
         restart_flag = 2;  // To safely re-enable a sensor currently most sensor need to follow complete restart init cycle
       }
     }
-    Response_P(S_JSON_COMMAND_XVALUE, XdrvMailbox.command, XsnsGetSensors().c_str());
+    Response_P(PSTR("{\"" D_CMND_SETSENSOR "\":"));
+    XsnsSensorState();
+    ResponseJsonEnd();
   }
 }
 

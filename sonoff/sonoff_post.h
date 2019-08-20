@@ -42,7 +42,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
 void KNX_CB_Action(message_t const &msg, void *arg);
 //#endif  // USE_KNX
 
-char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbetween = '\0');
+char* ToHex_P(const unsigned char * in, size_t insz, char * out, size_t outsz, char inbetween = '\0');
 
 /*********************************************************************************************\
  * Default global defines
@@ -134,6 +134,7 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
 //#define USE_VL53L0X                           // Enable VL53L0x time of flight sensor (I2C address 0x29) (+4k code)
 //#define USE_MLX90614                          // Enable MLX90614 ir temp sensor (I2C address 0x5a) (+0.6k code)
 //#define USE_CHIRP                             // Enable CHIRP soil moisture sensor (variable I2C address, default 0x20)
+//#define USE_PAJ7620                           // Enable PAJ7620 gesture sensor (I2C address 0x73) (+2.5k code)
 
 #define USE_MHZ19                             // Add support for MH-Z19 CO2 sensor (+2k code)
 #define USE_SENSEAIR                          // Add support for SenseAir K30, K70 and S8 CO2 sensor (+2k3 code)
@@ -152,6 +153,8 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
   #define MP3_VOLUME           10             // Set the startup volume on init, the range can be 0..30(max)
 //#define USE_AZ7798                            // Add support for AZ-Instrument 7798 CO2 datalogger
 #define USE_PN532_HSU                         // Add support for PN532 using HSU (Serial) interface (+1k8 code, 140 bytes mem)
+#define USE_RDM6300                           // Add support for RDM6300 125kHz RFID Reader (+0k8)
+
 #define USE_PZEM004T                          // Add support for PZEM004T Energy monitor (+2k code)
 #define USE_PZEM_AC                           // Add support for PZEM014,016 Energy monitor (+1k1 code)
 #define USE_PZEM_DC                           // Add support for PZEM003,017 Energy monitor (+1k1 code)
@@ -231,6 +234,8 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
 #undef USE_MP3_PLAYER                         // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
 #undef USE_AZ7798                             // Disable support for AZ-Instrument 7798 CO2 datalogger
 #undef USE_PN532_HSU                          // Disable support for PN532 using HSU (Serial) interface (+1k8 code, 140 bytes mem)
+#undef USE_RDM6300                            // Disable support for RDM6300 125kHz RFID Reader (+0k8)
+
 #undef USE_PZEM004T                           // Disable PZEM004T energy sensor
 #undef USE_PZEM_AC                            // Disable PZEM014,016 Energy monitor
 #undef USE_PZEM_DC                            // Disable PZEM003,017 Energy monitor
@@ -337,6 +342,7 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
 #undef USE_MQTT_TLS                           // Disable TLS support won't work as the MQTTHost is not set
 #undef USE_KNX                                // Disable KNX IP Protocol Support
 //#undef USE_WEBSERVER                          // Disable Webserver
+#undef USE_WEBSEND_RESPONSE                   // Disable command WebSend response message (+1k code)
 //#undef USE_EMULATION                          // Disable Wemo or Hue emulation
 #undef USE_CUSTOM                             // Disable Custom features
 #undef USE_DISCOVERY                          // Disable Discovery services for both MQTT and web server
@@ -369,6 +375,8 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
 #undef USE_MP3_PLAYER                         // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
 #undef USE_AZ7798                             // Disable support for AZ-Instrument 7798 CO2 datalogger
 #undef USE_PN532_HSU                          // Disable support for PN532 using HSU (Serial) interface (+1k8 code, 140 bytes mem)
+#undef USE_RDM6300                            // Disable support for RDM6300 125kHz RFID Reader (+0k8)
+
 #undef USE_PZEM004T                           // Disable PZEM004T energy sensor
 #undef USE_PZEM_AC                            // Disable PZEM014,016 Energy monitor
 #undef USE_PZEM_DC                            // Disable PZEM003,017 Energy monitor
@@ -411,6 +419,7 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
 #undef USE_MQTT_TLS                           // Disable TLS support won't work as the MQTTHost is not set
 #undef USE_KNX                                // Disable KNX IP Protocol Support
 //#undef USE_WEBSERVER                          // Disable Webserver
+#undef USE_WEBSEND_RESPONSE                   // Disable command WebSend response message (+1k code)
 #undef USE_EMULATION                          // Disable Wemo or Hue emulation
 #undef USE_CUSTOM                             // Disable Custom features
 #undef USE_DISCOVERY                          // Disable Discovery services for both MQTT and web server
@@ -445,6 +454,8 @@ char* ToHex(unsigned char * in, size_t insz, char * out, size_t outsz, char inbe
 #undef USE_MP3_PLAYER                         // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
 #undef USE_AZ7798                             // Disable support for AZ-Instrument 7798 CO2 datalogger
 #undef USE_PN532_HSU                          // Disable support for PN532 using HSU (Serial) interface (+1k8 code, 140 bytes mem)
+#undef USE_RDM6300                            // Disable support for RDM6300 125kHz RFID Reader (+0k8)
+
 #undef USE_PZEM004T                           // Disable PZEM004T energy sensor
 #undef USE_PZEM_AC                            // Disable PZEM014,016 Energy monitor
 #undef USE_PZEM_DC                            // Disable PZEM003,017 Energy monitor
