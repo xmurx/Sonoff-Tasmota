@@ -78,7 +78,7 @@ typedef union {                            // Restricted by MISRA-C Rule 18.4 bu
     uint32_t no_hold_retain : 1;           // bit 12 (v6.4.1.19) - SetOption62 - Don't use retain flag on HOLD messages
     uint32_t no_power_feedback : 1;        // bit 13 (v6.5.0.9)  - SetOption63 - Don't scan relay power state at restart
     uint32_t use_underscore : 1;           // bit 14 (v6.5.0.12) - SetOption64 - Enable "_" instead of "-" as sensor index separator
-    uint32_t tuya_show_dimmer : 1;		     // bit 15 (v6.5.0.15) - SetOption65 - Enable or Disable Dimmer slider control
+    uint32_t tuya_disable_dimmer : 1;      // bit 15 (v6.5.0.15) - SetOption65 - Enable or Disable Tuya Serial Dimmer control
     uint32_t tuya_dimmer_range_255 : 1;    // bit 16 (v6.6.0.1)  - SetOption66 - Enable or Disable Dimmer range 255 slider control
     uint32_t buzzer_enable : 1;            // bit 17 (v6.6.0.1)  - SetOption67 - Enable buzzer when available
     uint32_t pwm_multi_channels : 1;       // bit 18 (v6.6.0.3)  - SetOption68 - Enable multi-channels PWM instead of Color PWM
@@ -176,6 +176,15 @@ typedef union {
     uint8_t mhz19b_abc_disable : 1;        // Disable ABC (Automatic Baseline Correction for MHZ19(B) (0 = Enabled (default), 1 = Disabled with Sensor15 command)
   };
 } SensorCfg1;
+
+typedef struct {
+  uint32_t usage1_kWhtotal;
+  uint32_t usage2_kWhtotal;
+  uint32_t return1_kWhtotal;
+  uint32_t return2_kWhtotal;
+  uint32_t last_usage_kWhtotal;
+  uint32_t last_return_kWhtotal;
+} EnergyUsage;
 
 /*
 struct SYSCFG {
@@ -337,7 +346,9 @@ struct SYSCFG {
   uint16_t      display_width;             // 774
   uint16_t      display_height;            // 776
 
-  uint8_t       free_778[28];              // 778
+  uint8_t       free_778[4];               // 778
+
+  EnergyUsage   energy_usage;              // 77C
 
 //  uint32_t      drivers[3];                // 794 - 6.5.0.12 replaced by below three entries
   uint32_t      adc_param1;                // 794
@@ -356,7 +367,10 @@ struct SYSCFG {
   uint16_t      web_refresh;               // 7CC
   char          mems[MAX_RULE_MEMS][10];   // 7CE
   char          rules[MAX_RULE_SETS][MAX_RULE_SIZE]; // 800 uses 512 bytes in v5.12.0m, 3 x 512 bytes in v5.14.0b
-                                           // E00 - FFF free locations
+
+  uint8_t       free_e00[512];             // E00
+
+                                           // FFF last location
 } Settings;
 
 struct RTCRBT {
@@ -373,7 +387,8 @@ struct RTCMEM {
   unsigned long energy_kWhtotal;              // 298
   unsigned long pulse_counter[MAX_COUNTERS];  // 29C
   power_t       power;                     // 2AC
-  uint8_t       free_020[60];              // 2B0
+  EnergyUsage   energy_usage;              // 2B0
+  uint8_t       free_038[36];              // 2C8
                                            // 2EC - 2FF free locations
 } RtcSettings;
 
