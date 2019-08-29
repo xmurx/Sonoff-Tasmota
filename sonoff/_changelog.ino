@@ -1,4 +1,13 @@
 /*********************************************************************************************\
+ * 6.6.0.9 20190828
+ * Change theoretical baudrate range to 300..19660500 bps in 300 increments (#6294)
+ * Add Full support of all protocols in IRremoteESP8266, to be used on dedicated-IR Tasmota version. Warning: +81k Flash when compiling with USE_IR_REMOTE_FULL
+ *
+ * 6.6.0.8 20190827
+ * Add Tuya Energy monitoring by Shantur Rathore
+ * Add phase 1 Domoticz P1 Smart Meter support using energy sensors handled by xdrv_03_energy.ino based on an idea by pablozg
+ *   Add commands Tariff1 0..23 (start Off-Peak hour), Tariff2 0..23 (start Standard hour) and Tariff3 0/1 (Saturday and Sunday Off-Peak)
+ *
  * 6.6.0.7 20190825
  * Expand Settings area to 4k for future use
  *

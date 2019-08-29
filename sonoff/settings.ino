@@ -125,6 +125,18 @@
 #ifndef ENERGY_OVERTEMP
 #define ENERGY_OVERTEMP             90         // Overtemp in Celsius
 #endif
+#ifndef TUYA_DIMMER_MAX
+#define TUYA_DIMMER_MAX             100
+#endif
+#ifndef ENERGY_TARIFF1_HOUR
+#define ENERGY_TARIFF1_HOUR         23         // Start hour "nighttime" or "off-peak" tariff
+#endif
+#ifndef ENERGY_TARIFF2_HOUR
+#define ENERGY_TARIFF2_HOUR         7          // Start hour "daytime" or "standard" tariff
+#endif
+#ifndef ENERGY_TARIFF_WEEKEND
+#define ENERGY_TARIFF_WEEKEND       1          // 0 = No difference in weekend, 1 = off-peak during weekend
+#endif
 
 enum WebColors {
   COL_TEXT, COL_BACKGROUND, COL_FORM,
@@ -584,8 +596,8 @@ void SettingsDefaultSet2(void)
 //  for (uint32_t i = 1; i < MAX_PULSETIMERS; i++) { Settings.pulse_timer[i] = 0; }
 
   // Serial
-  Settings.baudrate = APP_BAUDRATE / 1200;
-  Settings.sbaudrate = SOFT_BAUDRATE / 1200;
+  Settings.baudrate = APP_BAUDRATE / 300;
+  Settings.sbaudrate = SOFT_BAUDRATE / 300;
   Settings.serial_delimiter = 0xff;
   Settings.seriallog_level = SERIAL_LOG_LEVEL;
 
@@ -760,6 +772,8 @@ void SettingsDefaultSet2(void)
   Settings.light_pixels = WS2812_LEDS;
 //  Settings.light_rotation = 0;
   SettingsDefaultSet_5_8_1();    // Clock color
+
+  Settings.param[P_TUYA_DIMMER_MAX] = TUYA_DIMMER_MAX;
 
   // Display
   SettingsDefaultSet_5_10_1();   // Display settings
@@ -946,10 +960,10 @@ void SettingsDelta(void)
       }
     }
     if (Settings.version < 0x050C0007) {
-      Settings.baudrate = APP_BAUDRATE / 1200;
+      Settings.baudrate = APP_BAUDRATE / 300;
     }
     if (Settings.version < 0x050C0008) {
-      Settings.sbaudrate = SOFT_BAUDRATE / 1200;
+      Settings.sbaudrate = SOFT_BAUDRATE / 300;
       Settings.serial_delimiter = 0xff;
     }
     if (Settings.version < 0x050C000A) {
@@ -1065,6 +1079,21 @@ void SettingsDelta(void)
     }
     if (Settings.version < 0x06060007) {
       memset((char*)&Settings +0xE00, 0x00, sizeof(SYSCFG) -0xE00);
+    }
+    if (Settings.version < 0x06060008) {
+      // Move current tuya dimmer range to the new param.
+      if (Settings.flag3.tuya_dimmer_range_255) {
+        Settings.param[P_TUYA_DIMMER_MAX] = 100;
+      } else {
+        Settings.param[P_TUYA_DIMMER_MAX] = 255;
+      }
+      Settings.param[P_ENERGY_TARIFF1] = ENERGY_TARIFF1_HOUR;
+      Settings.param[P_ENERGY_TARIFF2] = ENERGY_TARIFF2_HOUR;
+      Settings.flag3.energy_weekend = ENERGY_TARIFF_WEEKEND;
+    }
+    if (Settings.version < 0x06060009) {
+      Settings.baudrate = Settings.ex_baudrate * 4;
+      Settings.sbaudrate = Settings.ex_sbaudrate * 4;
     }
 
     Settings.version = VERSION;
