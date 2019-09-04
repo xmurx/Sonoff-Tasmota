@@ -113,6 +113,7 @@ const uint16_t SERIALLOG_TIMER = 600;       // Seconds to disable SerialLog
 const uint8_t OTA_ATTEMPTS = 5;             // Number of times to try fetching the new firmware
 
 const uint16_t INPUT_BUFFER_SIZE = 520;     // Max number of characters in (serial and http) command buffer
+const uint16_t FLOATSZ = 33;                // Max number of characters in float result from dtostrfd
 const uint16_t CMDSZ = 24;                  // Max number of characters in command
 const uint16_t TOPSZ = 100;                 // Max number of characters in topic string
 const uint16_t LOGSZ = 520;                 // Max number of characters in log
@@ -172,9 +173,12 @@ const uint32_t LOOP_SLEEP_DELAY = 50;       // Lowest number of milliseconds to 
 #define RGB_REMAP_BRGW         48
 #define RGB_REMAP_BGRW         54
 
-#define NEO_BB_DEFAULT         0            // NeoPixelBus BitBang speed 800kBps with reset time 50 uSec
-#define NEO_BB_WS2812X         1            // NeoPixelBus BitBang speed 800kBps with reset time 300 uSec
-#define NEO_BB_SK6812          2            // NeoPixelBus BitBang speed 800kBps with reset time 80 uSec
+#define NEO_HW_WS2812          0            // NeoPixelBus hardware WS2812
+#define NEO_HW_WS2812X         1            // NeoPixelBus hardware WS2812x like WS2812b
+#define NEO_HW_WS2813          1            // NeoPixelBus hardware WS2813
+#define NEO_HW_SK6812          2            // NeoPixelBus hardware SK6812
+#define NEO_HW_LC8812          2            // NeoPixelBus hardware LC8812
+#define NEO_HW_APA106          3            // NeoPixelBus hardware APA106
 
 #define MQTT_PUBSUBCLIENT      1            // Mqtt PubSubClient library
 #define MQTT_TASMOTAMQTT       2            // Mqtt TasmotaMqtt library based on esp-mqtt-arduino - soon obsolete
@@ -227,7 +231,11 @@ enum EmulationOptions {EMUL_NONE, EMUL_WEMO, EMUL_HUE, EMUL_MAX};
 
 enum TopicOptions { CMND, STAT, TELE, nu1, RESULT_OR_CMND, RESULT_OR_STAT, RESULT_OR_TELE };
 
-enum ExecuteCommandPowerOptions { POWER_OFF, POWER_ON, POWER_TOGGLE, POWER_BLINK, POWER_BLINK_STOP, power_nu1, POWER_OFF_NO_STATE, POWER_ON_NO_STATE, power_nu2, POWER_SHOW_STATE };
+enum ExecuteCommandPowerOptions { POWER_OFF, POWER_ON, POWER_TOGGLE, POWER_BLINK, POWER_BLINK_STOP,
+                                  POWER_OFF_NO_STATE = 8, POWER_ON_NO_STATE, POWER_TOGGLE_NO_STATE,
+                                  POWER_SHOW_STATE = 16 };
+enum SendKeyPowerOptions { POWER_HOLD = 3, CLEAR_RETAIN = 9 };
+enum SendKeyOptions { KEY_BUTTON, KEY_SWITCH };
 
 enum PowerOnStateOptions { POWER_ALL_OFF, POWER_ALL_ON, POWER_ALL_SAVED_TOGGLE, POWER_ALL_SAVED, POWER_ALL_ALWAYS_ON, POWER_ALL_OFF_PULSETIME_ON };
 
@@ -258,7 +266,7 @@ enum XsnsFunctions {FUNC_SETTINGS_OVERRIDE, FUNC_PIN_STATE, FUNC_MODULE_INIT, FU
                     FUNC_PREP_BEFORE_TELEPERIOD, FUNC_JSON_APPEND, FUNC_WEB_SENSOR, FUNC_COMMAND, FUNC_COMMAND_SENSOR, FUNC_COMMAND_DRIVER,
                     FUNC_MQTT_SUBSCRIBE, FUNC_MQTT_INIT, FUNC_MQTT_DATA,
                     FUNC_SET_POWER, FUNC_SET_DEVICE_POWER, FUNC_SHOW_SENSOR,
-                    FUNC_ENERGY_EVERY_SECOND,
+                    FUNC_ENERGY_EVERY_SECOND, FUNC_ENERGY_RESET,
                     FUNC_RULES_PROCESS, FUNC_SERIAL, FUNC_FREE_MEM, FUNC_BUTTON_PRESSED,
                     FUNC_WEB_ADD_BUTTON, FUNC_WEB_ADD_MAIN_BUTTON, FUNC_WEB_ADD_HANDLER, FUNC_SET_CHANNELS};
 
