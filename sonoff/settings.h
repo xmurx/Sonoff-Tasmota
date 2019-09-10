@@ -181,8 +181,8 @@ typedef struct {
   uint32_t usage1_kWhtoday;
   uint32_t return1_kWhtotal;
   uint32_t return2_kWhtotal;
-  uint32_t last_usage_kWhtotal;
   uint32_t last_return_kWhtotal;
+  uint32_t free;
 } EnergyUsage;
 
 
@@ -227,9 +227,7 @@ struct SYSCFG {
   uint8_t       weblog_level;              // 1AC
   uint8_t       mqtt_fingerprint[2][20];   // 1AD
   uint8_t       adc_param_type;            // 1D5
-
-  uint8_t       free_1D6[18];              // 1D6  Free since 5.12.0e
-
+  uint8_t       register8[18];             // 1D6 - 18 x 8-bit registers indexed by enum SettingsRegister8
   uint8_t       sps30_inuse_hours;         // 1E8
   char          mqtt_host[33];             // 1E9 - Keep together with below as being copied as one chunck with reset 6
   uint16_t      mqtt_port;                 // 20A - Keep together
@@ -373,8 +371,10 @@ struct SYSCFG {
   char          mems[MAX_RULE_MEMS][10];   // 7CE
   char          rules[MAX_RULE_SETS][MAX_RULE_SIZE];  // 800 uses 512 bytes in v5.12.0m, 3 x 512 bytes in v5.14.0b
   TuyaFnidDpidMap tuya_fnid_map[MAX_TUYA_FUNCTIONS];  // E00    32 bytes
+  uint16_t      ina226_r_shunt[4];         // E20
+  uint16_t      ina226_i_fs[4];            // E28
 
-  uint8_t       free_e20[472];             // E20
+  uint8_t       free_e30[456];             // E30
 
   uint32_t      cfg_timestamp;             // FF8
   uint32_t      cfg_crc32;                 // FFC

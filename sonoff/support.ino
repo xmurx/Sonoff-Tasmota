@@ -124,6 +124,18 @@ size_t strcspn(const char *str1, const char *str2)
   return ret;
 }
 
+// https://clc-wiki.net/wiki/C_standard_library:string.h:strpbrk
+// Locate the ﬁrst occurrence in the string pointed to by s1 of any character from the string pointed to by s2
+char* strpbrk(const char *s1, const char *s2)
+{
+  while(*s1) {
+    if (strchr(s2, *s1++)) {
+      return (char*)--s1;
+    }
+  }
+  return 0;
+}
+
 // https://opensource.apple.com/source/Libc/Libc-583/stdlib/FreeBSD/strtoull.c
 // Convert a string to an unsigned long long integer
 #ifndef __LONG_LONG_MAX__
@@ -876,13 +888,13 @@ char* ResponseGetTime(uint32_t format, char* time_str)
 {
   switch (format) {
   case 1:
-    snprintf_P(time_str, TIMESZ, PSTR("{\"" D_JSON_TIME "\":\"%s\""), GetDateAndTime(DT_LOCAL).c_str());
+    snprintf_P(time_str, TIMESZ, PSTR("{\"" D_JSON_TIME "\":\"%s\",\"Epoch\":%u"), GetDateAndTime(DT_LOCAL).c_str(), UtcTime());
     break;
   case 2:
     snprintf_P(time_str, TIMESZ, PSTR("{\"" D_JSON_TIME "\":%u"), UtcTime());
     break;
   default:
-    snprintf_P(time_str, TIMESZ, PSTR("{\"" D_JSON_TIME "\":\"%s\",\"Epoch\":%u"), GetDateAndTime(DT_LOCAL).c_str(), UtcTime());
+    snprintf_P(time_str, TIMESZ, PSTR("{\"" D_JSON_TIME "\":\"%s\""), GetDateAndTime(DT_LOCAL).c_str());
   }
   return time_str;
 }
