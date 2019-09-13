@@ -59,6 +59,8 @@ void SSD1306InitDriver()
     }
   }
 
+  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("-- Init Display model:%d"), Settings.display_model );
+
   if (XDSP_02 == Settings.display_model) {
 
     if ((Settings.display_width != 96) && (Settings.display_width != 128)) {
@@ -83,10 +85,14 @@ void SSD1306InitDriver()
     oled1306 = new Adafruit_SSD1306(Settings.display_width, Settings.display_height, &Wire, reset_pin);
     oled1306->begin(SSD1306_SWITCHCAPVCC, Settings.display_address[0], 0);
     renderer = oled1306;
+
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("-- Init Display mode:%d width: %d, height:%d"), DISPLAY_INIT_MODE, Settings.display_width, Settings.display_height);
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("-- Init Display address:%x"), Settings.display_address[0]);
     renderer->DisplayInit(DISPLAY_INIT_MODE, Settings.display_size, Settings.display_rotate, Settings.display_font);
 
     renderer->setTextColor(1,0);
 
+#define SHOW_SPLASH 
 #ifdef SHOW_SPLASH
     renderer->setTextFont(0);
     renderer->setTextSize(2);
