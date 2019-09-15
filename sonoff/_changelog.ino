@@ -5,6 +5,13 @@
  * Change rename "Data" to "Hash" and limit to 32 bits when receiving UNKNOWN IR protocol (see DECODE_HASH from IRremoteESP8266)
  * Add command Gpios 255/All to show all available GPIO components (#6407)
  * Change JSON output format for commands Adc, Adcs, Modules, Gpio and Gpios from list to dictionary (#6407)
+ * Add Zigbee support phase 3 - support for Xiaomi lumi.weather air quality sensor, Osram mini-switch
+ * Change energy sensors for three phase/channel support
+ * Add support for Shelly 2.5 dual energy (#6160)
+ * Add initial support for up to three PZEM-014/-016 on serial modbus connection with addresses 1 (default), 2 and 3 (#2315)
+ * Add initial support for up to three PZEM-004T on serial connection with addresses x.x.x.1 (default), 2 and 3 (#2315)
+ * Add initial support for up to three PZEM-003/-017 on serial modbus connection with addresses 1 (default), 2 and 3 (#2315)
+ * Add driver USE_SDM630_2 as future replacement for USE_SDM630 - Pls test and report
  *
  * 6.6.0.11 20190907
  * Change Settings crc calculation allowing short term backward compatibility
