@@ -1,0 +1,4 @@
+
+FUNC_SHOW_SENSOR returns this:
+
+{"Time":"2019-09-24T19:46:12","BME280":{"Temperature":22.3,"Humidity":48.5,"Pressure":1005.0},"VL53L0X":{"Distance":566},"PressureUnit":"hPa","TempUnit":"C"}
