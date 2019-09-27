@@ -21,8 +21,7 @@ bool Xdrv90(uint8_t function)
     }
     case FUNC_SHOW_SENSOR:
     {
-      Log::Debug("XDRV90: show sensor");
-      //Log::Debug("XDRV90: %s", MQTTResponse::Get());
+      Log::Debug("XDRV90: %s", MQTTResponse::Get());
       break;
     }
   }

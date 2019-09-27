@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include "sonoff.h"
 #include "logging.h"
+#include "x_support.h"
 
 /*********************************************************************************************\
  * Logging helper functions
