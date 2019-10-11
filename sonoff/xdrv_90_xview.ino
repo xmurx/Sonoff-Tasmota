@@ -34,8 +34,8 @@ namespace XView
     }
 
     int distance;
-    float temperature;
-    float humidity;
+    int temperature;
+    int humidity;
     int pressure;
   };
 
@@ -52,25 +52,28 @@ namespace XView
    */
   bool ExtractValues( XViewData& data )
   {
+
+    Log::Debug( "xView:  %s", MQTTResponse::Get() );
     JsonObject& root = jsonBuffer.parseObject(MQTTResponse::Get());
     if(root.success())
     {
-      Log::Debug( "XView - root successful");
-      const char* Time = root["Time"]; 
+      /*
       const JsonObject& BME280 = root["BME280"];
-
-      if(BME280.success())
-      { 
-        Log::Debug( "XView - BME280 successful");
-        data.temperature = BME280["Temperature"]; 
-        data.humidity = BME280["Humidity"];
-        data.pressure = BME280["Pressure"];
+      if( BME280.success())
+      {
+        Log::Debug( "xView: BME280 success...");
+        data.temperature         = BME280["Temperature"]; 
+        data.humidity            = BME280["Humidity"];
+        data.pressure            = BME280["Pressure"];
       }
-      data.distance = root["VL53L0X"]["Distance"];
-    }
-    else
-    {
-      return false;
+
+      const JsonObject& VL53L0X = root["VL53L0X"];
+      if(VL53L0X.success())
+      {
+        Log::Debug( "xView: VL53L0X success...");
+        data.distance = VL53L0X["Distance"];
+      }
+      */
     }
     return true;
   }
@@ -87,17 +90,32 @@ bool Xdrv90(uint8_t function)
       Log::Debug("XDRV90: Init xview driver");
       break;
     }
-    case FUNC_SHOW_SENSOR:
+    case FUNC_EVERY_100_MSECOND:
     {
+      static uint8_t snsIndex = 0;
+      MQTTResponse::Set(" ");
+      MQTTResponse::AppendTime();
+      XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
+      MQTTResponse::AppendEnd();
+      
       bool ret = XView::ExtractValues(XView::data);
       if(ret==true)
       {
-        Log::Debug("Temp: %f, Hum: %f, Press: %d, Distance: %d",
+        Log::Debug("Temp: %d, Hum: %d, Press: %d, Distance: %d",
                     XView::data.temperature,
                     XView::data.humidity,
                     XView::data.pressure,
                     XView::data.distance );
       }
+      else
+      {
+        //Log::Debug("xview: extract  values from MQTT failed...");
+      }
+      
+      break;
+    }
+    case FUNC_SHOW_SENSOR:
+    {
       break;
     }
   }
