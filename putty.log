@@ -1,6 +1,7 @@
-=~=~=~=~=~=~=~=~=~=~=~= PuTTY log 2019.10.11 06:36:23 =~=~=~=~=~=~=~=~=~=~=~=
-r$lœž|Œ$à|Œ$äb|Ž‚ì’rÛb„bŒp~ûnŸ$onœâìbp„Ž#l r$pòoàƒ$ŒÜboâ|$äŽ#Œòooï$„Žl 2nNl`nr’’n#œl{’’n"ÜlÜû$œÂûlälÜlü‚nÜ
-00:00:00 CFG: aus Flash geladen am F7, zÃ¤hlen 125
+=~=~=~=~=~=~=~=~=~=~=~= PuTTY log 2019.10.15 21:54:21 =~=~=~=~=~=~=~=~=~=~=~=
+
+{llœß|Œlà|„$ì#|‚ìpÛr²ÜŒBŒûonŸlnoÜãì"pŒŽl{lrlpûNà‚lŒœboã|läŽb„ònoÎ$Œ$`ond`N{ŽÛ’o#Ül{’ÛNbœ$œòlœâ¾lälœŽdüƒoÜ
+00:00:00 CFG: aus Flash geladen am FA, zÃ¤hlen 154
 00:00:00 -- Init Display model:2
 00:00:00 -- Init Display mode:0 width: 128, height:64
 00:00:00 -- Init Display address:3c
@@ -11,218 +12,782 @@ r$lœž|Œ$à|Œ$äb|Ž‚ì’rÛb„bŒp~ûnŸ$onœâìbp„Ž#l r$pòoàƒ$ŒÜboâ|
 00:00:00 SHT: Sensor hat ACK-Befehl nicht ausgefÃ¼hrt
 00:00:00 I2C: BME280 gefunden bei 0x76
 00:00:00 I2C: VL53L0X gefunden bei 0x29
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
 00:00:00 WIF: Verbindungsversuch...
 00:00:00 WIF: verbinden mit AP1 HomeLinkDeineMutter in Modus 11N als sonoff-8122...
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:00 xView:  {{"Time":"1970-01-01T00:00:00"}
-00:00:00 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01","BME280":{"Temperature":21.0,"Humidity":47.1,"Pressure":1008.5}}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
 00:00:01 WIF: Verbindungsversuch...
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:01 xView:  {{"Time":"1970-01-01T00:00:01"}
-00:00:01 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02","VL53L0X":{"Distance":809}}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
+00:00:01 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 xView: BME280 success...
+00:00:01 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:02 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
 00:00:02 WIF: Verbindungsversuch...
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02"}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:02 xView:  {{"Time":"1970-01-01T00:00:02","BME280":{"Temperature":21.0,"Humidity":47.2,"Pressure":1008.6}}
-00:00:02 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:03 xView:  {{"Time":"1970-01-01T00:00:03"}
-00:00:03 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:03 xView:  {{"Time":"1970-01-01T00:00:03"}
-00:00:03 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:03 xView:  {{"Time":"1970-01-01T00:00:03"}
-00:00:03 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:03 xView:  {{"Time":"1970-01-01T00:00:03"}
-00:00:03 Temp: 0, Hum: 0, Press: 0, Distance: 0
+00:00:02 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:02 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:02 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:03 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
 00:00:03 WIF: Verbindungsversuch...
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04","VL53L0X":{"Distance":807}}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
+00:00:03 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:04 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:04 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
+00:00:04 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 0
 00:00:04 WIF: verbunden
 00:00:04 HTP: Web-Server aktiv bei sonoff-8122 mit IP-Adresse 192.168.188.46
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-00:00:04 xView:  {{"Time":"1970-01-01T00:00:04"}
-00:00:04 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 NTP: Drift 0, (UTC) Fri Oct 11 04:36:26 2019, (DST) Sun Mar 31 02:00:00 2019, (STD) Sun Oct 27 03:00:00 2019
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26","BME280":{"Temperature":21.0,"Humidity":47.2,"Pressure":1008.6}}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:26 xView:  {{"Time":"2019-10-11T05:36:26"}
-05:36:26 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27","VL53L0X":{"Distance":806}}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:27 xView:  {{"Time":"2019-10-11T05:36:27"}
-05:36:27 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28","BME280":{"Temperature":21.0,"Humidity":47.3,"Pressure":1008.5}}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:28 xView:  {{"Time":"2019-10-11T05:36:28"}
-05:36:28 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29","VL53L0X":{"Distance":804}}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:29 xView:  {{"Time":"2019-10-11T05:36:29"}
-05:36:29 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 RSL: tele/sonoff/STATE = {"Time":"2019-10-11T05:36:30","Uptime":"0T00:00:09","UptimeSec":9,"Heap":25,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":25,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":88,"LinkCount":1,"Downtime":"0T00:00:04"}}
-05:36:30 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-11T05:36:30","BME280":{"Temperature":21.0,"Humidity":47.3,"Pressure":1008.5},"VL53L0X":{"Distance":800},"PressureUnit":"hPa","TempUnit":"C"}
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30","BME280":{"Temperature":21.0,"Humidity":47.3,"Pressure":1008.5}}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:30 xView:  {{"Time":"2019-10-11T05:36:30"}
-05:36:30 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 APP: Anzahl StartvorgÃ¤nge 95
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31","VL53L0X":{"Distance":813}}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 CFG: in Flash gespeichert am F6, zÃ¤hlen 126, Bytes 4096
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:31 xView:  {{"Time":"2019-10-11T05:36:31"}
-05:36:31 Temp: 0, Hum: 0, Press: 0, Distance: 0
-05:36:32 xView:  {{"Time":"2019-10-11T05:36:32"}
-05:36:32 Temp: 0, Hum: 0, Press: 0, Distance: 0
-0
+00:00:04 xView: VL53L0X success...
+00:00:04 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:24 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:24 NTP: Drift 0, (UTC) Tue Oct 15 19:54:24 2019, (DST) Sun Mar 31 02:00:00 2019, (STD) Sun Oct 27 03:00:00 2019
+20:54:24 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:24 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:24 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:25 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:25 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:25 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:25 xView - Temp: 23.00, Hum: 53.70, Press: 1000.50, Distance: 910
+20:54:26 xView: BME280 success...
+20:54:26 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:26 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:26 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:26 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:27 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:27 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:27 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:27 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:28 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:28 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:54:28","Uptime":"0T00:00:09","UptimeSec":9,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":94,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:54:28 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:54:28","BME280":{"Temperature":23.0,"Humidity":53.8,"Pressure":1000.5},"VL53L0X":{"Distance":902},"PressureUnit":"hPa","TempUnit":"C"}
+20:54:28 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 910
+20:54:28 xView: VL53L0X success...
+20:54:28 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:28 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:29 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:29 APP: Anzahl StartvorgÃ¤nge 124
+20:54:29 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:29 CFG: in Flash gespeichert am F9, zÃ¤hlen 155, Bytes 4096
+20:54:29 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:29 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:30 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:30 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:30 xView - Temp: 23.00, Hum: 53.70, Press: 1000.60, Distance: 902
+20:54:30 xView: BME280 success...
+20:54:30 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:31 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:31 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:31 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:31 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:32 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:32 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:32 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:32 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:33 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 902
+20:54:33 xView: VL53L0X success...
+20:54:33 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:33 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:33 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:34 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:34 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:34 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:34 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:35 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:35 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:35 xView: BME280 success...
+20:54:35 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:35 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:36 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:36 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:36 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:36 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:37 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:37 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:37 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:37 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 912
+20:54:38 xView: VL53L0X success...
+20:54:38 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:38 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:54:38","Uptime":"0T00:00:19","UptimeSec":19,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":96,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:54:38 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:54:38","BME280":{"Temperature":23.0,"Humidity":53.8,"Pressure":1000.5},"VL53L0X":{"Distance":72},"PressureUnit":"hPa","TempUnit":"C"}
+20:54:38 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:38 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:38 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:39 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:39 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:39 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:39 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:40 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 72
+20:54:40 xView: BME280 success...
+20:54:40 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:40 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:40 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:41 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:41 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:41 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:41 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:42 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:42 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:42 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 72
+20:54:42 xView: VL53L0X success...
+20:54:42 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:43 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:43 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:43 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:43 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:44 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:44 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:44 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:44 xView - Temp: 23.00, Hum: 53.80, Press: 1000.60, Distance: 692
+20:54:45 xView: BME280 success...
+20:54:45 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:45 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:45 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:45 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:46 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:46 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:46 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:46 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:47 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:47 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 692
+20:54:47 xView: VL53L0X success...
+20:54:47 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:47 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:48 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:48 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:54:48","Uptime":"0T00:00:29","UptimeSec":29,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":100,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:54:48 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:54:48","BME280":{"Temperature":23.0,"Humidity":53.7,"Pressure":1000.5},"VL53L0X":{"Distance":1087},"PressureUnit":"hPa","TempUnit":"C"}
+20:54:48 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:48 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:48 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:49 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:49 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:49 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 911
+20:54:49 xView: BME280 success...
+20:54:49 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:50 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:50 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:50 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:50 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:51 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:51 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:51 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:51 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:52 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 911
+20:54:52 xView: VL53L0X success...
+20:54:52 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:52 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:52 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:53 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:53 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:53 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:53 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:54 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:54 xView - Temp: 23.00, Hum: 54.00, Press: 1000.50, Distance: 1214
+20:54:54 xView: BME280 success...
+20:54:54 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:54 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:55 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:55 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:55 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:55 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:56 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:56 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:56 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:56 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 1214
+20:54:57 xView: VL53L0X success...
+20:54:57 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:57 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:57 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:57 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:58 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:58 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:54:58","Uptime":"0T00:00:39","UptimeSec":39,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":100,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:54:58 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:54:58","BME280":{"Temperature":23.0,"Humidity":53.8,"Pressure":1000.5},"VL53L0X":{"Distance":76},"PressureUnit":"hPa","TempUnit":"C"}
+20:54:58 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:58 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:58 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:59 xView - Temp: 23.00, Hum: 53.80, Press: 1000.50, Distance: 25
+20:54:59 xView: BME280 success...
+20:54:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:54:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:54:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 25
+20:55:01 xView: VL53L0X success...
+20:55:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:04 xView: BME280 success...
+20:55:04 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:04 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:04 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:04 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:05 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:05 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:05 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:05 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:06 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:06 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 89
+20:55:06 xView: VL53L0X success...
+20:55:06 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:06 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:07 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:07 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:07 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:07 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:08 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:08 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:55:08","Uptime":"0T00:00:49","UptimeSec":49,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":100,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:55:08 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:55:08","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":1292},"PressureUnit":"hPa","TempUnit":"C"}
+20:55:08 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:08 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:08 xView: BME280 success...
+20:55:08 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:09 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:09 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:09 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:09 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 87
+20:55:11 xView: VL53L0X success...
+20:55:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:12 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:12 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:12 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:12 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:13 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:13 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:13 xView: BME280 success...
+20:55:13 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:13 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:14 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:14 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:14 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:14 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:15 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:15 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:15 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:15 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:16 xView: VL53L0X success...
+20:55:16 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:16 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:16 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:16 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:17 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:17 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:17 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:17 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:18 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:18 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:55:18","Uptime":"0T00:00:59","UptimeSec":59,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":80,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:55:18 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:55:18","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":921},"PressureUnit":"hPa","TempUnit":"C"}
+20:55:18 xView: BME280 success...
+20:55:18 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:18 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:18 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:19 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:19 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:19 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:19 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:20 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:20 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:20 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:20 xView: VL53L0X success...
+20:55:20 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:21 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:21 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:21 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:21 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:22 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:22 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:22 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:22 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:23 xView: BME280 success...
+20:55:23 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:23 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:23 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:23 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:24 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:24 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:24 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:24 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:25 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:25 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:25 xView: VL53L0X success...
+20:55:25 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:25 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:26 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:26 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:26 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:26 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:27 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:27 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:27 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:27 xView: BME280 success...
+20:55:27 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:28 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:28 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:55:28","Uptime":"0T00:01:09","UptimeSec":69,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":84,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:55:28 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:55:28","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":922},"PressureUnit":"hPa","TempUnit":"C"}
+20:55:28 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:28 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:28 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:29 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:29 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:29 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:29 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:30 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:30 xView: VL53L0X success...
+20:55:30 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:30 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:30 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:31 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:31 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:31 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:31 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:32 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:32 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:32 xView: BME280 success...
+20:55:32 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:32 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:33 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:33 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:33 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:33 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:34 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:34 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:34 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:34 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 925
+20:55:35 xView: VL53L0X success...
+20:55:35 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:35 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:35 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:35 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:36 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:36 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:36 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:36 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:37 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:37 xView: BME280 success...
+20:55:37 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:37 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:37 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:38 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:38 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:55:38","Uptime":"0T00:01:19","UptimeSec":79,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":84,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:55:38 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:55:38","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":922},"PressureUnit":"hPa","TempUnit":"C"}
+20:55:38 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:38 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:38 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:39 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:39 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:39 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 924
+20:55:39 xView: VL53L0X success...
+20:55:39 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:40 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:40 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:40 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:40 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:41 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:41 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:41 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:41 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:42 xView: BME280 success...
+20:55:42 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:42 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:42 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:42 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:43 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:43 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:43 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:43 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:44 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:44 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 923
+20:55:44 xView: VL53L0X success...
+20:55:44 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:44 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:45 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:45 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:45 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:45 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:46 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:46 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:46 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:46 xView: BME280 success...
+20:55:46 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:47 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:47 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:47 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:47 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:48 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:48 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:55:48","Uptime":"0T00:01:29","UptimeSec":89,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":86,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:55:48 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:55:48","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":922},"PressureUnit":"hPa","TempUnit":"C"}
+20:55:48 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:48 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:48 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:49 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:49 xView: VL53L0X success...
+20:55:49 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:49 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:49 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:50 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:50 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:50 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:50 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:51 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:51 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:51 xView: BME280 success...
+20:55:51 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:51 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:52 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:52 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:52 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:52 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:53 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:53 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:53 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:53 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 920
+20:55:54 xView: VL53L0X success...
+20:55:54 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:54 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:54 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:54 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:55 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:55 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:55 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:55 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:56 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:56 xView: BME280 success...
+20:55:56 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:56 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:56 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:57 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:57 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:57 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:57 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:58 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:58 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:55:58","Uptime":"0T00:01:39","UptimeSec":99,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":98,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:55:58 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:55:58","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":383},"PressureUnit":"hPa","TempUnit":"C"}
+20:55:58 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:58 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:55:58 xView: VL53L0X success...
+20:55:58 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:55:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:55:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:55:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:55:59 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:00 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:01 xView: BME280 success...
+20:56:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:01 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:02 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 383
+20:56:03 xView: VL53L0X success...
+20:56:03 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:04 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:04 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:05 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:05 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:06 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:06 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:07 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:08 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:08 xView: BME280 success...
+20:56:08 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:09 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:09 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:10 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:11 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:12 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 400
+20:56:12 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:56:12","Uptime":"0T00:01:53","UptimeSec":113,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":322,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":92,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:56:12 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:56:12","BME280":{"Temperature":22.7,"Humidity":47.6,"Pressure":698.2},"VL53L0X":{"Distance":9999},"PressureUnit":"hPa","TempUnit":"C"}
+20:56:12 xView: VL53L0X success...
+20:56:12 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:13 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:13 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:14 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:14 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:15 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:15 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:16 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:16 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:17 xView: BME280 success...
+20:56:17 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:17 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:18 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:18 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:19 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:20 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:20 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:21 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:21 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:22 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:22 xView: VL53L0X success...
+20:56:22 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:23 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:23 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:24 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:24 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:25 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:25 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:26 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:26 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:27 xView: BME280 success...
+20:56:27 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:27 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:28 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:28 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+20:56:29 xView - Temp: 22.70, Hum: 47.60, Press: 698.20, Distance: 9999
+
+Soft WDT reset
+
+>>>stack>>>
+
+ctx: cont
+sp: 3ffffcf0 end: 3fffffc0 offset: 01b0
+3ffffea0:  00000009 00000026 00000007 40245820  
+3ffffeb0:  00000001 3fff2cdb 3fff313c 402458d6  
+3ffffec0:  3fff2cdb 00000029 fcac0831 00000000  
+3ffffed0:  00000000 00000000 4bc6a7f0 000000f8  
+3ffffee0:  00000013 3ffef484 3fff2cd9 40245bb4  
+3ffffef0:  00000000 0000004c 00000003 4023293c  
+3fffff00:  02589713 3fffff10 3fff2cc8 40232964  
+3fffff10:  3fffff45 3fe009ff 3fffff60 4023585a  
+3fffff20:  00000000 00000009 3ffef484 40235bbe  
+3fffff30:  00000009 00000009 00000012 40211620  
+3fffff40:  2e383936 00003032 00000007 4022bf4c  
+3fffff50:  362e3734 00000030 00000000 4022e187  
+3fffff60:  372e3232 3fff0030 00000001 4021188a  
+3fffff70:  00000028 00000044 00000009 3fff30f8  
+3fffff80:  3fffdad0 3fff1be8 0001ff3b 4022b740  
+3fffff90:  00000000 00000000 00000001 3fff30f8  
+3fffffa0:  3fffdad0 00000000 3fff30c8 40244f74  
+3fffffb0:  feefeffe feefeffe 3ffe8740 40100881  
+<<<stack<<<
+
+ ets Jan  8 2013,rst cause:2, boot mode:(3,6)
+
+load 0x4010f000, len 1384, room 16 
+tail 8
+chksum 0x2d
+csum 0x2d
+v7ee793e7
+~ld
+
+00:00:00 CFG: aus Flash geladen am F9, zÃ¤hlen 155
+00:00:00 -- Init Display model:2
+00:00:00 -- Init Display mode:0 width: 128, height:64
+00:00:00 -- Init Display address:3c
+00:00:00 SRC: Restart
+00:00:00 DSP: Power 1
+00:00:00 Projekt sonoff Sonoff Version 6.6.0.12(sonoff)-STAGE
+00:00:00 XDRV90: Init xview driver
+00:00:00 SHT: Sensor hat ACK-Befehl nicht ausgefÃ¼hrt
+00:00:00 I2C: BME280 gefunden bei 0x76
+00:00:00 I2C: VL53L0X gefunden bei 0x29
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:00 WIF: Verbindungsversuch...
+00:00:00 WIF: verbinden mit AP1 HomeLinkDeineMutter in Modus 11N als sonoff-8122...
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:00 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 WIF: Verbindungsversuch...
+00:00:01 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 xView - Temp: 0.00, Hum: 0.00, Press: 0.00, Distance: 0
+00:00:01 xView: BME280 success...
+00:00:01 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:02 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:02 WIF: Verbindungsversuch...
+00:00:02 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:02 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:02 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:03 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:03 WIF: Verbindungsversuch...
+00:00:03 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:04 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:04 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:04 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 0
+00:00:04 WIF: verbunden
+00:00:04 HTP: Web-Server aktiv bei sonoff-8122 mit IP-Adresse 192.168.188.46
+00:00:04 xView: VL53L0X success...
+00:00:04 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:37 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:37 NTP: Drift 0, (UTC) Tue Oct 15 19:56:37 2019, (DST) Sun Mar 31 02:00:00 2019, (STD) Sun Oct 27 03:00:00 2019
+20:56:37 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:37 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:37 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:38 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:38 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:38 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:38 xView - Temp: 23.10, Hum: 56.10, Press: 1000.50, Distance: 899
+20:56:39 xView: BME280 success...
+20:56:39 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:39 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:39 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:39 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:40 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:40 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:40 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:40 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:41 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:41 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:56:41","Uptime":"0T00:00:09","UptimeSec":9,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":88,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:56:41 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:56:41","BME280":{"Temperature":23.1,"Humidity":53.8,"Pressure":1000.5},"VL53L0X":{"Distance":904},"PressureUnit":"hPa","TempUnit":"C"}
+20:56:41 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 899
+20:56:41 xView: VL53L0X success...
+20:56:41 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:41 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:42 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:42 APP: Anzahl StartvorgÃ¤nge 125
+20:56:42 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:42 CFG: in Flash gespeichert am F8, zÃ¤hlen 156, Bytes 4096
+20:56:42 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:42 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:43 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:43 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:43 xView - Temp: 23.10, Hum: 54.00, Press: 1000.50, Distance: 904
+20:56:43 xView: BME280 success...
+20:56:43 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:44 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:44 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:44 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:44 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:45 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:45 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:45 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:45 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:46 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 904
+20:56:46 xView: VL53L0X success...
+20:56:46 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:46 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:46 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:47 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:47 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:47 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:47 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:48 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:48 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:48 xView: BME280 success...
+20:56:48 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:48 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:49 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:49 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:49 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:49 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:50 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:50 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:50 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:50 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:51 xView: VL53L0X success...
+20:56:51 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:51 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:56:51","Uptime":"0T00:00:19","UptimeSec":19,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":92,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:56:51 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:56:51","BME280":{"Temperature":23.1,"Humidity":53.7,"Pressure":1000.5},"VL53L0X":{"Distance":897},"PressureUnit":"hPa","TempUnit":"C"}
+20:56:51 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:51 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:51 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:52 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:52 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:52 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:52 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:53 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:53 xView: BME280 success...
+20:56:53 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:53 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:53 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:54 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:54 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:54 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:54 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:55 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:55 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:55 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 897
+20:56:55 xView: VL53L0X success...
+20:56:55 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:56 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:56 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:56 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:56 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:57 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:57 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:57 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:57 xView - Temp: 23.10, Hum: 53.70, Press: 1000.50, Distance: 130
+20:56:58 xView: BME280 success...
+20:56:58 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:58 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:58 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:58 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:59 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:59 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:59 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:56:59 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:57:00 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:57:00 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 130
+20:57:00 xView: VL53L0X success...
+20:57:00 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:00 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:01 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:01 RSL: tele/sonoff/STATE = {"Time":"2019-10-15T20:57:01","Uptime":"0T00:00:29","UptimeSec":29,"Heap":26,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":0,"POWER1":"ON","POWER2":"ON","Wifi":{"AP":1,"SSId":"HomeLinkDeineMutter","BSSId":"24:65:11:56:4E:4D","Channel":6,"RSSI":92,"LinkCount":1,"Downtime":"0T00:00:04"}}
+20:57:01 RSL: tele/sonoff/SENSOR = {"Time":"2019-10-15T20:57:01","BME280":{"Temperature":23.1,"Humidity":53.5,"Pressure":1000.6},"VL53L0X":{"Distance":902},"PressureUnit":"hPa","TempUnit":"C"}
+20:57:01 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:01 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:01 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:02 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:02 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:02 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:02 xView: BME280 success...
+20:57:02 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:03 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:03 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:03 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:03 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:04 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:04 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:04 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:04 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:05 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 146
+20:57:05 xView: VL53L0X success...
+20:57:05 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:05 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:05 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:05 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:06 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:06 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:06 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:07 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:07 xView - Temp: 23.00, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:07 xView: BME280 success...
+20:57:07 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:07 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:08 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:08 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:08 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:08 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:09 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:09 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:09 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:09 xView - Temp: 23.10, Hum: 53.60, Press: 1000.50, Distance: 903
+20:57:10 xView: VL53L0X success...
+20:57:10 xView - Temp: 23.10, Hum: 53.60, Press: 1000.

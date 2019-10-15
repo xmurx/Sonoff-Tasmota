@@ -150,6 +150,15 @@ void MQTTResponse::AppendTime()
   ResponseAppendTime();
 }
 
+/**
+ * @brief reset the MQTT buffer
+ * 
+ */
+void MQTTResponse::Clear()
+{
+  memset(mqtt_data, 0, sizeof(mqtt_data));
+}
+
 /*********************************************************************************************\
  * class WebServer
 \*********************************************************************************************/

@@ -17,6 +17,7 @@ public:
   template<typename... Args>
   static void AppendP(PGM_P formatP, Args... args);
   
+  static void Clear();
   static const char* Get();
   static void AppendEnd();
   static void AppendTime();

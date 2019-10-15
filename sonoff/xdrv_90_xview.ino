@@ -26,20 +26,50 @@ namespace XView
   public:
 
     XViewData()
-    : distance(0),
-      temperature(0.0),
-      pressure(0),
-      humidity(0.0)
+    : _distance(0),
+      _temperature(0.0),
+      _pressure(0),
+      _humidity(0.0)
     {
     }
 
-    int distance;
-    int temperature;
-    int humidity;
-    int pressure;
+    void SetDistance(int distance) {_distance = distance;}
+    void SetTemperature(float temperature) { _temperature = temperature;}
+    void SetHumidity(float humidity) { _humidity = humidity;}
+    void SetPressure(float pressure) { _pressure = pressure;}
+
+    int Distance() {return _distance;}
+    float Temperature() {return _temperature;}
+    float Humidity() {return _humidity;}
+    float Pressure() {return _pressure;}
+
+    void PrintInfo()
+    {
+      char tempBuffer[8];
+      dtostrf(_temperature,3,2,tempBuffer);
+
+      char humBuffer[16];
+      dtostrf(_humidity,4,2,humBuffer);
+
+      char presBuffer[16];
+      dtostrf(_pressure,4,2,presBuffer);
+
+      Log::Debug("xView - Temp: %s, Hum: %s, Press: %s, Distance: %d",
+                    tempBuffer,
+                    humBuffer,
+                    presBuffer,
+                    _distance );
+    }
+
+private:
+
+    int _distance;
+    float _temperature;
+    float _humidity;
+    float _pressure;
   };
 
-  const size_t capacity = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(5) + 120;
+  const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 120;
   StaticJsonBuffer<capacity> jsonBuffer;
   XViewData data;
 
@@ -52,32 +82,28 @@ namespace XView
    */
   bool ExtractValues( XViewData& data )
   {
-
-    Log::Debug( "xView:  %s", MQTTResponse::Get() );
+    jsonBuffer.clear();
     JsonObject& root = jsonBuffer.parseObject(MQTTResponse::Get());
     if(root.success())
     {
-      /*
       const JsonObject& BME280 = root["BME280"];
-      if( BME280.success())
+      if(BME280.success())
       {
         Log::Debug( "xView: BME280 success...");
-        data.temperature         = BME280["Temperature"]; 
-        data.humidity            = BME280["Humidity"];
-        data.pressure            = BME280["Pressure"];
+        data.SetTemperature(BME280["Temperature"]);
+        data.SetHumidity(BME280["Humidity"]);
+        data.SetPressure(BME280["Pressure"]);
       }
 
       const JsonObject& VL53L0X = root["VL53L0X"];
       if(VL53L0X.success())
       {
         Log::Debug( "xView: VL53L0X success...");
-        data.distance = VL53L0X["Distance"];
+        data.SetDistance(VL53L0X["Distance"]);
       }
-      */
     }
     return true;
   }
-
 } // end of namespace XView
 
 bool Xdrv90(uint8_t function)
@@ -90,28 +116,23 @@ bool Xdrv90(uint8_t function)
       Log::Debug("XDRV90: Init xview driver");
       break;
     }
-    case FUNC_EVERY_100_MSECOND:
+    case FUNC_EVERY_250_MSECOND:
     {
-      static uint8_t snsIndex = 0;
-      MQTTResponse::Set(" ");
+      MQTTResponse::Clear();
       MQTTResponse::AppendTime();
+
+      static uint8_t snsIndex = 0;
       XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
+
       MQTTResponse::AppendEnd();
-      
       bool ret = XView::ExtractValues(XView::data);
       if(ret==true)
       {
-        Log::Debug("Temp: %d, Hum: %d, Press: %d, Distance: %d",
-                    XView::data.temperature,
-                    XView::data.humidity,
-                    XView::data.pressure,
-                    XView::data.distance );
+        XView::data.PrintInfo();
       }
       else
       {
-        //Log::Debug("xview: extract  values from MQTT failed...");
       }
-      
       break;
     }
     case FUNC_SHOW_SENSOR:
