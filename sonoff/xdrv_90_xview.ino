@@ -1,7 +1,9 @@
 #include "logging.h"
-#include "x_support.h"
+#include "gc_support.h"
 #include "ArduinoJson.h"
 #include "logging.h"
+#include "images.h"
+#include "Adafruit_SSD1306.h"
 
 #ifdef USE_X_VIEW_DRIVER
 
@@ -13,6 +15,7 @@
 
 namespace XView
 {
+  
 /**
  * @brief xviewData - data for display view
  * @distance - current distance value
@@ -83,56 +86,100 @@ private:
   bool ExtractValues( XViewData& data )
   {
     jsonBuffer.clear();
+    bool result = false;
     JsonObject& root = jsonBuffer.parseObject(MQTTResponse::Get());
     if(root.success())
     {
       const JsonObject& BME280 = root["BME280"];
       if(BME280.success())
       {
-        Log::Debug( "xView: BME280 success...");
         data.SetTemperature(BME280["Temperature"]);
         data.SetHumidity(BME280["Humidity"]);
         data.SetPressure(BME280["Pressure"]);
+        result = true;
       }
 
       const JsonObject& VL53L0X = root["VL53L0X"];
       if(VL53L0X.success())
       {
-        Log::Debug( "xView: VL53L0X success...");
         data.SetDistance(VL53L0X["Distance"]);
+        result = true;
       }
     }
-    return true;
+    return result;
   }
 } // end of namespace XView
 
 bool Xdrv90(uint8_t function)
 {
   bool result = true;
+  static unsigned long start = millis();
   switch (function)
   {
     case FUNC_INIT:
     {
+      /*
       Log::Debug("XDRV90: Init xview driver");
+      if( renderer != NULL )
+      { 
+        
+      }
+      */
+      if( renderer != NULL )
+      { 
+        renderer->drawBitmap(0,0, splash,128,32,1);
+        renderer->Updateframe();
+      }
+      break;
       break;
     }
     case FUNC_EVERY_250_MSECOND:
     {
-      MQTTResponse::Clear();
-      MQTTResponse::AppendTime();
+      static uint32_t delay = 0;
+      static bool splashFinnished = false;
 
-      static uint8_t snsIndex = 0;
-      XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
-
-      MQTTResponse::AppendEnd();
-      bool ret = XView::ExtractValues(XView::data);
-      if(ret==true)
-      {
-        XView::data.PrintInfo();
-      }
+      if(delay <= 8) { delay++; }
       else
       {
+        splashFinnished = true;
+        if(renderer != NULL)
+        {
+          renderer->clearDisplay();
+          renderer->setTextFont(0);
+          renderer->setTextSize(1);
+          renderer->setCursor(3,0);
+          renderer->println(F("Distance:"));
+          renderer->Updateframe();
+        }
       }
+
+      if(splashFinnished)
+      {
+        uint8_t snsIndex = 0;
+        do
+        {
+          MQTTResponse::Clear();
+          MQTTResponse::AppendTime();
+          XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
+          MQTTResponse::AppendEnd();
+
+          bool ret = XView::ExtractValues(XView::data);
+          if(ret==true)
+          {
+            unsigned long timeDiff = millis() - start;
+            if(renderer != NULL)
+            {
+              renderer->setCursor(10,10);
+              renderer->printf( "%d mm", XView::data.Distance());
+              renderer->Updateframe();
+            }
+          }
+        } while (snsIndex != 0);
+      }
+      break;
+    }
+    case FUNC_EVERY_SECOND:
+    {
       break;
     }
     case FUNC_SHOW_SENSOR:

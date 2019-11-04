@@ -12,6 +12,6 @@ public:
 
     template<typename... Args>
     static void Error( const char* format, Args... args );
-};
+};    
 
 #endif

@@ -3,9 +3,10 @@
 #include <stdint.h>
 
 #include <Arduino.h>
+
 #include "sonoff.h"
 #include "logging.h"
-#include "x_support.h"
+#include "gc_support.h"
 
 /*********************************************************************************************\
  * Logging helper functions

@@ -1,0 +1,25 @@
+{
+    "name": "GardenControl", 
+    "repository": {
+        "url": "", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "esp8266"
+    ], 
+    "frameworks": [
+        "arduino"
+    ], 
+    "version": "6744ce0ac4", 
+    "export": {
+        "include": ""
+    }, 
+    "authors": [
+        {
+            "maintainer": false, 
+            "name": "Ronny Müller", 
+        }
+    ], 
+    "id": 11, 
+    "description": "empty"
+}
