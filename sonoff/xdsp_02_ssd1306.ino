@@ -92,7 +92,6 @@ void SSD1306InitDriver()
 
     renderer->setTextColor(1,0);
 
-#define SHOW_SPLASH 
 #ifdef SHOW_SPLASH
     renderer->setTextFont(0);
     renderer->setTextSize(2);

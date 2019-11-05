@@ -127,7 +127,8 @@ bool Xdrv90(uint8_t function)
       */
       if( renderer != NULL )
       { 
-        renderer->drawBitmap(0,0, splash,128,32,1);
+        XView::Image splash = XView::Splash();
+        renderer->drawBitmap(0,0, splash.Data(),splash.Width(),splash.Height(),1);
         renderer->Updateframe();
       }
       break;
@@ -146,9 +147,8 @@ bool Xdrv90(uint8_t function)
         {
           renderer->clearDisplay();
           renderer->setTextFont(0);
-          renderer->setTextSize(1);
-          renderer->setCursor(3,0);
-          renderer->println(F("Distance:"));
+          renderer->setTextSize(2);
+          renderer->setCursor(0,0);
           renderer->Updateframe();
         }
       }
@@ -169,7 +169,7 @@ bool Xdrv90(uint8_t function)
             unsigned long timeDiff = millis() - start;
             if(renderer != NULL)
             {
-              renderer->setCursor(10,10);
+              renderer->setCursor(12,10);
               renderer->printf( "%d mm", XView::data.Distance());
               renderer->Updateframe();
             }
