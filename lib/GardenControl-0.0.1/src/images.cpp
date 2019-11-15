@@ -1,8 +1,9 @@
 #include "Arduino.h"
 #include "images.h"
 
-namespace XView
+namespace View
 {
+    
 //------------------------------------------------------
 // class Image
 //------------------------------------------------------

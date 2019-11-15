@@ -3,7 +3,7 @@
 
 #include "Arduino.h"
 
-namespace XView
+namespace View
 {
 
 //------------------------------------------------------

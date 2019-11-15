@@ -1,9 +1,10 @@
-#include "logging.h"
-#include "gc_support.h"
+
 #include "ArduinoJson.h"
+
+#include "gc_support.h"
 #include "logging.h"
 #include "images.h"
-#include "Adafruit_SSD1306.h"
+#include "view.h"
 
 #ifdef USE_X_VIEW_DRIVER
 
@@ -13,68 +14,11 @@
 
 #define XDRV_90 90
 
-namespace XView
+namespace View
 {
-  
-/**
- * @brief xviewData - data for display view
- * @distance - current distance value
- * @temperature - current temperature value
- * @pressure - current air pressure value
- * @humidity - current air humidity value
- */
-
-  class XViewData
-  {
-  public:
-
-    XViewData()
-    : _distance(0),
-      _temperature(0.0),
-      _pressure(0),
-      _humidity(0.0)
-    {
-    }
-
-    void SetDistance(int distance) {_distance = distance;}
-    void SetTemperature(float temperature) { _temperature = temperature;}
-    void SetHumidity(float humidity) { _humidity = humidity;}
-    void SetPressure(float pressure) { _pressure = pressure;}
-
-    int Distance() {return _distance;}
-    float Temperature() {return _temperature;}
-    float Humidity() {return _humidity;}
-    float Pressure() {return _pressure;}
-
-    void PrintInfo()
-    {
-      char tempBuffer[8];
-      dtostrf(_temperature,3,2,tempBuffer);
-
-      char humBuffer[16];
-      dtostrf(_humidity,4,2,humBuffer);
-
-      char presBuffer[16];
-      dtostrf(_pressure,4,2,presBuffer);
-
-      Log::Debug("xView - Temp: %s, Hum: %s, Press: %s, Distance: %d",
-                    tempBuffer,
-                    humBuffer,
-                    presBuffer,
-                    _distance );
-    }
-
-private:
-
-    int _distance;
-    float _temperature;
-    float _humidity;
-    float _pressure;
-  };
-
   const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 120;
   StaticJsonBuffer<capacity> jsonBuffer;
-  XViewData data;
+  ViewData data;
 
   /**
    * @brief 
@@ -83,7 +27,7 @@ private:
    * @return true - if extraction of data was successful
    * @return false - if extraction of data fails
    */
-  bool ExtractValues( XViewData& data )
+  bool ExtractValues( ViewData& data )
   {
     jsonBuffer.clear();
     bool result = false;
@@ -112,26 +56,14 @@ private:
 
 bool Xdrv90(uint8_t function)
 {
+  static View::SSD1306View view(renderer);
   bool result = true;
   static unsigned long start = millis();
   switch (function)
   {
     case FUNC_INIT:
     {
-      /*
-      Log::Debug("XDRV90: Init xview driver");
-      if( renderer != NULL )
-      { 
-        
-      }
-      */
-      if( renderer != NULL )
-      { 
-        XView::Image splash = XView::Splash();
-        renderer->drawBitmap(0,0, splash.Data(),splash.Width(),splash.Height(),1);
-        renderer->Updateframe();
-      }
-      break;
+      view.Execute(View::SSD1306View::Command::Init, View::data);
       break;
     }
     case FUNC_EVERY_250_MSECOND:
@@ -163,14 +95,14 @@ bool Xdrv90(uint8_t function)
           XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
           MQTTResponse::AppendEnd();
 
-          bool ret = XView::ExtractValues(XView::data);
+          bool ret = View::ExtractValues(View::data);
           if(ret==true)
           {
             unsigned long timeDiff = millis() - start;
             if(renderer != NULL)
             {
               renderer->setCursor(12,10);
-              renderer->printf( "%d mm", XView::data.Distance());
+              renderer->printf( "%d mm", View::data.Distance());
               renderer->Updateframe();
             }
           }
