@@ -1,7 +1,6 @@
-
 #include "ArduinoJson.h"
 
-#include "gc_support.h"
+#include "x_support.h"
 #include "logging.h"
 #include "images.h"
 #include "view.h"
@@ -14,7 +13,7 @@
 
 #define XDRV_90 90
 
-namespace View
+namespace xControl
 {
   const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 120;
   StaticJsonBuffer<capacity> jsonBuffer;
@@ -52,68 +51,38 @@ namespace View
     }
     return result;
   }
-} // end of namespace XView
+} // end of namespace xControl
 
 bool Xdrv90(uint8_t function)
 {
-  static View::SSD1306View view(renderer);
+  static xControl::SSD1306View view;
   bool result = true;
-  static unsigned long start = millis();
+
   switch (function)
   {
     case FUNC_INIT:
     {
-      view.Execute(View::SSD1306View::Command::Init, View::data);
+      view.Init(renderer);
       break;
     }
     case FUNC_EVERY_250_MSECOND:
     {
-      static uint32_t delay = 0;
-      static bool splashFinnished = false;
-
-      if(delay <= 8) { delay++; }
-      else
+      uint8_t snsIndex = 0;
+      do
       {
-        splashFinnished = true;
-        if(renderer != NULL)
-        {
-          renderer->clearDisplay();
-          renderer->setTextFont(0);
-          renderer->setTextSize(2);
-          renderer->setCursor(0,0);
-          renderer->Updateframe();
-        }
-      }
+        MQTTResponse::Clear();
+        MQTTResponse::AppendTime();
+        XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
+        MQTTResponse::AppendEnd();
+        
+        xControl::ExtractValues(xControl::data);
+      } while (snsIndex != 0);
 
-      if(splashFinnished)
-      {
-        uint8_t snsIndex = 0;
-        do
-        {
-          MQTTResponse::Clear();
-          MQTTResponse::AppendTime();
-          XsnsNextCall(FUNC_JSON_APPEND, snsIndex);
-          MQTTResponse::AppendEnd();
-
-          bool ret = View::ExtractValues(View::data);
-          if(ret==true)
-          {
-            unsigned long timeDiff = millis() - start;
-            if(renderer != NULL)
-            {
-              renderer->setCursor(12,10);
-              renderer->printf( "%d mm", View::data.Distance());
-              renderer->Updateframe();
-            }
-          }
-        } while (snsIndex != 0);
-      }
+      //display determined data 
+      view.Show(xControl::data);
       break;
     }
     case FUNC_EVERY_SECOND:
-    {
-      break;
-    }
     case FUNC_SHOW_SENSOR:
     {
       break;

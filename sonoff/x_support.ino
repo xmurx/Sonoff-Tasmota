@@ -6,47 +6,41 @@
 
 #include "sonoff.h"
 #include "logging.h"
-#include "gc_support.h"
+#include "x_support.h"
 
-/*********************************************************************************************\
- * Logging helper functions
-\*********************************************************************************************/
-
-/**
- * @brief print Debug log
- * 
- * @param format - format string
- * @param args - variable parameter list
- */
-
-template<typename... Args>
-void Log::Debug( const char* format, Args... args)
+namespace xControl
 {
-  AddLog_P2(LOG_LEVEL_DEBUG, format, args...);
-}
+  /*********************************************************************************************\
+   * Logging helper functions --> adapt loginng to tasmota logging interface
+  \*********************************************************************************************/
 
-/**
- * @brief print Info log
- * 
- * @param format - format string
- * @param args - variable parameter list
- */
-template<typename... Args>
-void Log::Info( const char* format, Args... args)
-{
-  AddLog_P2(LOG_LEVEL_INFO, format, args...);
-}
+  void LogWrapper(LogLevel level, PGM_P formatP, ...)
+  {
+    va_list arg;
+    va_start(arg, formatP);
+    vsnprintf_P(log_data, sizeof(log_data), formatP, arg);
+    va_end(arg);
 
-/**
- * @brief print Error log
- * 
- * @param format - format string
- * @param ... - variable parameter list
- */
-template<typename... Args>
-void Log::Error( const char* format, Args... args)
-{
-  AddLog_P2(LOG_LEVEL_ERROR, format, args...);
+    uint32_t tasmotaLogLevel = LOG_LEVEL_NONE;
+    if(level == LogLevelInfo)
+    {
+      tasmotaLogLevel = LOG_LEVEL_INFO;
+    }
+    else if(level == LogLevelError)
+    {
+      tasmotaLogLevel = LOG_LEVEL_ERROR;
+    }
+    else if(level == LogLevelDebug)
+    {
+      tasmotaLogLevel = LOG_LEVEL_DEBUG;
+    }
+    else
+    {
+      //LOG_LEVEL_NONE is allready assigned
+    }
+
+    AddLog(tasmotaLogLevel);
+  }
 }
 
 /*********************************************************************************************\

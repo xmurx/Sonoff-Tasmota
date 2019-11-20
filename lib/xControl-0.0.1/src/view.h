@@ -3,10 +3,10 @@
 
 #include "Arduino.h"
 #include "logging.h"
+#include "renderer.h"
+#include "view.h"
 
-class Renderer; //Forward declaration
-
-namespace View
+namespace xControl
 {
 
 //------------------------------------------------------
@@ -53,11 +53,11 @@ public:
         char presBuffer[16];
         dtostrf(_pressure, 4, 2, presBuffer);
 
-        Log::Debug("View - Temp: %s, Hum: %s, Press: %s, Distance: %d",
-                   tempBuffer,
-                   humBuffer,
-                   presBuffer,
-                   _distance);
+        Logging::Debug("View - Temp: %s, Hum: %s, Press: %s, Distance: %d",
+                       tempBuffer,
+                       humBuffer,
+                       presBuffer,
+                       _distance);
     }
 
 private:
@@ -68,45 +68,72 @@ private:
 };
 
 //------------------------------------------------------
+// PercentConverter
+//------------------------------------------------------
+
+class PercentConverter
+{
+public:
+
+    PercentConverter(uint32_t minValue,uint32_t maxValue, uint32_t step );
+    ~PercentConverter();
+    uint32_t ToPercent(uint32_t value);
+
+private:
+  uint32_t _minValue;
+  uint32_t _maxValue;
+  uint32_t _step;
+};
+
+//------------------------------------------------------
 // SSD1306View
 //------------------------------------------------------
 
 class SSD1306View
 {
 public:
-    SSD1306View(Renderer* renderer);
+    SSD1306View();
+    SSD1306View(Renderer *renderer);
     virtual ~SSD1306View();
 
-    enum Command{ Init, Step };
-    void Execute( Command command, const ViewData& data );
-    
-private:
+    void Init(Renderer *renderer);
+    void Show(const ViewData &data);
+    void Step();
 
+private:
+    void Process();
     class StateControl
     {
     public:
-
-        enum State { Unknown, ShowSplash, Delay, ShowData };
+        enum State
+        {
+            Unknown,
+            ShowSplash,
+            Delay,
+            ShowData
+        };
         StateControl();
 
         State GetState();
-        void SetState(State state);
+        void SetState(State state, uint32_t delay = 0);
 
         void StartDelay(uint32_t delayIn_ms);
         bool DelayExpired();
         void ResetDelay();
 
     private:
-
         State _state;
         uint32_t _startTime;
         uint32_t _delayTime;
     };
 
-    Renderer* _renderer;
+    Renderer *_renderer;
+    PercentConverter _distanceConverter;
+
     StateControl _stateControl;
+    ViewData _data;
 };
 
-} // namespace View
+} // namespace xControl
 
 #endif
