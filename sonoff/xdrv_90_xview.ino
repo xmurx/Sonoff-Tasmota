@@ -62,7 +62,7 @@ bool Xdrv90(uint8_t function)
   {
     case FUNC_INIT:
     {
-      view.Init(renderer);
+      view.Init(renderer, Settings.display_width, Settings.display_height);
       break;
     }
     case FUNC_EVERY_250_MSECOND:

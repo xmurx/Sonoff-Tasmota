@@ -96,7 +96,7 @@ public:
     SSD1306View(Renderer *renderer);
     virtual ~SSD1306View();
 
-    void Init(Renderer *renderer);
+    void Init(Renderer *renderer, uint32_t width, uint32_t height);
     void Show(const ViewData &data);
     void Step();
 
@@ -129,6 +129,8 @@ private:
 
     Renderer *_renderer;
     PercentConverter _distanceConverter;
+    uint32_t _width;
+    uint32_t _height;
 
     StateControl _stateControl;
     ViewData _data;

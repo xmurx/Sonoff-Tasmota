@@ -76,13 +76,17 @@ namespace xControl
 
     SSD1306View::SSD1306View(Renderer *renderer)
     : _renderer(renderer),
-      _distanceConverter(0, 1000, 10)
+      _distanceConverter(0, 1000, 10),
+      _width(0),
+      _height(0)
     {
     }
 
     SSD1306View::SSD1306View()
     : _renderer(NULL),
-      _distanceConverter(0, 1000, 10)
+      _distanceConverter(0, 1000, 10),
+      _width(0),
+      _height(0)
     {
     }
 
@@ -90,9 +94,12 @@ namespace xControl
     {
     }
 
-    void SSD1306View::Init(Renderer* renderer)
+    void SSD1306View::Init(Renderer* renderer, uint32_t width, uint32_t height)
     {
         _renderer = renderer;
+        _width = width;
+        _height = height;
+
         if(_renderer != NULL)
         {
           _stateControl.SetState(StateControl::ShowSplash);
@@ -134,12 +141,16 @@ namespace xControl
                 }
                 case StateControl::ShowData:
                 {
-                    _renderer->setTextFont(0);
-                    _renderer->setTextSize(2);
-                    _renderer->clearDisplay();
-                    _renderer->setCursor(12,10);
-                    _renderer->printf( "%d%%", (100-_distanceConverter.ToPercent(_data.Distance())));
-                    _renderer->Updateframe();
+                    static uint32_t lastValue = _data.Distance();
+                    uint32_t currentValue = _data.Distance();
+                    if(lastValue != currentValue)                                      
+                    {
+                      lastValue = currentValue;
+                      _renderer->clearDisplay();
+                      _renderer->drawRect(14,0,_width-28,_height,1);
+                      _renderer->fillRect(18,3, (100-_distanceConverter.ToPercent(currentValue))-6, 26, 1);
+                      _renderer->Updateframe();
+                    }
                     break;
                 }
                 case StateControl::Unknown:
