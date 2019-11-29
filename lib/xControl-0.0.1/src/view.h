@@ -110,7 +110,10 @@ private:
             Unknown,
             ShowSplash,
             Delay,
-            ShowData
+            ShowLevel,
+            ShowTemp,
+            ShowHumidity,
+            ShowPressure
         };
         StateControl();
 
@@ -120,11 +123,13 @@ private:
         void StartDelay(uint32_t delayIn_ms);
         bool DelayExpired();
         void ResetDelay();
+        bool OnEnter();
 
     private:
         State _state;
         uint32_t _startTime;
         uint32_t _delayTime;
+        bool _onEnter;
     };
 
     Renderer *_renderer;

@@ -8,7 +8,8 @@ namespace xControl
     SSD1306View::StateControl::StateControl()
     : _state(Unknown),
       _startTime(0),
-      _delayTime(0)
+      _delayTime(0),
+      _onEnter(false)
     { 
     }
 
@@ -16,9 +17,13 @@ namespace xControl
     { 
         if(state == Delay)
         {
-            _delayTime = delay;
-            _startTime = millis();
+          _delayTime = delay;
+          _startTime = millis();
         }
+
+        if(_state != state)
+          _onEnter = true;
+
         _state = state;
     }
 
@@ -44,9 +49,19 @@ namespace xControl
         bool ret = ((millis() - _startTime) >= _delayTime);
         if(ret)
         {
-            ResetDelay();
+          ResetDelay();
         }
         return ret;
+    }
+
+    bool SSD1306View::StateControl::OnEnter()
+    {
+      if(_onEnter == true)
+      {
+        _onEnter = false;
+        return true;
+      }
+      return _onEnter;
     }
 
     //------------------------------------------------------
@@ -135,23 +150,64 @@ namespace xControl
                 case StateControl::Delay:
                 {
                     if(_stateControl.DelayExpired())
-                        _stateControl.SetState(StateControl::ShowData);
+                        _stateControl.SetState(StateControl::ShowLevel);
                     
                     break;
                 }
-                case StateControl::ShowData:
+                case StateControl::ShowLevel:
                 {
-                    static uint32_t lastValue = _data.Distance();
-                    uint32_t currentValue = _data.Distance();
-                    if(lastValue != currentValue)                                      
-                    {
-                      lastValue = currentValue;
-                      _renderer->clearDisplay();
-                      _renderer->drawRect(14,0,_width-28,_height,1);
-                      _renderer->fillRect(18,3, (100-_distanceConverter.ToPercent(currentValue))-6, 26, 1);
-                      _renderer->Updateframe();
-                    }
-                    break;
+                  if(_stateControl.OnEnter())
+                    _stateControl.StartDelay(2000);
+
+                  static uint32_t lastValue = _data.Distance();
+                  uint32_t currentValue = _data.Distance();
+                  if(lastValue != currentValue)                                      
+                  {
+                    lastValue = currentValue;
+                    _renderer->clearDisplay();
+                    _renderer->drawChar(0,3,'E',1,0,2);
+                    _renderer->drawRect(12,0,_width-24,_height-12,1);
+                    _renderer->drawChar(118,3,'F',1,0,2);
+                    _renderer->fillRect(15,3, (100-_distanceConverter.ToPercent(currentValue)), 26-12, 1);
+                    
+                    _renderer->setTextSize(1);
+                    _renderer->setCursor(28, 23);
+                    _renderer->print("Abwassertank");
+                    _renderer->Updateframe();
+                  }
+
+                  if(_stateControl.DelayExpired())
+                    _stateControl.SetState(StateControl::ShowTemp);
+
+                  break;
+                }
+                case StateControl::ShowTemp:
+                {
+                  if(_stateControl.OnEnter())
+                    _stateControl.StartDelay(10000);
+                  /*
+                  _renderer->clearDisplay();
+                  _renderer->setTextSize(2);
+                  _renderer->setCursor(20, 10);
+                  _renderer->print(_data.Temperature(),1);
+                  _renderer->print((char)247);
+                  _renderer->print('C');
+                  _renderer->Updateframe();
+                  */
+
+                  _renderer->clearDisplay();
+                  _renderer->setTextSize(2);
+                  _renderer->setCursor(0, 0);
+                  _renderer->print("AAAAAAAAAA");
+                  _renderer->setCursor(0, 18);
+                  _renderer->print("BBBBBBBBBB");
+                  _renderer->drawRect(0,0,_width,_height  ,1);
+                  _renderer->Updateframe();
+
+                  if(_stateControl.DelayExpired())
+                    _stateControl.SetState(StateControl::ShowLevel);
+
+                  break;
                 }
                 case StateControl::Unknown:
                     break;
