@@ -99,6 +99,8 @@ public:
     void Init(Renderer *renderer, uint32_t width, uint32_t height);
     void Show(const ViewData &data);
     void Step();
+    uint32_t HorizontalCenterLine();
+    uint32_t VerticalCenterLine();
 
 private:
     void Process();
@@ -107,13 +109,13 @@ private:
     public:
         enum State
         {
-            Unknown,
-            ShowSplash,
-            Delay,
-            ShowLevel,
-            ShowTemp,
-            ShowHumidity,
-            ShowPressure
+          Unknown,
+          ShowSplash,
+          Delay,
+          ShowLevel,
+          ShowTemp,
+          ShowHumidity,
+          ShowPressure
         };
         StateControl();
 
@@ -136,6 +138,8 @@ private:
     PercentConverter _distanceConverter;
     uint32_t _width;
     uint32_t _height;
+    uint32_t _verticalCenterLine;
+    uint32_t _horizontalCenterLine;
 
     StateControl _stateControl;
     ViewData _data;

@@ -89,20 +89,21 @@ namespace xControl
     // SSD1306View
     //------------------------------------------------------
 
-    SSD1306View::SSD1306View(Renderer *renderer)
-    : _renderer(renderer),
-      _distanceConverter(0, 1000, 10),
-      _width(0),
-      _height(0)
-    {
-    }
-
     SSD1306View::SSD1306View()
     : _renderer(NULL),
       _distanceConverter(0, 1000, 10),
       _width(0),
-      _height(0)
+      _height(0),
+      _horizontalCenterLine(),
+      _verticalCenterLine(0)
     {
+    }
+
+
+    SSD1306View::SSD1306View(Renderer *renderer)
+    : SSD1306View()
+    {
+      _renderer = renderer;
     }
 
     SSD1306View::~SSD1306View()
@@ -114,6 +115,8 @@ namespace xControl
         _renderer = renderer;
         _width = width;
         _height = height;
+        _horizontalCenterLine = _height/2;
+        _verticalCenterLine = _width/2;
 
         if(_renderer != NULL)
         {
@@ -131,6 +134,16 @@ namespace xControl
     void SSD1306View::Step()
     {
         Process();
+    }
+
+    uint32_t SSD1306View::HorizontalCenterLine()
+    {
+      return _horizontalCenterLine;
+    }
+
+    uint32_t SSD1306View::VerticalCenterLine()
+    {
+      return _verticalCenterLine;
     }
 
     void SSD1306View::Process()

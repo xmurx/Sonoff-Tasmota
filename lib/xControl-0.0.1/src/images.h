@@ -31,7 +31,10 @@ private:
 
 Image Splash();
 Image Background();
+Image Temperature();
+Image Humidity();
+Image Pressure();
 
-}
+} // end of namespace
 
 #endif
