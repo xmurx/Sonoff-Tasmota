@@ -99,6 +99,7 @@ public:
     void Init(Renderer *renderer, uint32_t width, uint32_t height);
     void Show(const ViewData &data);
     void Step();
+    
     uint32_t HorizontalCenterLine();
     uint32_t VerticalCenterLine();
 

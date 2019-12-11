@@ -3,101 +3,96 @@
 
 namespace xControl
 {
+  //------------------------------------------------------
+  // label -> FontSize
+  //------------------------------------------------------  
 
-//------------------------------------------------------
-// label
-//------------------------------------------------------  
-
-  Label::Label(Renderer* renderer, const SSD1306View* parentView)
-  : _renderer(renderer),
-    _view(parentView)
+  Label::FontSize::FontSize(uint32_t widht, uint32_t hight)
+  : _widht(widht),
+    _hight(hight)
   {
-    
+  }
+
+  Label::FontSize::FontSize()
+  : _widht(0),
+    _hight(0)
+  {
+  }
+
+  //------------------------------------------------------
+  // label -> CursorPosition
+  //------------------------------------------------------  
+
+  Label::CursorPosition::CursorPosition()
+  : x(0),
+    y(0)
+  {
+  }
+
+  //------------------------------------------------------
+  // label
+  //------------------------------------------------------  
+
+  Label::Label(Renderer* renderer, SSD1306View& parentView, Orientation orientation)
+  : _renderer(renderer),
+    _view(parentView),
+    _orientation(orientation),
+    _text((const char*)NULL),
+    _defaultFontSize(6,8),
+    _scaleFactor(1)
+  {
+    _text.reserve(16);
   }
 
   Label::~Label()
   {
-
   }
 
-  size_t Label::Print(const String & data)
+  void Label::SetTextSize(TextSize size)
+  {
+    _scaleFactor = (uint32_t)size;
+  }
+
+  size_t Label::Text(const String & text)
   {
     if(_renderer)
     {
-      return _renderer->print(data);
+      _text = text;
+      CalculatePosition();
+      _renderer->setTextSize(_scaleFactor);      
+      return _renderer->print(_text);
     }
     return 0;
   }
 
-  size_t Label::Print(const char data[])
+  size_t Label::Text(const char* text)
   {
     if(_renderer)
     {
-      return _renderer->print(data);
+      _text = text;
+      CalculatePosition();
+      _renderer->setTextSize(_scaleFactor);
+      return _renderer->print(_text);
     }
     return 0;
   }
 
-  size_t Label::Print(char data)
+  void Label::CalculatePosition()
   {
-    if(_renderer)
+    switch (_orientation)
     {
-      return _renderer->print(data);
+      case Centered:
+      {
+        _cursor.x = _view.VerticalCenterLine() - ((_text.length()/2)*(_defaultFontSize._widht * _scaleFactor));
+        _cursor.y = _view.HorizontalCenterLine() - ((_defaultFontSize._hight * _scaleFactor)/2);
+        break;
+      } 
+      default:
+      {
+        _cursor.x = 0;
+        _cursor.y = 0;
+        break;
+      }
     }
-    return 0;
-  }
-
-  size_t Label::Print(unsigned char data, int format)
-  {
-    if(_renderer)
-    {
-      return _renderer->print(data, format);
-    }
-    return 0;
-  }
-
-  size_t Label::Print(int value, int format)
-  {
-    if(_renderer)
-    {
-      return _renderer->print(value, format);
-    }
-    return 0;
-  }
-
-  size_t Label::Print(unsigned int value, int format)
-  {
-    if(_renderer)
-    {
-      return _renderer->print(value, format);
-    }
-    return 0;
-  }
-
-  size_t Label::Print(long value, int format)
-  {
-    if(_renderer)
-    {
-      return _renderer->print(value, format);
-    }
-    return 0;
-  }
-
-  size_t Label::Print(unsigned long value, int format)
-  {
-    if(_renderer)
-    {
-      return _renderer->print(value, format);
-    }
-    return 0;
-  }
-
-  size_t Label::Print(double value, int pression)
-  {
-    if(_renderer)
-    {
-      return _renderer->print(value, pression);
-    }
-    return 0;
   }
 } // end of namespace

@@ -2,11 +2,16 @@
 #include "view.h"
 #include "images.h"
 #include "Print.h"
+#include "WString.h"
 
 class Renderer; // forward declaration
 
 namespace xControl
 {
+
+//------------------------------------------------------
+// IPrintable
+//------------------------------------------------------  
 
 class IPrintable
 {
@@ -31,25 +36,42 @@ public:
 class Label : public IPrintable
 {
 public:
-  enum Orientation { centered, leftJustified, rightJustified };
-  Label(Renderer* renderer, const SSD1306View* parentView);
+  enum Orientation { Centered, LeftJustified, RightJustified };
+  enum TextSize { Default = 1, Factor2 = 2, Factor3 = 3 };
+  struct CursorPosition
+  {
+    CursorPosition();
+    uint32_t x;
+    uint32_t y;
+  };
+
+  struct FontSize
+  {
+    FontSize(uint32_t widht, uint32_t hight);
+    FontSize();
+    uint32_t _widht;
+    uint32_t _hight;
+  };
+  
+  Label(Renderer* renderer, SSD1306View& parentView, Orientation orientation = Centered);
   virtual ~Label();
 
-  virtual size_t Print(const String & data);
-  virtual size_t Print(const char data[]);
-  virtual size_t Print(char data);
-  virtual size_t Print(unsigned char data, int = DEC);
-  virtual size_t Print(int value, int format = DEC);
-  virtual size_t Print(unsigned int value, int format = DEC);
-  virtual size_t Print(long value, int format = DEC);
-  virtual size_t Print(unsigned long value, int format = DEC);
-  virtual size_t Print(double value, int pression = 2);
+  virtual void SetTextSize(TextSize size);
+  virtual size_t Text(const String& text);
+  virtual size_t Text(const char* text);
 
 private:
 
+  void CalculatePosition();
+
   Renderer* _renderer;
-  const SSD1306View* _view;
-  const View::Image* icon;
+  SSD1306View& _view;
+  const View::Image* _icon;
+  Orientation _orientation;
+  CursorPosition _cursor;
+  FontSize _defaultFontSize;
+  uint32_t _scaleFactor;
+  String _text;
 };
 
 } // end of namespace
