@@ -94,7 +94,7 @@ namespace xControl
       _distanceConverter(0, 1000, 10),
       _width(0),
       _height(0),
-      _horizontalCenterLine(),
+      _horizontalCenterLine(0),
       _verticalCenterLine(0)
     {
     }
@@ -117,6 +117,7 @@ namespace xControl
         _height = height;
         _horizontalCenterLine = _height/2;
         _verticalCenterLine = _width/2;
+        _label.Init(_renderer, this );
 
         if(_renderer != NULL)
         {
@@ -170,7 +171,7 @@ namespace xControl
                 case StateControl::ShowLevel:
                 {
                   if(_stateControl.OnEnter())
-                    _stateControl.StartDelay(2000);
+                    _stateControl.StartDelay(10000);
 
                   static uint32_t lastValue = _data.Distance();
                   uint32_t currentValue = _data.Distance();
@@ -197,25 +198,13 @@ namespace xControl
                 case StateControl::ShowTemp:
                 {
                   if(_stateControl.OnEnter())
-                    _stateControl.StartDelay(10000);
-                  /*
-                  _renderer->clearDisplay();
-                  _renderer->setTextSize(2);
-                  _renderer->setCursor(20, 10);
-                  _renderer->print(_data.Temperature(),1);
-                  _renderer->print((char)247);
-                  _renderer->print('C');
-                  _renderer->Updateframe();
-                  */
+                    _stateControl.StartDelay(2000);
+                  
+                  String temperatur(_data.Temperature());
+                  temperatur += (char)247;
+                  temperatur += "C";
 
-                  _renderer->clearDisplay();
-                  _renderer->setTextSize(2);
-                  _renderer->setCursor(0, 0);
-                  _renderer->print("AAAAAAAAAA");
-                  _renderer->setCursor(0, 18);
-                  _renderer->print("BBBBBBBBBB");
-                  _renderer->drawRect(0,0,_width,_height  ,1);
-                  _renderer->Updateframe();
+                  _label.Text(temperatur);
 
                   if(_stateControl.DelayExpired())
                     _stateControl.SetState(StateControl::ShowLevel);

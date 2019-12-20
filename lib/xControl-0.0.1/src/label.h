@@ -1,39 +1,22 @@
+#pragma once
+
 #include "Arduino.h"
-#include "view.h"
-#include "images.h"
-#include "Print.h"
 #include "WString.h"
 
-class Renderer; // forward declaration
+#include "images.h"
+
+class Renderer; //forward declaration
 
 namespace xControl
 {
 
-//------------------------------------------------------
-// IPrintable
-//------------------------------------------------------  
-
-class IPrintable
-{
-public:
-
-  virtual size_t Print(const String & data) = 0;
-  virtual size_t Print(const char data[]) = 0;
-  virtual size_t Print(char data) = 0;
-  virtual size_t Print(unsigned char data, int = DEC) = 0;
-  virtual size_t Print(int value, int format = DEC) = 0;
-  virtual size_t Print(unsigned int value, int format = DEC) = 0;
-  virtual size_t Print(long value, int format = DEC) = 0;
-  virtual size_t Print(unsigned long value, int format = DEC) = 0;
-  virtual size_t Print(double value, int pression = 2) = 0;
-
-};
+class SSD1306View; //forward declaration
 
 //------------------------------------------------------
 // Label
 //------------------------------------------------------
 
-class Label : public IPrintable
+class Label
 {
 public:
   enum Orientation { Centered, LeftJustified, RightJustified };
@@ -52,9 +35,13 @@ public:
     uint32_t _widht;
     uint32_t _hight;
   };
-  
-  Label(Renderer* renderer, SSD1306View& parentView, Orientation orientation = Centered);
+
+  Label();  
+  Label(Renderer* renderer, SSD1306View* parentView, Orientation orientation = Centered);
+
   virtual ~Label();
+
+  void Init(Renderer* renderer, SSD1306View* parent, Orientation orientation = Centered);
 
   virtual void SetTextSize(TextSize size);
   virtual size_t Text(const String& text);
@@ -63,9 +50,10 @@ public:
 private:
 
   void CalculatePosition();
+  size_t Show(const char* data);
 
   Renderer* _renderer;
-  SSD1306View& _view;
+  SSD1306View* _view;
   const View::Image* _icon;
   Orientation _orientation;
   CursorPosition _cursor;

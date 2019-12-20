@@ -1,6 +1,8 @@
 #ifndef _LOGGING_H_
 #define _LOGGING_H_
 
+#include "Arduino.h"
+
 namespace xControl
 {
     enum LogLevel { LogLevelNone, LogLevelInfo, LogLevelError, LogLevelDebug };

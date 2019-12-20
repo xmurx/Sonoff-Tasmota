@@ -1,9 +1,8 @@
-#ifndef _VIEW_H_
-#define _VIEW_H_
+#pragma once
 
-#include "Arduino.h"
 #include "logging.h"
 #include "renderer.h"
+#include "label.h"
 #include "view.h"
 
 namespace xControl
@@ -99,7 +98,7 @@ public:
     void Init(Renderer *renderer, uint32_t width, uint32_t height);
     void Show(const ViewData &data);
     void Step();
-    
+
     uint32_t HorizontalCenterLine();
     uint32_t VerticalCenterLine();
 
@@ -144,8 +143,7 @@ private:
 
     StateControl _stateControl;
     ViewData _data;
+    Label _label;
 };
 
 } // namespace xControl
-
-#endif
