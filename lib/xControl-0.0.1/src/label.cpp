@@ -1,15 +1,14 @@
 #include <stddef.h>
+#include <string.h>
 
 #include "label.h"
 #include "renderer.h"
-#include "view.h"
 
 namespace xControl
 {
   //------------------------------------------------------
   // label -> FontSize
   //------------------------------------------------------  
-
   Label::FontSize::FontSize(uint32_t widht, uint32_t hight)
   : _widht(widht),
     _hight(hight)
@@ -38,20 +37,21 @@ namespace xControl
 
   Label::Label()
   : _renderer(NULL),
-    _view(NULL),
     _orientation(Centered),
-    _text((const char*)NULL),
     _defaultFontSize(6,8),
-    _scaleFactor(2)
+    _scaleFactor(2),
+    _width(0),
+    _height(0)
   {
-    _text.reserve(16);
+    memset(_text, 0, sizeof(_text));
   }
 
-  Label::Label(Renderer* renderer, SSD1306View* parentView, Orientation orientation)
+  Label::Label(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation)
   : Label()
   {
     _renderer = renderer;
-    _view = parentView;
+    _width = width;
+    _height = height;
     _orientation = orientation;
   }
 
@@ -59,11 +59,12 @@ namespace xControl
   {
   }
 
-  void Label::Init(Renderer* renderer, SSD1306View* parent, Orientation orientation)
+  void Label::Init(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation)
   {
     _renderer = renderer,
-    _view = parent;
     _orientation = orientation;
+    _height = height;
+    _width  = width;
   }
 
   void Label::SetTextSize(TextSize size)
@@ -71,13 +72,27 @@ namespace xControl
     _scaleFactor = (uint32_t)size;
   }
 
+  int32_t Label::HorizontalCenterLine()
+  {
+    return _height / 2;
+  }
+
+  int32_t Label::VerticalCenterLine()
+  {
+    return _width / 2;
+  }
+
   size_t Label::Show(const char* text)
   {
     size_t size = 0;
     if(_renderer)
     {
-      _text = text;
+      size_t textSize = strlen(text);
+      memset( _text, 0, BufferSize);
+      strncpy(_text, text, ((textSize > BufferSize) ? BufferSize : textSize));
+
       CalculatePosition();
+
       _renderer->setCursor(_cursor.x, _cursor.y);
       _renderer->clearDisplay();
       _renderer->setTextSize(_scaleFactor);
@@ -86,11 +101,6 @@ namespace xControl
       return size;
     }
     return size;
-  }
-
-  size_t Label::Text(const String & text)
-  {
-    return Show(text.c_str());
   }
 
   size_t Label::Text(const char* text)
@@ -104,8 +114,17 @@ namespace xControl
     {
       case Centered:
       {
-        _cursor.x = _view->VerticalCenterLine() - ((_text.length()/2)*(_defaultFontSize._widht * _scaleFactor));
-        _cursor.y = _view->HorizontalCenterLine() - ((_defaultFontSize._hight * _scaleFactor)/2);
+        enum{IncreasedAccuracy = 10};
+        int32_t halfNumberOfChars = (int32_t)(strlen(_text)*IncreasedAccuracy/2);
+        int32_t singleCharWidht = _defaultFontSize._widht * _scaleFactor;
+        _cursor.x = VerticalCenterLine() - (halfNumberOfChars * singleCharWidht / IncreasedAccuracy);
+        _cursor.y = HorizontalCenterLine() - (_defaultFontSize._hight * _scaleFactor * IncreasedAccuracy / 2 / IncreasedAccuracy);
+
+        if( _cursor.x < 0 || _cursor.y < 0)
+        {
+          _cursor.x = 0;
+          _cursor.y = 0;
+        }
         break;
       } 
       default:

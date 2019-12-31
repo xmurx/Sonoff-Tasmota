@@ -1,10 +1,11 @@
 #ifndef _IMAGES_H_
 #define _IMAGES_H_
 
-#include "Arduino.h"
-
 namespace View
 {
+
+#include <stdint.h>
+#include "common.h"
 
 //------------------------------------------------------
 // class Image

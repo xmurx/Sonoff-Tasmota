@@ -1,19 +1,17 @@
-#pragma once
+#ifndef __LABEL_H__
+#define __LABEL_H__
 
-#include "Arduino.h"
-#include "WString.h"
+#include <stdint.h>
 
+#include "common.h"
 #include "images.h"
 
-class Renderer; //forward declaration
-
+class Renderer;
 namespace xControl
 {
 
-class SSD1306View; //forward declaration
-
 //------------------------------------------------------
-// Label
+// Label (R is the used Renderer -> depending on runtime environment)
 //------------------------------------------------------
 
 class Label
@@ -24,8 +22,8 @@ public:
   struct CursorPosition
   {
     CursorPosition();
-    uint32_t x;
-    uint32_t y;
+    int32_t x;
+    int32_t y;
   };
 
   struct FontSize
@@ -37,29 +35,36 @@ public:
   };
 
   Label();  
-  Label(Renderer* renderer, SSD1306View* parentView, Orientation orientation = Centered);
+  Label(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation = Centered);
 
   virtual ~Label();
 
-  void Init(Renderer* renderer, SSD1306View* parent, Orientation orientation = Centered);
-
-  virtual void SetTextSize(TextSize size);
-  virtual size_t Text(const String& text);
+  void Init(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation = Centered);
+  void SetTextSize(TextSize size);
   virtual size_t Text(const char* text);
 
 private:
 
   void CalculatePosition();
+  void CheckRange();
   size_t Show(const char* data);
+  int32_t HorizontalCenterLine();
+  int32_t VerticalCenterLine();
 
   Renderer* _renderer;
-  SSD1306View* _view;
   const View::Image* _icon;
   Orientation _orientation;
   CursorPosition _cursor;
   FontSize _defaultFontSize;
   uint32_t _scaleFactor;
-  String _text;
+
+  int32_t _width;
+  int32_t _height;
+
+  enum {BufferSize = 16 };
+  char _text[BufferSize];
 };
 
 } // end of namespace
+
+#endif //__LABEL_H__

@@ -91,11 +91,7 @@ namespace xControl
 
     SSD1306View::SSD1306View()
     : _renderer(NULL),
-      _distanceConverter(0, 1000, 10),
-      _width(0),
-      _height(0),
-      _horizontalCenterLine(0),
-      _verticalCenterLine(0)
+      _distanceConverter(0, 1000, 10)
     {
     }
 
@@ -113,11 +109,7 @@ namespace xControl
     void SSD1306View::Init(Renderer* renderer, uint32_t width, uint32_t height)
     {
         _renderer = renderer;
-        _width = width;
-        _height = height;
-        _horizontalCenterLine = _height/2;
-        _verticalCenterLine = _width/2;
-        _label.Init(_renderer, this );
+        _label.Init(_renderer, width, height );
 
         if(_renderer != NULL)
         {
@@ -135,16 +127,6 @@ namespace xControl
     void SSD1306View::Step()
     {
         Process();
-    }
-
-    uint32_t SSD1306View::HorizontalCenterLine()
-    {
-      return _horizontalCenterLine;
-    }
-
-    uint32_t SSD1306View::VerticalCenterLine()
-    {
-      return _verticalCenterLine;
     }
 
     void SSD1306View::Process()
@@ -177,10 +159,11 @@ namespace xControl
                   uint32_t currentValue = _data.Distance();
                   if(lastValue != currentValue)                                      
                   {
+                    enum{width=128, height=32};
                     lastValue = currentValue;
                     _renderer->clearDisplay();
                     _renderer->drawChar(0,3,'E',1,0,2);
-                    _renderer->drawRect(12,0,_width-24,_height-12,1);
+                    _renderer->drawRect(12,0,width-24,height-12,1);
                     _renderer->drawChar(118,3,'F',1,0,2);
                     _renderer->fillRect(15,3, (100-_distanceConverter.ToPercent(currentValue)), 26-12, 1);
                     
@@ -200,11 +183,11 @@ namespace xControl
                   if(_stateControl.OnEnter())
                     _stateControl.StartDelay(2000);
                   
-                  String temperatur(_data.Temperature());
-                  temperatur += (char)247;
-                  temperatur += "C";
+                  String temperature(_data.Temperature());
+                  temperature += (char)247;
+                  temperature += "C";
 
-                  _label.Text(temperatur);
+                  _label.Text(temperature.c_str());
 
                   if(_stateControl.DelayExpired())
                     _stateControl.SetState(StateControl::ShowLevel);
