@@ -1,12 +1,19 @@
-#include "Arduino.h"
 #include "images.h"
 
 namespace View
 {
-    
+
 //------------------------------------------------------
 // class Image
 //------------------------------------------------------
+
+Image::Image()
+: _data(NULL),
+  _size(0),
+  _width(0),
+  _height(0)
+{
+}
 
 Image::Image( const uint8_t* rawData, uint16_t dataSize, uint16_t width, uint16_t height )
 : _data(rawData),
@@ -14,6 +21,18 @@ Image::Image( const uint8_t* rawData, uint16_t dataSize, uint16_t width, uint16_
   _width(width),
   _height(height)
 {
+}
+
+Image::~Image()
+{
+}
+
+bool Image::Valid()
+{
+  if( Width() != 0 && Height() != 0 && Data() != NULL && Size() != 0)
+    return true;
+
+  return false;
 }
 
 uint16_t Image::Width() { return _width; }

@@ -14,13 +14,15 @@ namespace View
 class Image
 {
 public:
-
+    Image();
     Image( const uint8_t* rawData, uint16_t dataSize, uint16_t width, uint16_t height );
+    ~Image();
+
     uint16_t Width();
     uint16_t Height();
     uint16_t Size();
-
     const uint8_t* PROGMEM Data();
+    bool Valid();
 
 private:
 

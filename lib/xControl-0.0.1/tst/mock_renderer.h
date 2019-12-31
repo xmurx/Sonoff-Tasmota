@@ -1,7 +1,7 @@
 #ifndef __MOCKRENDERER_H__
 #define __MOCKRENDERER_H__
 
-//#include "gmock/gmock.h"
+#include "gmock/gmock.h"
 #include "renderer.h"
 
 using namespace testing;
@@ -15,6 +15,7 @@ public:
 	MOCK_METHOD(void, setTextSize, (uint8_t s), (override));
 	MOCK_METHOD(size_t, print, (const char* value), (override));
 	MOCK_METHOD(void, Updateframe, (), (override));
+
 };
 
 #endif //__MOCKRENDERER_H__
