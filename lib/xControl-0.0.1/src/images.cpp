@@ -1,6 +1,6 @@
 #include "images.h"
 
-namespace View
+namespace xControl
 {
 
 //------------------------------------------------------

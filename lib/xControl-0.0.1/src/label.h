@@ -40,19 +40,23 @@ public:
   virtual ~Label();
 
   void Init(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation = Centered);
+
   void SetTextSize(TextSize size);
-  virtual size_t Text(const char* text);
+  void Text(const char* text);
+
+
 
 private:
 
   void CalculatePosition();
   void CheckRange();
-  size_t Show(const char* data);
+  void Show();
   int32_t HorizontalCenterLine();
   int32_t VerticalCenterLine();
 
   Renderer* _renderer;
-  const View::Image* _icon;
+  const xControl::Image* _icon;
+
   Orientation _orientation;
   CursorPosition _cursor;
   FontSize _defaultFontSize;

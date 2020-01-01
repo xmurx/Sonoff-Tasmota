@@ -82,30 +82,27 @@ namespace xControl
     return _width / 2;
   }
 
-  size_t Label::Show(const char* text)
+  void Label::Show()
   {
-    size_t size = 0;
     if(_renderer)
     {
-      size_t textSize = strlen(text);
-      memset( _text, 0, BufferSize);
-      strncpy(_text, text, ((textSize > BufferSize) ? BufferSize : textSize));
-
       CalculatePosition();
 
       _renderer->setCursor(_cursor.x, _cursor.y);
       _renderer->clearDisplay();
       _renderer->setTextSize(_scaleFactor);
-      size = _renderer->print(_text);
+      _renderer->print(_text);
       _renderer->Updateframe();
-      return size;
     }
-    return size;
   }
 
-  size_t Label::Text(const char* text)
+  void Label::Text(const char* text)
   {
-    return Show(text);
+    size_t textSize = strlen(text);
+    memset( _text, 0, BufferSize);
+    strncpy(_text, text, ((textSize > BufferSize) ? BufferSize-1 : textSize));
+
+    Show();
   }
 
   void Label::CalculatePosition()

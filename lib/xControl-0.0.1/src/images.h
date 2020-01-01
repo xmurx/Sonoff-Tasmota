@@ -1,7 +1,7 @@
 #ifndef _IMAGES_H_
 #define _IMAGES_H_
 
-namespace View
+namespace xControl
 {
 
 #include <stdint.h>
