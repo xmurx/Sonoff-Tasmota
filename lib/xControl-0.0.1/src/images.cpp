@@ -27,7 +27,7 @@ Image::~Image()
 {
 }
 
-bool Image::Valid()
+bool Image::IsValid()
 {
   if( Width() != 0 && Height() != 0 && Data() != NULL && Size() != 0)
     return true;
@@ -199,7 +199,7 @@ static const uint8_t PROGMEM pressure [] =
 
 Image Splash(){ return Image(isplash, sizeof(isplash), 128, 32); }
 Image Background() { return Image(background, sizeof(background), 128, 32); }
-Image Temperatur() { return Image(temperatur, sizeof(temperatur), 32, 32); }
+Image Temperature() { return Image(temperatur, sizeof(temperatur), 32, 32); }
 Image Pressure() { return Image(pressure, sizeof(pressure), 32, 32); }
 Image Humidity() { return Image(humidity, sizeof(humidity), 32, 32); }
 

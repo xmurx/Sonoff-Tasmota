@@ -11,33 +11,17 @@ public:
   Renderer() {}
   virtual ~Renderer() {}
 
-  virtual void setCursor(int16_t x, int16_t y)
-  {
-     _x = x;
-     _y = y;
-  }
+  virtual void setCursor(int16_t x, int16_t y) {}
 
-  virtual void clearDisplay(void)
-  {
-  }
+  virtual void clearDisplay(void) {}
 
-  virtual void setTextSize(uint8_t s)
-  {
-  }
+  virtual void setTextSize(uint8_t s) {}
 
-  virtual size_t print(const char* value)
-  {
-    return strlen(value);
-  }
+  virtual size_t print(const char* value) { return 0; }
 
-  virtual void Updateframe()
-  {
-  }
+  virtual void Updateframe() { }
 
-private:
-
-  int16_t _x;
-  int16_t _y;
+  virtual void drawBitmap(int16_t x, int16_t y, const uint8_t bitmap[], int16_t w, int16_t h, uint16_t color) {}
 };
 
 

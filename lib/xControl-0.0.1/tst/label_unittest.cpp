@@ -24,8 +24,18 @@ TEST(LabelTest, SetCursor_with_txt_to_long)
   const char txt[] = "12345678901";
   NiceMock<MockRenderer> renderer{};
 
-  //incorrect position x,y for this txt is: x=0, y =0 -> txt to long for current display 
+  //incorrect position x,y for this txt is: x=0, y =0 -> txt to long for current display
   EXPECT_CALL(renderer, setCursor(Eq(0),Eq(0))).Times(AtLeast(1));
   xControl::Label label{&renderer, 128, 32};
   label.Text(txt);
+}
+
+TEST(LabelTest, SetCursor_and_drawBitmap)
+{
+  NiceMock<MockRenderer> renderer{};
+  xControl::Label label{&renderer, 128, 32};
+  xControl::Image icon = xControl::Temperature();
+  EXPECT_CALL(renderer, setCursor(Eq(icon.Width()+1),Eq(8))).Times(AtLeast(1));
+  label.SetIcon(icon);
+  label.Text("Hallo");
 }

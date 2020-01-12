@@ -41,7 +41,8 @@ namespace xControl
     _defaultFontSize(6,8),
     _scaleFactor(2),
     _width(0),
-    _height(0)
+    _height(0),
+    _icon(&_defaultEmptyImage)
   {
     memset(_text, 0, sizeof(_text));
   }
@@ -88,8 +89,12 @@ namespace xControl
     {
       CalculatePosition();
 
+      _renderer->clearDisplay();      
+      if(_icon->IsValid())
+      {
+        _renderer->drawBitmap(0, 0, _icon->Data(), _icon->Width(), _icon->Height(), 1);
+      }
       _renderer->setCursor(_cursor.x, _cursor.y);
-      _renderer->clearDisplay();
       _renderer->setTextSize(_scaleFactor);
       _renderer->print(_text);
       _renderer->Updateframe();
@@ -101,8 +106,16 @@ namespace xControl
     size_t textSize = strlen(text);
     memset( _text, 0, BufferSize);
     strncpy(_text, text, ((textSize > BufferSize) ? BufferSize-1 : textSize));
-
     Show();
+  }
+
+  void Label::SetIcon(xControl::Image& icon)
+  {
+    _icon = &icon;
+  }
+  void Label::RemoveIcon()
+  {
+    _icon = &_defaultEmptyImage;
   }
 
   void Label::CalculatePosition()
@@ -122,6 +135,11 @@ namespace xControl
           _cursor.x = 0;
           _cursor.y = 0;
         }
+
+        if(_icon->IsValid())
+        {
+          _cursor.x = _icon->Width() + 1;
+        }
         break;
       } 
       default:
@@ -130,6 +148,6 @@ namespace xControl
         _cursor.y = 0;
         break;
       }
-    }
+    } 
   }
 } // end of namespace

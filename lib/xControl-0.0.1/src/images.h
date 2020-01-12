@@ -1,12 +1,11 @@
 #ifndef _IMAGES_H_
 #define _IMAGES_H_
 
-namespace xControl
-{
-
 #include <stdint.h>
 #include "common.h"
 
+namespace xControl
+{
 //------------------------------------------------------
 // class Image
 //------------------------------------------------------
@@ -22,7 +21,7 @@ public:
     uint16_t Height();
     uint16_t Size();
     const uint8_t* PROGMEM Data();
-    bool Valid();
+    bool IsValid();
 
 private:
 

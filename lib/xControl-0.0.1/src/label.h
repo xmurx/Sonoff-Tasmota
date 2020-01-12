@@ -44,7 +44,8 @@ public:
   void SetTextSize(TextSize size);
   void Text(const char* text);
 
-
+  void SetIcon(xControl::Image& icon);
+  void RemoveIcon();
 
 private:
 
@@ -55,7 +56,8 @@ private:
   int32_t VerticalCenterLine();
 
   Renderer* _renderer;
-  const xControl::Image* _icon;
+  xControl::Image* _icon;
+  xControl::Image _defaultEmptyImage;
 
   Orientation _orientation;
   CursorPosition _cursor;

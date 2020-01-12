@@ -137,6 +137,7 @@ private:
     StateControl _stateControl;
     ViewData _data;
     Label _label;
+    Image _icon;
 };
 
 } // namespace xControl

@@ -137,7 +137,7 @@ namespace xControl
             {
                 case StateControl::ShowSplash:
                 {
-                    View::Image splash = View::Splash();
+                    xControl::Image splash = xControl::Splash();
                     _renderer->drawBitmap(0, 0, splash.Data(), splash.Width(), splash.Height(), 1);
                     _renderer->Updateframe();
                     _stateControl.SetState(StateControl::Delay, 2000);
@@ -187,11 +187,32 @@ namespace xControl
                   temperature += (char)247;
                   temperature += "C";
 
+                  _icon = xControl::Temperature();
+                  _label.SetIcon(_icon);
+
                   _label.Text(temperature.c_str());
 
                   if(_stateControl.DelayExpired())
-                    _stateControl.SetState(StateControl::ShowLevel);
+                    _stateControl.SetState(StateControl::ShowHumidity);
 
+                  break;
+                }
+                case StateControl::ShowHumidity:
+                {
+                  if(_stateControl.OnEnter())
+                    _stateControl.StartDelay(2000);
+
+                  String humidity(_data.Humidity());
+                  humidity += "%";
+
+                  _icon = xControl::Humidity();
+                  _label.SetIcon(_icon);
+
+                  _label.Text(humidity.c_str());
+
+                  if(_stateControl.DelayExpired())
+                    _stateControl.SetState(StateControl::ShowLevel);
+                    
                   break;
                 }
                 case StateControl::Unknown:
