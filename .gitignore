@@ -17,3 +17,4 @@ firmware.map
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 *.bak
+lib/xControl-0.0.1/cov_xml.xml

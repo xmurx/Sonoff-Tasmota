@@ -32,5 +32,6 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
   include_directories("${gtest_SOURCE_DIR}/include")
 endif()
 
+project(xControl)
 add_subdirectory(src)
 add_subdirectory(tst)

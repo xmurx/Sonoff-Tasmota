@@ -7,4 +7,4 @@ set_property(TARGET xControl-Unittest PROPERTY CXX_STANDARD 11)
 
 target_link_libraries(xControl-Unittest xControl gtest_main gmock)
 add_test(NAME xControl-Unittest COMMAND xControl_Ut)
-add_custom_command(TARGET xControl-Unittest POST_BUILD COMMAND opencppcoverage --export_type cobertura $<TARGET_FILE:xControl-Unittest>)
+add_custom_command(TARGET xControl-Unittest POST_BUILD COMMAND opencppcoverage --sources *xControl* --excluded_sources *googletest* --export_type=cobertura:${CMAKE_SOURCE_DIR}/cov_xml.xml -- $<TARGET_FILE:xControl-Unittest>)
