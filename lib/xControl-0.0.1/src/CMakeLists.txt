@@ -4,6 +4,8 @@ project(xControl)
 add_library(xControl Label.h
                      label.cpp
                      Images.h
-                     Images.cpp )
+                     Images.cpp
+                     view.h
+                     view.cpp )
 
 target_include_directories(xControl PUBLIC ../tst/)

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "logging.h"
-#include "renderer.h"
 #include "label.h"
 #include "view.h"
+
+class Renderer;
 
 namespace xControl
 {
@@ -23,47 +23,29 @@ namespace xControl
 class ViewData
 {
 public:
-    ViewData()
-        : _distance(0),
-          _temperature(0.0),
-          _pressure(0),
-          _humidity(0.0)
-    {
-    }
+  ViewData()
+  : _distance(0),
+    _temperature(0.0),
+    _pressure(0),
+    _humidity(0.0)
+  {
+  }
 
-    void SetDistance(int distance) { _distance = distance; }
-    void SetTemperature(float temperature) { _temperature = temperature; }
-    void SetHumidity(float humidity) { _humidity = humidity; }
-    void SetPressure(float pressure) { _pressure = pressure; }
-
-    int Distance() const { return _distance; }
-    float Temperature() const { return _temperature; }
-    float Humidity() const { return _humidity; }
-    float Pressure() const { return _pressure; }
-
-    void PrintInfo()
-    {
-        char tempBuffer[8];
-        dtostrf(_temperature, 3, 2, tempBuffer);
-
-        char humBuffer[16];
-        dtostrf(_humidity, 4, 2, humBuffer);
-
-        char presBuffer[16];
-        dtostrf(_pressure, 4, 2, presBuffer);
-
-        Logging::Debug("View - Temp: %s, Hum: %s, Press: %s, Distance: %d",
-                       tempBuffer,
-                       humBuffer,
-                       presBuffer,
-                       _distance);
-    }
+  void SetDistance(int distance) { _distance = distance; }
+  void SetTemperature(float temperature) { _temperature = temperature; }
+  void SetHumidity(float humidity) { _humidity = humidity; }
+  void SetPressure(float pressure) { _pressure = pressure; }
+  int Distance() const { return _distance; }
+  float Temperature() const { return _temperature; }
+  float Humidity() const { return _humidity; }
+  float Pressure() const { return _pressure; }
+  void PrintInfo();
 
 private:
-    int _distance;
-    float _temperature;
-    float _humidity;
-    float _pressure;
+  int _distance;
+  float _temperature;
+  float _humidity;
+  float _pressure;
 };
 
 //------------------------------------------------------
@@ -74,9 +56,9 @@ class PercentConverter
 {
 public:
 
-    PercentConverter(uint32_t minValue,uint32_t maxValue, uint32_t step );
-    ~PercentConverter();
-    uint32_t ToPercent(uint32_t value);
+  PercentConverter(uint32_t minValue,uint32_t maxValue, uint32_t step );
+  ~PercentConverter();
+  uint32_t ToPercent(uint32_t value);
 
 private:
   uint32_t _minValue;
@@ -91,53 +73,52 @@ private:
 class SSD1306View
 {
 public:
-    SSD1306View();
-    SSD1306View(Renderer *renderer);
-    virtual ~SSD1306View();
+  SSD1306View();
+  SSD1306View(Renderer *renderer);
+  virtual ~SSD1306View();
 
-    void Init(Renderer *renderer, uint32_t width, uint32_t height);
-    void Show(const ViewData &data);
-    void Step();
+  void Init(Renderer *renderer, uint32_t width, uint32_t height);
+  void Show(const ViewData &data);
+  void Step();
     
 private:
-    void Process();
-    class StateControl
+  void Process();
+  class StateControl
+  {
+  public:
+    enum State
     {
-    public:
-        enum State
-        {
-          Unknown,
-          ShowSplash,
-          Delay,
-          ShowLevel,
-          ShowTemp,
-          ShowHumidity,
-          ShowPressure
-        };
-        StateControl();
-
-        State GetState();
-        void SetState(State state, uint32_t delay = 0);
-
-        void StartDelay(uint32_t delayIn_ms);
-        bool DelayExpired();
-        void ResetDelay();
-        bool OnEnter();
-
-    private:
-        State _state;
-        uint32_t _startTime;
-        uint32_t _delayTime;
-        bool _onEnter;
+      Unknown,
+      ShowSplash,
+      Delay,
+      ShowLevel,
+      ShowTemp,
+      ShowHumidity,
+      ShowPressure
     };
+    StateControl();
 
-    Renderer *_renderer;
-    PercentConverter _distanceConverter;
+    State GetState();
+    void SetState(State state, uint32_t delay = 0);
 
-    StateControl _stateControl;
-    ViewData _data;
-    Label _label;
-    Image _icon;
+    void StartDelay(uint32_t delayIn_ms);
+    bool DelayExpired();
+    void ResetDelay();
+    bool OnEnter();
+
+  private:
+    State _state;
+    uint32_t _startTime;
+    uint32_t _delayTime;
+    bool _onEnter;
+  };
+
+  Renderer* _renderer;
+  PercentConverter _distanceConverter;
+  StateControl _stateControl;
+  ViewData _data;
+  Label _label;
+  Image _icon;
 };
 
 } // namespace xControl
