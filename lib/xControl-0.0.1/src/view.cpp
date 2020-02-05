@@ -6,19 +6,6 @@
 unsigned long millis();
 namespace xControl
 {
-  void ViewData::PrintInfo()
-  {
-/*    
-    char tempBuffer[8];
-    dtostrf(_temperature, 3, 2, tempBuffer);
-    char humBuffer[16];
-    dtostrf(_humidity, 4, 2, humBuffer);
-    char pressBuffer[16];
-    dtostrf(_pressure, 4, 2, pressBuffer);
-    Logging::Debug("View - Temp: %s, Hum: %s, Press: %s, Distance: %d", tempBuffer, humBuffer, pressBuffer, _distance);
-*/    
-  }
-
   SSD1306View::StateControl::StateControl()
   : _state(Unknown),
     _startTime(0),

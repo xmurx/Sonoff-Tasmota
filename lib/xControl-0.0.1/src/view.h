@@ -39,7 +39,6 @@ public:
   float Temperature() const { return _temperature; }
   float Humidity() const { return _humidity; }
   float Pressure() const { return _pressure; }
-  void PrintInfo();
 
 private:
   int _distance;
