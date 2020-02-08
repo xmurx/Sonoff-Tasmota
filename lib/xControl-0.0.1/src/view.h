@@ -66,8 +66,96 @@ private:
 };
 
 //------------------------------------------------------
+// StateControl
+//------------------------------------------------------
+
+enum State
+{
+  Unknown = 0,
+  ShowSplash,
+//  Delay,
+  ShowLevel,
+  ShowTemp,
+  ShowHumidity,
+  ShowPressure
+};
+
+template<typename T>
+class StateControl
+{
+public:
+
+  StateControl()
+  : _state(T::Unknown),
+    _startTime(0),
+    _delayTime(0),
+    _onEnter(false)
+  { 
+  }
+
+  T GetState()
+  {
+    return _state;
+  }
+
+  void SetState(T state, uint32_t delay = 0)
+  {
+    if(state == T::Delay)
+    {
+      _delayTime = delay;
+      _startTime = millis();
+    }
+
+    if(_state != state)
+      _onEnter = true;
+
+    _state = state;
+  }
+
+  void StartDelay(uint32_t delayIn_ms)
+  {
+    _delayTime = delayIn_ms;
+    _startTime = millis();
+  }
+
+  bool DelayExpired()
+  {
+    bool ret = ((millis() - _startTime) >= _delayTime);
+    if(ret)
+    {
+      ResetDelay();
+    }
+    return ret;
+  }
+
+  void ResetDelay()
+  {
+    _startTime = 0;
+    _delayTime = 0;
+  }
+
+  bool OnEnter()
+  {
+    if(_onEnter == true)
+    {
+      _onEnter = false;
+      return true;
+    }
+    return _onEnter;
+  }
+
+private:
+
+  T _state;
+  uint32_t _startTime;
+  uint32_t _delayTime;
+  bool _onEnter;
+};
+
+//------------------------------------------------------
 // SSD1306View
 //------------------------------------------------------
+
 
 class SSD1306View
 {
@@ -82,39 +170,10 @@ public:
     
 private:
   void Process();
-  class StateControl
-  {
-  public:
-    enum State
-    {
-      Unknown,
-      ShowSplash,
-      Delay,
-      ShowLevel,
-      ShowTemp,
-      ShowHumidity,
-      ShowPressure
-    };
-    StateControl();
-
-    State GetState();
-    void SetState(State state, uint32_t delay = 0);
-
-    void StartDelay(uint32_t delayIn_ms);
-    bool DelayExpired();
-    void ResetDelay();
-    bool OnEnter();
-
-  private:
-    State _state;
-    uint32_t _startTime;
-    uint32_t _delayTime;
-    bool _onEnter;
-  };
 
   Renderer* _renderer;
   PercentConverter _distanceConverter;
-  StateControl _stateControl;
+  StateControl<State> _stateControl;
   ViewData _data;
   Label _label;
   Image _icon;

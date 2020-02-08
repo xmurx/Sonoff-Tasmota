@@ -6,65 +6,6 @@
 unsigned long millis();
 namespace xControl
 {
-  SSD1306View::StateControl::StateControl()
-  : _state(Unknown),
-    _startTime(0),
-    _delayTime(0),
-    _onEnter(false)
-  { 
-  }
-
-  void SSD1306View::StateControl::SetState(State state, uint32_t delay )
-  { 
-    if(state == Delay)
-    {
-      _delayTime = delay;
-      _startTime = millis();
-    }
-
-    if(_state != state)
-      _onEnter = true;
-
-    _state = state;
-  }
-
-  SSD1306View::StateControl::State SSD1306View::StateControl::GetState()
-  {
-    return _state;
-  }
-
-  void SSD1306View::StateControl::StartDelay(uint32_t delayIn_ms)
-  {
-    _delayTime = delayIn_ms;
-    _startTime = millis();
-  }
-
-  void SSD1306View::StateControl::ResetDelay()
-  { 
-    _startTime = 0;
-    _delayTime = 0;
-  }
-
-  bool SSD1306View::StateControl::DelayExpired()
-  {
-    bool ret = ((millis() - _startTime) >= _delayTime);
-    if(ret)
-    {
-      ResetDelay();
-    }
-    return ret;
-  }
-
-  bool SSD1306View::StateControl::OnEnter()
-  {
-    if(_onEnter == true)
-    {
-      _onEnter = false;
-      return true;
-    }
-    return _onEnter;
-  }
-
   //------------------------------------------------------
   // PercentConverter
   //------------------------------------------------------    
@@ -114,7 +55,7 @@ namespace xControl
 
     if(_renderer != NULL)
     {
-      _stateControl.SetState(StateControl::ShowSplash);
+      _stateControl.SetState(State::ShowSplash);
       Process();
     }
   }
@@ -136,22 +77,22 @@ namespace xControl
     {
       switch(_stateControl.GetState())
       {
-        case StateControl::ShowSplash:
+        case State::ShowSplash:
         {
           xControl::Image splash = xControl::Splash();
           _renderer->drawBitmap(0, 0, splash.Data(), splash.Width(), splash.Height(), 1);
           _renderer->Updateframe();
-          _stateControl.SetState(StateControl::Delay, 2000);
+          _stateControl.SetState(State::Delay, 2000);
           break;
         }
-        case StateControl::Delay:
+        case State::Delay:
         {
           if(_stateControl.DelayExpired())
-              _stateControl.SetState(StateControl::ShowLevel);
+              _stateControl.SetState(State::ShowLevel);
           
           break;
         }
-        case StateControl::ShowLevel:
+        case State::ShowLevel:
         {
           if(_stateControl.OnEnter())
             _stateControl.StartDelay(10000);
@@ -175,11 +116,11 @@ namespace xControl
           }
 
           if(_stateControl.DelayExpired())
-            _stateControl.SetState(StateControl::ShowTemp);
+            _stateControl.SetState(State::ShowTemp);
 
           break;
         }
-        case StateControl::ShowTemp:
+        case State::ShowTemp:
         {
           if(_stateControl.OnEnter())
             _stateControl.StartDelay(2000);
@@ -193,11 +134,11 @@ namespace xControl
           _label.Text(temperature.c_str());
 
           if(_stateControl.DelayExpired())
-            _stateControl.SetState(StateControl::ShowHumidity);
+            _stateControl.SetState(State::ShowHumidity);
 
           break;
         }
-        case StateControl::ShowHumidity:
+        case State::ShowHumidity:
         {
           if(_stateControl.OnEnter())
             _stateControl.StartDelay(2000);
@@ -210,11 +151,11 @@ namespace xControl
           _label.Text(humidity.c_str());
 
           if(_stateControl.DelayExpired())
-            _stateControl.SetState(StateControl::ShowLevel);
+            _stateControl.SetState(State::ShowLevel);
             
           break;
         }
-        case StateControl::Unknown:
+        case State::Unknown:
           break;
         default:
           break;
