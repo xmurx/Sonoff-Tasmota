@@ -3,7 +3,6 @@
 #include <stdint.h>
 
 #include <Arduino.h>
-#include "sonoff.h"
 #include "logging.h"
 
 /*********************************************************************************************\
