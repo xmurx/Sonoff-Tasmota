@@ -7,10 +7,15 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
-sonoff/user_config_override.h
+.cache
+tasmota/user_config_override.h
 build
 firmware.map
 firmware.asm
+tasmota*.bin
+tasmota*.bin.gz
+tasmota*.map
+platformio_override.ini
 
 ## Visual Studio Code specific ######
 .vscode
