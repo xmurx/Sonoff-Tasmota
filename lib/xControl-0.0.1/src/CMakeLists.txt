@@ -8,4 +8,4 @@ add_library(xControl Label.h
                      view.h
                      view.cpp )
 
-target_include_directories(xControl PUBLIC ../tst/)
+target_include_directories(xControl PUBLIC ../tst/inc)

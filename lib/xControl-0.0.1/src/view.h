@@ -73,7 +73,7 @@ enum State
 {
   Unknown = 0,
   ShowSplash,
-//  Delay,
+  Delay,
   ShowLevel,
   ShowTemp,
   ShowHumidity,

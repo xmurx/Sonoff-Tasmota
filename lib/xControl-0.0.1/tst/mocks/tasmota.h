@@ -3,6 +3,8 @@
 
 #include "gmock/gmock.h"
 
+unsigned long millis();
+
 namespace xControl
 {
   class Time
