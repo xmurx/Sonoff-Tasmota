@@ -22,7 +22,7 @@ namespace xControl
 
   TEST_F(TasmotaFixture, ChangeStateAfterTimeOutAndCallOnEnterOnce)
   { 
-    EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(2).WillOnce(Return(0)).WillOnce(Return(2001));
+    EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(1).WillOnce(Return(0)).WillOnce(Return(2001));
     StateControl<State> stateControl;
     State initialState = stateControl.GetState();
 
@@ -30,5 +30,34 @@ namespace xControl
     bool onEnter = stateControl.OnEnter();
     onEnter = onEnter && stateControl.OnEnter();
     EXPECT_TRUE((initialState == State::Unknown) && !onEnter );
+  }
+  
+  TEST_F(TasmotaFixture, ChangeStateWithOutTimeOutAndCallOnEnterOnce)
+  { 
+    StateControl<State> stateControl;
+    State initialState = stateControl.GetState();
+    stateControl.SetState(State::ShowLevel);
+
+    State changedState = stateControl.GetState();
+
+    bool onEnter = stateControl.OnEnter();
+    onEnter = onEnter && stateControl.OnEnter();
+
+    EXPECT_TRUE((initialState == State::Unknown) && !onEnter && (changedState == State::ShowLevel));
+  }
+
+  TEST_F(TasmotaFixture, StartDelayAndWaitForExpire)
+  { 
+    StateControl<State> stateControl;
+    State initialState = stateControl.GetState();
+
+    EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(2).WillOnce(Return(0)).WillOnce(Return(2000));
+    
+    stateControl.SetState(State::ShowHumidity);
+    State changedState = stateControl.GetState();
+    stateControl.StartDelay(1500);
+    
+    bool expired = stateControl.DelayExpired();
+    EXPECT_TRUE((initialState == State::Unknown) && expired && (changedState == State::ShowHumidity));
   }
 } // end of namespace
