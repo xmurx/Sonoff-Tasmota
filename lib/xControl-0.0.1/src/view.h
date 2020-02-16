@@ -2,6 +2,7 @@
 
 #include "label.h"
 #include "view.h"
+#include "level.h"
 
 class Renderer;
 
@@ -176,6 +177,7 @@ private:
   StateControl<State> _stateControl;
   ViewData _data;
   Label _label;
+  Level _level;
   Image _icon;
 };
 

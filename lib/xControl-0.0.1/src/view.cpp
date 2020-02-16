@@ -52,6 +52,7 @@ namespace xControl
   {
     _renderer = renderer;
     _label.Init(_renderer, width, height );
+    _level.Init(_renderer, width, height );
 
     if(_renderer != NULL)
     {
@@ -97,23 +98,8 @@ namespace xControl
           if(_stateControl.OnEnter())
             _stateControl.StartDelay(10000);
 
-          static uint32_t lastValue = _data.Distance();
-          uint32_t currentValue = _data.Distance();
-          if(lastValue != currentValue)                                      
-          {
-            enum{width=128, height=32};
-            lastValue = currentValue;
-            _renderer->clearDisplay();
-            _renderer->drawChar(0,3,'E',1,0,2);
-            _renderer->drawRect(12,0,width-24,height-12,1);
-            _renderer->drawChar(118,3,'F',1,0,2);
-            _renderer->fillRect(15,3, (100-_distanceConverter.ToPercent(currentValue)), 26-12, 1);
-            
-            _renderer->setTextSize(1);
-            _renderer->setCursor(28, 23);
-            _renderer->print("Abwassertank");
-            _renderer->Updateframe();
-          }
+          _level.Set(_distanceConverter.ToPercent(_data.Distance()));
+          _level.Show();
 
           if(_stateControl.DelayExpired())
             _stateControl.SetState(State::ShowTemp);

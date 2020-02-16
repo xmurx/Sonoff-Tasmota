@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "images.h"
+#include "viewable.h"
 
 class Renderer;
 namespace xControl
@@ -14,9 +15,10 @@ namespace xControl
 // Label (R is the used Renderer -> depending on runtime environment)
 //------------------------------------------------------
 
-class Label
+class Label : public Viewable
 {
 public:
+
   enum Orientation { Centered, LeftJustified, RightJustified };
   enum TextSize { Default = 1, Factor2 = 2, Factor3 = 3 };
   struct CursorPosition
@@ -36,11 +38,9 @@ public:
 
   Label();  
   Label(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation = Centered);
-
   virtual ~Label();
 
   void Init(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation = Centered);
-
   void SetTextSize(TextSize size);
   void Text(const char* text);
 
@@ -52,10 +52,10 @@ private:
   void CalculatePosition();
   void CheckRange();
   void Show();
+  void SetDefaultValues();
   int32_t HorizontalCenterLine();
   int32_t VerticalCenterLine();
 
-  Renderer* _renderer;
   xControl::Image* _icon;
   xControl::Image _defaultEmptyImage;
 
@@ -63,9 +63,6 @@ private:
   CursorPosition _cursor;
   FontSize _defaultFontSize;
   uint32_t _scaleFactor;
-
-  int32_t _width;
-  int32_t _height;
 
   enum {BufferSize = 16 };
   char _text[BufferSize];

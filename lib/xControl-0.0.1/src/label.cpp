@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "label.h"
-#include "renderer.h"
 
 namespace xControl
 {
@@ -36,23 +35,15 @@ namespace xControl
   //------------------------------------------------------  
 
   Label::Label()
-  : _renderer(NULL),
-    _orientation(Centered),
-    _defaultFontSize(6,8),
-    _scaleFactor(2),
-    _width(0),
-    _height(0),
-    _icon(&_defaultEmptyImage)
+  : Viewable()
   {
-    memset(_text, 0, sizeof(_text));
+    SetDefaultValues();
   }
 
   Label::Label(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation)
-  : Label()
+  : Viewable(renderer, width, height)
   {
-    _renderer = renderer;
-    _width = width;
-    _height = height;
+    SetDefaultValues();
     _orientation = orientation;
   }
 
@@ -62,10 +53,17 @@ namespace xControl
 
   void Label::Init(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation)
   {
-    _renderer = renderer,
+    Viewable::Init(renderer, width, height);
     _orientation = orientation;
-    _height = height;
-    _width  = width;
+  }
+
+  void Label::SetDefaultValues()
+  {
+    _orientation = Centered;
+    _defaultFontSize = {6,8};
+    _scaleFactor = 2;
+    _icon = &_defaultEmptyImage;
+    memset(_text, 0, sizeof(_text));
   }
 
   void Label::SetTextSize(TextSize size)
@@ -88,7 +86,6 @@ namespace xControl
     if(_renderer)
     {
       CalculatePosition();
-
       _renderer->clearDisplay();      
       if(_icon->IsValid())
       {

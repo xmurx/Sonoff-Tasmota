@@ -6,6 +6,10 @@ add_library(xControl Label.h
                      Images.h
                      Images.cpp
                      view.h
-                     view.cpp )
+                     view.cpp
+                     level.h
+                     level.cpp
+                     viewable.h
+                     viewable.cpp )
 
 target_include_directories(xControl PUBLIC ../tst/inc)
