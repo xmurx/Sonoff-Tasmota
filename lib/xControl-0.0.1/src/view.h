@@ -101,11 +101,8 @@ public:
 
   void SetState(T state, uint32_t delay = 0)
   {
-    if(state == T::Delay)
-    {
-      _delayTime = delay;
-      _startTime = millis();
-    }
+    if(delay != 0)
+      StartDelay(delay);
 
     if(_state != state)
       _onEnter = true;

@@ -14,9 +14,7 @@ namespace xControl
     SetDefaults();
   }
 
-  Level::~Level()
-  {
-  }
+  Level::~Level() { }
 
   void Level::SetDefaults()
   {

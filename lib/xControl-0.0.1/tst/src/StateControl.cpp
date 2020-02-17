@@ -60,4 +60,18 @@ namespace xControl
     bool expired = stateControl.DelayExpired();
     EXPECT_TRUE((initialState == State::Unknown) && expired && (changedState == State::ShowHumidity));
   }
+
+  TEST_F(TasmotaFixture, CheckTimeBetweenStateChange)
+  { 
+    StateControl<State> stateControl;
+    State initialState = stateControl.GetState();
+    EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(2).WillOnce(Return(0)).WillOnce(Return(2000));
+    
+    stateControl.SetState(State::ShowHumidity);
+    State changedState = stateControl.GetState();
+    stateControl.SetState(State::ShowLevel);
+    State state = stateControl.GetState();
+    
+    EXPECT_TRUE(true);
+  }
 } // end of namespace

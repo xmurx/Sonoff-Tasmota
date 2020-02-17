@@ -80,17 +80,17 @@ namespace xControl
       {
         case State::ShowSplash:
         {
-          xControl::Image splash = xControl::Splash();
-          _renderer->drawBitmap(0, 0, splash.Data(), splash.Width(), splash.Height(), 1);
-          _renderer->Updateframe();
-          _stateControl.SetState(State::Delay, 2000);
-          break;
-        }
-        case State::Delay:
-        {
+          if(_stateControl.OnEnter())
+          {
+            xControl::Image splash = xControl::Splash();
+            _renderer->drawBitmap(0, 0, splash.Data(), splash.Width(), splash.Height(), 1);
+            _renderer->Updateframe();
+            _stateControl.StartDelay(2000);
+          }
+
           if(_stateControl.DelayExpired())
-              _stateControl.SetState(State::ShowLevel);
-          
+            _stateControl.SetState(State::ShowTemp);
+            
           break;
         }
         case State::ShowLevel:
