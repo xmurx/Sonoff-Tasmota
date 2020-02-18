@@ -82,12 +82,18 @@ enum State
 };
 
 template<typename T>
+struct StateTrait{ static const T initialValue; };
+
+template<>
+struct StateTrait<State>{ static const State initialValue = State::Unknown; };
+
+template<typename T>
 class StateControl
 {
 public:
 
   StateControl()
-  : _state(T::Unknown),
+  : _state(StateTrait<T>::initialValue),
     _startTime(0),
     _delayTime(0),
     _onEnter(false)
@@ -99,11 +105,8 @@ public:
     return _state;
   }
 
-  void SetState(T state, uint32_t delay = 0)
+  void SetState(T state)
   {
-    if(delay != 0)
-      StartDelay(delay);
-
     if(_state != state)
       _onEnter = true;
 

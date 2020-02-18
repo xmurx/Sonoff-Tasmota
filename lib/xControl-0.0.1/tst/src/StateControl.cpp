@@ -15,7 +15,8 @@ namespace xControl
     EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(2).WillOnce(Return(0)).WillOnce(Return(2001));
     StateControl<State> stateControl;
     State initialState = stateControl.GetState();
-    stateControl.SetState(State::Delay, 2000);
+    stateControl.SetState(State::Delay);
+    stateControl.StartDelay(2000);
     bool delayExpired = stateControl.DelayExpired();
     EXPECT_TRUE((initialState == State::Unknown) && delayExpired );
   }
@@ -26,7 +27,8 @@ namespace xControl
     StateControl<State> stateControl;
     State initialState = stateControl.GetState();
 
-    stateControl.SetState(State::Delay, 2000);
+    stateControl.SetState(State::Delay);
+    stateControl.StartDelay(2000);
     bool onEnter = stateControl.OnEnter();
     onEnter = onEnter && stateControl.OnEnter();
     EXPECT_TRUE((initialState == State::Unknown) && !onEnter );
