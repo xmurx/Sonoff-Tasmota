@@ -33,30 +33,33 @@ namespace xControl
 
   SSD1306View::SSD1306View()
   : _renderer(NULL),
+    _stateControl(NULL),
     _distanceConverter(0, 1000, 10)
   {
   }
 
 
-  SSD1306View::SSD1306View(Renderer *renderer)
+  SSD1306View::SSD1306View(Renderer *renderer, StateControlBase<State>* stateControl)
   : SSD1306View()
   {
     _renderer = renderer;
+    _stateControl = stateControl;
   }
 
   SSD1306View::~SSD1306View()
   {
   }
 
-  void SSD1306View::Init(Renderer* renderer, uint32_t width, uint32_t height)
+  void SSD1306View::Init(Renderer* renderer, StateControlBase<State>* stateControl, uint32_t width, uint32_t height)
   {
     _renderer = renderer;
+    _stateControl = stateControl;
     _label.Init(_renderer, width, height );
     _level.Init(_renderer, width, height );
 
     if(_renderer != NULL)
     {
-      _stateControl.SetState(State::ShowSplash);
+      _stateControl->SetState(State::ShowSplash);
       Process();
     }
   }
@@ -76,40 +79,40 @@ namespace xControl
   {
     if (_renderer)
     {
-      switch(_stateControl.GetState())
+      switch(_stateControl->GetState())
       {
         case State::ShowSplash:
         {
-          if(_stateControl.OnEnter())
+          if(_stateControl->OnEnter())
           {
             xControl::Image splash = xControl::Splash();
             _renderer->drawBitmap(0, 0, splash.Data(), splash.Width(), splash.Height(), 1);
             _renderer->Updateframe();
-            _stateControl.StartDelay(2000);
+            _stateControl->StartDelay(2000);
           }
 
-          if(_stateControl.DelayExpired())
-            _stateControl.SetState(State::ShowTemp);
+          if(_stateControl->DelayExpired())
+            _stateControl->SetState(State::ShowTemp);
             
           break;
         }
         case State::ShowLevel:
         {
-          if(_stateControl.OnEnter())
-            _stateControl.StartDelay(10000);
+          if(_stateControl->OnEnter())
+            _stateControl->StartDelay(10000);
 
           _level.Set(_distanceConverter.ToPercent(_data.Distance()));
           _level.Show();
 
-          if(_stateControl.DelayExpired())
-            _stateControl.SetState(State::ShowTemp);
+          if(_stateControl->DelayExpired())
+            _stateControl->SetState(State::ShowTemp);
 
           break;
         }
         case State::ShowTemp:
         {
-          if(_stateControl.OnEnter())
-            _stateControl.StartDelay(2000);
+          if(_stateControl->OnEnter())
+            _stateControl->StartDelay(2000);
           
           String temperature(_data.Temperature());
           temperature += (char)247;
@@ -119,15 +122,15 @@ namespace xControl
           _label.SetIcon(_icon);
           _label.Text(temperature.c_str());
 
-          if(_stateControl.DelayExpired())
-            _stateControl.SetState(State::ShowHumidity);
+          if(_stateControl->DelayExpired())
+            _stateControl->SetState(State::ShowHumidity);
 
           break;
         }
         case State::ShowHumidity:
         {
-          if(_stateControl.OnEnter())
-            _stateControl.StartDelay(2000);
+          if(_stateControl->OnEnter())
+            _stateControl->StartDelay(2000);
 
           String humidity(_data.Humidity());
           humidity += "%";
@@ -136,8 +139,8 @@ namespace xControl
           _label.SetIcon(_icon);
           _label.Text(humidity.c_str());
 
-          if(_stateControl.DelayExpired())
-            _stateControl.SetState(State::ShowLevel);
+          if(_stateControl->DelayExpired())
+            _stateControl->SetState(State::ShowLevel);
             
           break;
         }
