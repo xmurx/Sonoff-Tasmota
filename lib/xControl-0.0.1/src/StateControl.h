@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+extern "C" unsigned long millis();
 namespace xControl
 {
   template<typename T>
@@ -52,12 +53,12 @@ namespace xControl
     virtual void StartDelay(uint32_t delayIn_ms)
     {
       _delayTime = delayIn_ms;
-      _startTime = millis();
+      _startTime = ::millis();
     }
 
     virtual bool DelayExpired()
     {
-      bool ret = ((millis() - _startTime) >= _delayTime);
+      bool ret = ((::millis() - _startTime) >= _delayTime);
       if(ret)
       {
         ResetDelay();

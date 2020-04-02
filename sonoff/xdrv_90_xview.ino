@@ -18,6 +18,7 @@ namespace xControl
   const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 120;
   StaticJsonBuffer<capacity> jsonBuffer;
   ViewData data;
+  StateControl<xControl::State> stateControl;
 
   /**
    * @brief 
@@ -62,7 +63,7 @@ bool Xdrv90(uint8_t function)
   {
     case FUNC_INIT:
     {
-      view.Init(renderer, Settings.display_width, Settings.display_height);
+      view.Init(renderer, &xControl::stateControl, Settings.display_width, Settings.display_height);
       break;
     }
     case FUNC_EVERY_250_MSECOND:
@@ -90,5 +91,23 @@ bool Xdrv90(uint8_t function)
   }
   return result;
 }
+
+#ifdef TANK_LEVEL_SENSOR
+#define XSNS_90 90
+static xControl::PercentConverter converter(0, 1000, 10);
+bool Xsns90(byte function)
+{
+  switch (function)
+  {
+    case FUNC_JSON_APPEND:
+    {
+      MQTTResponse::AppendP(PSTR(",\"Tank\":{\"Level\":%d}"), converter.ToPercent(xControl::data.Distance()));
+      break;
+    }
+    default:
+      break;
+  }
+}
+#endif //TANK_LEVEL_SENSOR
 
 #endif //USE_X_VIEW_ON_SSD1306
