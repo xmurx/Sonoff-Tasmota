@@ -101,7 +101,7 @@ bool Xsns90(byte function)
   {
     case FUNC_JSON_APPEND:
     {
-      MQTTResponse::AppendP(PSTR(",\"Tank\":{\"Level\":%d}"), converter.ToPercent(xControl::data.Distance()));
+      MQTTResponse::AppendP(PSTR(",\"Tank\":{\"Level\":%d}"), (100-converter.ToPercent(xControl::data.Distance())));
       break;
     }
     default:
