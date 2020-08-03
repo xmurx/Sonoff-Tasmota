@@ -101,7 +101,7 @@ void Scd30Update(void)
 {
   scd30Loop_count++;
   if (scd30Loop_count > (scd30Interval_sec - 1)) {
-    int error = 0;
+    uint32_t error = 0;
     switch (scd30ErrorState) {
       case SCD30_STATE_NO_ERROR: {
         error = scd30.readMeasurement(&scd30_CO2, &scd30_CO2EAvg, &scd30_Temp, &scd30_Humid);
@@ -249,6 +249,7 @@ int Scd30GetCommand(int command_code, uint16_t *pvalue)
         // else for Unknown command
       break;
   }
+  return 0;  // Fix GCC 10.1 warning
 }
 
 int Scd30SetCommand(int command_code, uint16_t value)
@@ -291,6 +292,7 @@ int Scd30SetCommand(int command_code, uint16_t value)
         // else for Unknown command
       break;
   }
+  return 0;  // Fix GCC 10.1 warning
 }
 
 /*********************************************************************************************\
@@ -362,28 +364,24 @@ void Scd30Show(bool json)
 {
   if (scd30IsDataValid)
   {
-    char humidity[10];
-    dtostrfd(ConvertHumidity(scd30_Humid), Settings.flag2.humidity_resolution, humidity);
-    char temperature[10];
-    dtostrfd(ConvertTemp(scd30_Temp), Settings.flag2.temperature_resolution, temperature);
+    float t = ConvertTemp(scd30_Temp);
+    float h = ConvertHumidity(scd30_Humid);
 
     if (json) {
-      //ResponseAppend_P(PSTR(",\"SCD30\":{\"" D_JSON_CO2 "\":%d,\"" D_JSON_TEMPERATURE "\":%s,\"" D_JSON_HUMIDITY "\":%s}"), scd30_CO2, temperature, humidity);
-      ResponseAppend_P(PSTR(",\"SCD30\":{\"" D_JSON_CO2 "\":%d,\"" D_JSON_ECO2 "\":%d,\"" D_JSON_TEMPERATURE "\":%s,\"" D_JSON_HUMIDITY "\":%s}"),
-        scd30_CO2, scd30_CO2EAvg, temperature, humidity);
+      ResponseAppend_P(PSTR(",\"SCD30\":{\"" D_JSON_CO2 "\":%d,\"" D_JSON_ECO2 "\":%d,"), scd30_CO2, scd30_CO2EAvg);
+      ResponseAppendTHD(t, h);
+      ResponseJsonEnd();
 #ifdef USE_DOMOTICZ
-      if (0 == tele_period)
-      {
+      if (0 == tele_period) {
         DomoticzSensor(DZ_AIRQUALITY, scd30_CO2);
-        DomoticzTempHumSensor(temperature, humidity);
+        DomoticzTempHumPressureSensor(t, h);
       }
 #endif  // USE_DOMOTICZ
 #ifdef USE_WEBSERVER
     } else {
       WSContentSend_PD(HTTP_SNS_CO2EAVG, "SCD30", scd30_CO2EAvg);
       WSContentSend_PD(HTTP_SNS_CO2, "SCD30", scd30_CO2);
-      WSContentSend_PD(HTTP_SNS_TEMP, "SCD30", temperature, TempUnit());
-      WSContentSend_PD(HTTP_SNS_HUM, "SCD30", humidity);
+      WSContentSend_THD("SCD30", t, h);
 #endif  // USE_WEBSERVER
     }
   }

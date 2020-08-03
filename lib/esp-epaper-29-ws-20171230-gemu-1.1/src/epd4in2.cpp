@@ -90,7 +90,7 @@ void Epd42::DisplayInit(int8_t p,int8_t size,int8_t rot,int8_t font) {
   fillScreen(BLACK);
 }
 
-int16_t Epd42::Begin(int16_t cs,int16_t mosi,int16_t sclk) {
+void Epd42::Begin(int16_t cs,int16_t mosi,int16_t sclk) {
   cs_pin=cs;
   mosi_pin=mosi;
   sclk_pin=sclk;
@@ -502,12 +502,15 @@ const unsigned char lut_wb_quick[] PROGMEM =
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-
-
 #define PIN_OUT_SET 0x60000304
 #define PIN_OUT_CLEAR 0x60000308
 
+#ifdef ESP32
+#define SSPI_USEANYPIN 1
+#define PWRITE digitalWrite
+#else
 #define PWRITE ydigitalWrite
+#endif
 
 #ifndef SSPI_USEANYPIN
 // uses about 2.75 usecs, 365 kb /sec
@@ -530,6 +533,7 @@ void ICACHE_RAM_ATTR Epd42::fastSPIwrite(uint8_t d,uint8_t dc) {
 }
 #else
 
+#ifndef ESP32
 extern void ICACHE_RAM_ATTR ydigitalWrite(uint8_t pin, uint8_t val) {
   //stopWaveform(pin);
   if(pin < 16){
@@ -540,6 +544,7 @@ extern void ICACHE_RAM_ATTR ydigitalWrite(uint8_t pin, uint8_t val) {
     else GP16O &= ~1;
   }
 }
+#endif
 // about 13 us => 76 kb / sec
 // can use any pin
 void Epd42::fastSPIwrite(uint8_t d,uint8_t dc) {

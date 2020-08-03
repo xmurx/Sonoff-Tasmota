@@ -236,6 +236,7 @@ uint8_t solaxX1_ParseErrorCode(uint32_t code){
   if (ErrCode.TemperatureOverFault) return 6;
   if (ErrCode.FanFault) return 7;
   if (ErrCode.OtherDeviceFault) return 8;
+  return 0;
 }
 
 /*********************************************************************************************/
@@ -406,10 +407,10 @@ void solaxX1250MSecond(void) // Every Second
 void solaxX1SnsInit(void)
 {
   AddLog_P(LOG_LEVEL_DEBUG, PSTR("SX1: Solax X1 Inverter Init"));
-  DEBUG_SENSOR_LOG(PSTR("SX1: RX pin: %d, TX pin: %d"), pin[GPIO_SOLAXX1_RX], pin[GPIO_SOLAXX1_TX]);
+  DEBUG_SENSOR_LOG(PSTR("SX1: RX pin: %d, TX pin: %d"), Pin(GPIO_SOLAXX1_RX), Pin(GPIO_SOLAXX1_TX));
   protocolStatus.status = 0b00100000; // hasAddress
 
-  solaxX1Serial = new TasmotaSerial(pin[GPIO_SOLAXX1_RX], pin[GPIO_SOLAXX1_TX], 1);
+  solaxX1Serial = new TasmotaSerial(Pin(GPIO_SOLAXX1_RX), Pin(GPIO_SOLAXX1_TX), 1);
   if (solaxX1Serial->begin(SOLAXX1_SPEED)) {
     if (solaxX1Serial->hardwareSerial()) { ClaimSerial(); }
   } else {
@@ -419,7 +420,7 @@ void solaxX1SnsInit(void)
 
 void solaxX1DrvInit(void)
 {
-  if ((pin[GPIO_SOLAXX1_RX] < 99) && (pin[GPIO_SOLAXX1_TX] < 99)) {
+  if (PinUsed(GPIO_SOLAXX1_RX) && PinUsed(GPIO_SOLAXX1_TX)) {
     energy_flg = XNRG_12;
   }
 }

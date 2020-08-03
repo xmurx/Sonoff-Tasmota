@@ -17,9 +17,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//#ifdef ARDUINO_ESP8266_RELEASE_2_3_0
-// Functions not available in 2.3.0
-
 float fmodf(float x, float y)
 {
   // https://github.com/micropython/micropython/blob/master/lib/libm/fmodf.c
@@ -83,7 +80,6 @@ float fmodf(float x, float y)
   ux.i = uxi;
   return ux.f;
 }
-//#endif  // ARDUINO_ESP8266_RELEASE_2_3_0
 
 double FastPrecisePow(double a, double b)
 {
@@ -218,6 +214,7 @@ float cos_52(float x)
     case 2: return -cos_52s(x-(float)f_pi);
     case 3: return  cos_52s((float)f_twopi - x);
   }
+  return 0.0;  // Never reached. Fixes compiler warning
 }
 //
 // The sine is just cosine shifted a half-f_pi, so
@@ -278,6 +275,7 @@ float tan_56(float x)
     case 6: return -1.0f / tan_56s((x-(float)f_threehalfpi)   * (float)f_four_over_pi);
     case 7: return -       tan_56s(((float)f_twopi - x)       * (float)f_four_over_pi);
   }
+  return 0.0;  // Never reached. Fixes compiler warning
 }
 
 // *******************************************************************
@@ -421,4 +419,27 @@ uint16_t changeUIntScale(uint16_t inum, uint16_t ifrom_min, uint16_t ifrom_max,
     result = (((numerator * 2) / (from_max - from_min)) + 1) / 2 + to_min;
   }
   return (uint32_t) (result > to_max ? to_max : (result < to_min ? to_min : result));
+}
+
+// Force a float value between two ranges, and adds or substract the range until we fit
+float ModulusRangef(float f, float a, float b) {
+  if (b <= a) { return a; }       // inconsistent, do what we can
+  float range = b - a;
+  float x = f - a;                // now range of x should be 0..range
+  x = fmodf(x, range);            // actual range is now -range..range
+  if (x < 0.0f) { x += range; }   // actual range is now 0..range
+  return x + a;                   // returns range a..b
+}
+
+// Compute a n-degree polynomial for value x and an array of coefficient (by increasing order)
+// Ex:
+// For factors = { f0, f1, f2, f3 }
+// Returns : f0 + f1 x + f2 x^2, + f3 x^3
+// Internally computed as : f0 + x (f1 + x (f2 + x f3))
+float Polynomialf(const float *factors, uint32_t degree, float x) {
+  float r = 0.0f;
+  for (uint32_t i = degree - 1; i >= 0; i--) {
+    r = r * x + factors[i];
+  }
+  return r;
 }

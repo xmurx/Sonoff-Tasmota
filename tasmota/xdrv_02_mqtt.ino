@@ -123,34 +123,6 @@ void MakeValidMqtt(uint32_t option, char* str)
   }
 }
 
-#ifdef USE_DISCOVERY
-#ifdef MQTT_HOST_DISCOVERY
-void MqttDiscoverServer(void)
-{
-  if (!Wifi.mdns_begun) { return; }
-
-  int n = MDNS.queryService("mqtt", "tcp");  // Search for mqtt service
-
-  AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_MDNS D_QUERY_DONE " %d"), n);
-
-  if (n > 0) {
-    uint32_t i = 0;            // If the hostname isn't set, use the first record found.
-#ifdef MDNS_HOSTNAME
-    for (i = n; i > 0; i--) {  // Search from last to first and use first if not found
-      if (!strcmp(MDNS.hostname(i).c_str(), MDNS_HOSTNAME)) {
-        break;                 // Stop at matching record
-      }
-    }
-#endif  // MDNS_HOSTNAME
-    SettingsUpdateText(SET_MQTT_HOST, MDNS.IP(i).toString().c_str());
-    Settings.mqtt_port = MDNS.port(i);
-
-    AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_MDNS D_MQTT_SERVICE_FOUND " %s, " D_IP_ADDRESS " %s, " D_PORT " %d"), MDNS.hostname(i).c_str(), SettingsText(SET_MQTT_HOST), Settings.mqtt_port);
-  }
-}
-#endif  // MQTT_HOST_DISCOVERY
-#endif  // USE_DISCOVERY
-
 /*********************************************************************************************\
  * MQTT driver specific code need to provide the following functions:
  *
@@ -164,7 +136,7 @@ void MqttDiscoverServer(void)
 
 // Max message size calculated by PubSubClient is (MQTT_MAX_PACKET_SIZE < 5 + 2 + strlen(topic) + plength)
 #if (MQTT_MAX_PACKET_SIZE -TOPSZ -7) < MIN_MESSZ  // If the max message size is too small, throw an error at compile time. See PubSubClient.cpp line 359
-  #error "MQTT_MAX_PACKET_SIZE is too small in libraries/PubSubClient/src/PubSubClient.h, increase it to at least 1000"
+  #error "MQTT_MAX_PACKET_SIZE is too small in libraries/PubSubClient/src/PubSubClient.h, increase it to at least 1200"
 #endif
 
 #ifdef USE_MQTT_TLS
@@ -314,7 +286,7 @@ void MqttPublish(const char* topic, bool retained)
   ShowFreeMem(PSTR("MqttPublish"));
 #endif
 
-#if defined(USE_MQTT_TLS) && defined(USE_MQTT_AWS_IOT)
+#if defined(USE_MQTT_TLS) && defined(USE_MQTT_AWS_IOT) || defined(MQTT_NO_RETAIN)
 //  if (retained) {
 //    AddLog_P(LOG_LEVEL_INFO, S_LOG_MQTT, PSTR("Retained are not supported by AWS IoT, using retained = false."));
 //  }
@@ -374,7 +346,7 @@ void MqttPublishPrefixTopic_P(uint32_t prefix, const char* subtopic, bool retain
   MqttPublish(stopic, retained);
 
 #ifdef USE_MQTT_AWS_IOT
-  if ((prefix > 0) && (Settings.flag4.awsiot_shadow)) {    // placeholder for SetOptionXX
+  if ((prefix > 0) && (Settings.flag4.awsiot_shadow) && (Mqtt.connected)) {    // placeholder for SetOptionXX
     // compute the target topic
     char *topic = SettingsText(SET_MQTT_TOPIC);
     char topic2[strlen(topic)+1];       // save buffer onto stack
@@ -398,7 +370,7 @@ void MqttPublishPrefixTopic_P(uint32_t prefix, const char* subtopic, bool retain
     free(mqtt_save);
 
     bool result = MqttClient.publish(romram, mqtt_data, false);
-    AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_MQTT "Updated shadow: %s"), romram);
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR(D_LOG_MQTT "Updated shadow: %s"), romram);
     yield();  // #3313
   }
 #endif // USE_MQTT_AWS_IOT
@@ -409,10 +381,20 @@ void MqttPublishPrefixTopic_P(uint32_t prefix, const char* subtopic)
   MqttPublishPrefixTopic_P(prefix, subtopic, false);
 }
 
+void MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic, bool retained)
+{
+  MqttPublishPrefixTopic_P(prefix, subtopic, retained);
+  XdrvRulesProcess();
+}
+
+void MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic)
+{
+  MqttPublishPrefixTopicRulesProcess_P(prefix, subtopic, false);
+}
+
 void MqttPublishTeleSensor(void)
 {
-  MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_SENSOR), Settings.flag.mqtt_sensor_retain);  // CMND_SENSORRETAIN
-  XdrvRulesProcess();
+  MqttPublishPrefixTopicRulesProcess_P(TELE, PSTR(D_RSLT_SENSOR), Settings.flag.mqtt_sensor_retain);  // CMND_SENSORRETAIN
 }
 
 void MqttPublishPowerState(uint32_t device)
@@ -440,9 +422,11 @@ void MqttPublishPowerState(uint32_t device)
     Response_P(S_JSON_COMMAND_SVALUE, scommand, GetStateText(bitRead(power, device -1)));
     MqttPublish(stopic);
 
-    GetTopic_P(stopic, STAT, mqtt_topic, scommand);
-    Response_P(GetStateText(bitRead(power, device -1)));
-    MqttPublish(stopic, Settings.flag.mqtt_power_retain);  // CMND_POWERRETAIN
+    if (!Settings.flag4.only_json_message) {  // SetOption90 - Disable non-json MQTT response
+      GetTopic_P(stopic, STAT, mqtt_topic, scommand);
+      Response_P(GetStateText(bitRead(power, device -1)));
+      MqttPublish(stopic, Settings.flag.mqtt_power_retain);  // CMND_POWERRETAIN
+    }
 #ifdef USE_SONOFF_IFAN
   }
 #endif  // USE_SONOFF_IFAN
@@ -503,15 +487,23 @@ void MqttConnected(void)
     Response_P(PSTR(D_ONLINE));
     MqttPublish(stopic, true);
 
-    // Satisfy iobroker (#299)
-    mqtt_data[0] = '\0';
-    MqttPublishPrefixTopic_P(CMND, S_RSLT_POWER);
+    if (!Settings.flag4.only_json_message) {  // SetOption90 - Disable non-json MQTT response
+      // Satisfy iobroker (#299)
+      mqtt_data[0] = '\0';
+      MqttPublishPrefixTopic_P(CMND, S_RSLT_POWER);
+    }
 
     GetTopic_P(stopic, CMND, mqtt_topic, PSTR("#"));
     MqttSubscribe(stopic);
     if (strstr_P(SettingsText(SET_MQTT_FULLTOPIC), MQTT_TOKEN_TOPIC) != nullptr) {
-      GetGroupTopic_P(stopic, PSTR("#"));  // SetOption75 0: %prefix%/nothing/%topic% = cmnd/nothing/<grouptopic>/# or SetOption75 1: cmnd/<grouptopic>
-      MqttSubscribe(stopic);
+      uint32_t real_index = SET_MQTT_GRP_TOPIC;
+      for (uint32_t i = 0; i < MAX_GROUP_TOPICS; i++) {
+        if (1 == i) { real_index = SET_MQTT_GRP_TOPIC2 -1; }
+        if (strlen(SettingsText(real_index +i))) {
+          GetGroupTopic_P(stopic, PSTR("#"), real_index +i);  // SetOption75 0: %prefix%/nothing/%topic% = cmnd/nothing/<grouptopic>/# or SetOption75 1: cmnd/<grouptopic>
+          MqttSubscribe(stopic);
+        }
+      }
       GetFallbackTopic_P(stopic, PSTR("#"));
       MqttSubscribe(stopic);
     }
@@ -520,30 +512,33 @@ void MqttConnected(void)
   }
 
   if (Mqtt.initial_connection_state) {
-    char stopic2[TOPSZ];
-    Response_P(PSTR("{\"" D_CMND_MODULE "\":\"%s\",\"" D_JSON_VERSION "\":\"%s%s\",\"" D_JSON_FALLBACKTOPIC "\":\"%s\",\"" D_CMND_GROUPTOPIC "\":\"%s\"}"),
-      ModuleName().c_str(), my_version, my_image, GetFallbackTopic_P(stopic, ""), GetGroupTopic_P(stopic2, ""));
-    MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "1"));
+    if (ResetReason() != REASON_DEEP_SLEEP_AWAKE) {
+      char stopic2[TOPSZ];
+      Response_P(PSTR("{\"" D_CMND_MODULE "\":\"%s\",\"" D_JSON_VERSION "\":\"%s%s\",\"" D_JSON_FALLBACKTOPIC "\":\"%s\",\"" D_CMND_GROUPTOPIC "\":\"%s\"}"),
+        ModuleName().c_str(), my_version, my_image, GetFallbackTopic_P(stopic, ""), GetGroupTopic_P(stopic2, "", SET_MQTT_GRP_TOPIC));
+      MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "1"));
 #ifdef USE_WEBSERVER
-    if (Settings.webserver) {
+      if (Settings.webserver) {
 #if LWIP_IPV6
-      Response_P(PSTR("{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\",\"IPv6Address\":\"%s\"}"),
-        (2 == Settings.webserver) ? D_ADMIN : D_USER, my_hostname, WiFi.localIP().toString().c_str(),WifiGetIPv6().c_str());
+        Response_P(PSTR("{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\",\"IPv6Address\":\"%s\"}"),
+          (2 == Settings.webserver) ? D_ADMIN : D_USER, NetworkHostname(), NetworkAddress().toString().c_str(), WifiGetIPv6().c_str());
 #else
-      Response_P(PSTR("{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\"}"),
-        (2 == Settings.webserver) ? D_ADMIN : D_USER, my_hostname, WiFi.localIP().toString().c_str());
+        Response_P(PSTR("{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\"}"),
+          (2 == Settings.webserver) ? D_ADMIN : D_USER, NetworkHostname(), NetworkAddress().toString().c_str());
 #endif // LWIP_IPV6 = 1
-      MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "2"));
-    }
+        MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "2"));
+      }
 #endif  // USE_WEBSERVER
-    Response_P(PSTR("{\"" D_JSON_RESTARTREASON "\":"));
-    if (CrashFlag()) {
-      CrashDump();
-    } else {
-      ResponseAppend_P(PSTR("\"%s\""), GetResetReason().c_str());
+      Response_P(PSTR("{\"" D_JSON_RESTARTREASON "\":"));
+      if (CrashFlag()) {
+        CrashDump();
+      } else {
+        ResponseAppend_P(PSTR("\"%s\""), GetResetReason().c_str());
+      }
+      ResponseJsonEnd();
+      MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "3"));
     }
-    ResponseJsonEnd();
-    MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "3"));
+
     MqttPublishAllPowerState();
     if (Settings.tele_period) {
       tele_period = Settings.tele_period -5;  // Enable TelePeriod in 5 seconds
@@ -652,6 +647,8 @@ void MqttReconnect(void)
       AddLog_P(LOG_LEVEL_INFO, S_LOG_MQTT, PSTR("MFLN not supported by TLS server"));
     }
 #ifndef USE_MQTT_TLS_CA_CERT  // don't bother with fingerprints if using CA validation
+// **** Start patch Castellucci
+/*
     // create a printable version of the fingerprint received
     char buf_fingerprint[64];
     ToHex_P((unsigned char *)tlsClient->getRecvPubKeyFingerprint(), 20, buf_fingerprint, sizeof(buf_fingerprint), ' ');
@@ -680,6 +677,35 @@ void MqttReconnect(void)
         SettingsSaveAll();  // save settings
       }
     }
+*/
+    const uint8_t *recv_fingerprint = tlsClient->getRecvPubKeyFingerprint();
+    // create a printable version of the fingerprint received
+    char buf_fingerprint[64];
+    ToHex_P(recv_fingerprint, 20, buf_fingerprint, sizeof(buf_fingerprint), ' ');
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR(D_LOG_MQTT "Server fingerprint: %s"), buf_fingerprint);
+
+    bool learned = false;
+
+    // If the fingerprint slot is marked for update, we'll do so.
+    // Otherwise, if the fingerprint slot had the magic trust-on-first-use
+    // value, we will save the current fingerprint there, but only if the other fingerprint slot
+    // *didn't* match it.
+    if (recv_fingerprint[20] & 0x1 || (learn_fingerprint1 && 0 != memcmp(recv_fingerprint, Settings.mqtt_fingerprint[1], 20))) {
+      memcpy(Settings.mqtt_fingerprint[0], recv_fingerprint, 20);
+      learned = true;
+    }
+    // As above, but for the other slot.
+    if (recv_fingerprint[20] & 0x2 || (learn_fingerprint2 && 0 != memcmp(recv_fingerprint, Settings.mqtt_fingerprint[0], 20))) {
+      memcpy(Settings.mqtt_fingerprint[1], recv_fingerprint, 20);
+      learned = true;
+    }
+
+    if (learned) {
+      AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_MQTT "Fingerprint learned: %s"), buf_fingerprint);
+
+      SettingsSaveAll();  // save settings
+    }
+// **** End patch Castellucci
 #endif // !USE_MQTT_TLS_CA_CERT
 #endif // USE_MQTT_TLS
     MqttConnected();
@@ -710,6 +736,16 @@ void MqttCheck(void)
       MqttReconnect();
     }
   }
+}
+
+bool KeyTopicActive(uint32_t key)
+{
+  // key = 0 - Button topic
+  // key = 1 - Switch topic
+  key &= 1;
+  char key_topic[TOPSZ];
+  Format(key_topic, SettingsText(SET_MQTT_BUTTON_TOPIC + key), sizeof(key_topic));
+  return ((strlen(key_topic) != 0) && strcmp(key_topic, "0"));
 }
 
 /*********************************************************************************************\
@@ -871,13 +907,52 @@ void CmndPublish(void)
 
 void CmndGroupTopic(void)
 {
-  if (XdrvMailbox.data_len > 0) {
-    MakeValidMqtt(0, XdrvMailbox.data);
-    if (!strcmp(XdrvMailbox.data, mqtt_client)) { SetShortcutDefault(); }
-    SettingsUpdateText(SET_MQTT_GRP_TOPIC, (SC_DEFAULT == Shortcut()) ? MQTT_GRPTOPIC : XdrvMailbox.data);
-    restart_flag = 2;
+  if ((XdrvMailbox.index > 0) && (XdrvMailbox.index <= MAX_GROUP_TOPICS)) {
+    if (XdrvMailbox.data_len > 0) {
+      uint32_t settings_text_index = (1 == XdrvMailbox.index) ? SET_MQTT_GRP_TOPIC : SET_MQTT_GRP_TOPIC2 + XdrvMailbox.index - 2;
+      MakeValidMqtt(0, XdrvMailbox.data);
+      if (!strcmp(XdrvMailbox.data, mqtt_client)) { SetShortcutDefault(); }
+      SettingsUpdateText(settings_text_index, (SC_CLEAR == Shortcut()) ? "" : (SC_DEFAULT == Shortcut()) ? MQTT_GRPTOPIC : XdrvMailbox.data);
+
+      // Eliminate duplicates, have at least one and fill from index 1
+      char stemp[MAX_GROUP_TOPICS][TOPSZ];
+      uint32_t read_index = 0;
+      uint32_t real_index = SET_MQTT_GRP_TOPIC;
+      for (uint32_t i = 0; i < MAX_GROUP_TOPICS; i++) {
+        if (1 == i) { real_index = SET_MQTT_GRP_TOPIC2 -1; }
+        if (strlen(SettingsText(real_index +i))) {
+          bool not_equal = true;
+          for (uint32_t j = 0; j < read_index; j++) {
+            if (!strcmp(SettingsText(real_index +i), stemp[j])) {  // Topics are case-sensitive
+              not_equal = false;
+            }
+          }
+          if (not_equal) {
+            strncpy(stemp[read_index], SettingsText(real_index +i), sizeof(stemp[read_index]));
+            read_index++;
+          }
+        }
+      }
+      if (0 == read_index) {
+        SettingsUpdateText(SET_MQTT_GRP_TOPIC, MQTT_GRPTOPIC);
+      } else {
+        uint32_t write_index = 0;
+        uint32_t real_index = SET_MQTT_GRP_TOPIC;
+        for (uint32_t i = 0; i < MAX_GROUP_TOPICS; i++) {
+          if (1 == i) { real_index = SET_MQTT_GRP_TOPIC2 -1; }
+          if (write_index < read_index) {
+            SettingsUpdateText(real_index +i, stemp[write_index]);
+            write_index++;
+          } else {
+            SettingsUpdateText(real_index +i, "");
+          }
+        }
+      }
+
+      restart_flag = 2;
+    }
+    ResponseCmndAll(SET_MQTT_GRP_TOPIC, MAX_GROUP_TOPICS);
   }
-  ResponseCmndChar(SettingsText(SET_MQTT_GRP_TOPIC));
 }
 
 void CmndTopic(void)
@@ -966,6 +1041,9 @@ void CmndPowerRetain(void)
       }
     }
     Settings.flag.mqtt_power_retain = XdrvMailbox.payload;     // CMND_POWERRETAIN
+    if (Settings.flag.mqtt_power_retain) {
+      Settings.flag4.only_json_message = 0;                    // SetOption90 - Disable non-json MQTT response
+    }
   }
   ResponseCmndStateText(Settings.flag.mqtt_power_retain);      // CMND_POWERRETAIN
 }
@@ -1149,11 +1227,7 @@ void CmndTlsDump(void) {
   uint32_t end   = start + tls_block_len -1;
   for (uint32_t pos = start; pos < end; pos += 0x10) {
     uint32_t* values = (uint32_t*)(pos);
-#ifdef ARDUINO_ESP8266_RELEASE_2_3_0
-    Serial.printf("%08x:  %08x %08x %08x %08x\n", pos, bswap32(values[0]), bswap32(values[1]), bswap32(values[2]), bswap32(values[3]));
-#else
     Serial.printf_P(PSTR("%08x:  %08x %08x %08x %08x\n"), pos, bswap32(values[0]), bswap32(values[1]), bswap32(values[2]), bswap32(values[3]));
-#endif
   }
 }
 #endif  // DEBUG_DUMP_TLS
@@ -1175,14 +1249,14 @@ const char HTTP_BTN_MENU_MQTT[] PROGMEM =
 const char HTTP_FORM_MQTT1[] PROGMEM =
   "<fieldset><legend><b>&nbsp;" D_MQTT_PARAMETERS "&nbsp;</b></legend>"
   "<form method='get' action='" WEB_HANDLE_MQTT "'>"
-  "<p><b>" D_HOST "</b> (" MQTT_HOST ")<br><input id='mh' placeholder='" MQTT_HOST" ' value='%s'></p>"
+  "<p><b>" D_HOST "</b> (" MQTT_HOST ")<br><input id='mh' placeholder=\"" MQTT_HOST "\" value=\"%s\"></p>"
   "<p><b>" D_PORT "</b> (" STR(MQTT_PORT) ")<br><input id='ml' placeholder='" STR(MQTT_PORT) "' value='%d'></p>"
-  "<p><b>" D_CLIENT "</b> (%s)<br><input id='mc' placeholder='%s' value='%s'></p>";
+  "<p><b>" D_CLIENT "</b> (%s)<br><input id='mc' placeholder=\"%s\" value=\"%s\"></p>";
 const char HTTP_FORM_MQTT2[] PROGMEM =
-  "<p><b>" D_USER "</b> (" MQTT_USER ")<br><input id='mu' placeholder='" MQTT_USER "' value='%s'></p>"
-  "<p><b>" D_PASSWORD "</b><input type='checkbox' onclick='sp(\"mp\")'><br><input id='mp' type='password' placeholder='" D_PASSWORD "' value='" D_ASTERISK_PWD "'></p>"
-  "<p><b>" D_TOPIC "</b> = %%topic%% (%s)<br><input id='mt' placeholder='%s' value='%s'></p>"
-  "<p><b>" D_FULL_TOPIC "</b> (%s)<br><input id='mf' placeholder='%s' value='%s'></p>";
+  "<p><b>" D_USER "</b> (" MQTT_USER ")<br><input id='mu' placeholder=\"" MQTT_USER "\" value=\"%s\"></p>"
+  "<p><label><b>" D_PASSWORD "</b><input type='checkbox' onclick='sp(\"mp\")'></label><br><input id='mp' type='password' placeholder=\"" D_PASSWORD "\" value=\"" D_ASTERISK_PWD "\"></p>"
+  "<p><b>" D_TOPIC "</b> = %%topic%% (%s)<br><input id='mt' placeholder=\"%s\" value=\"%s\"></p>"
+  "<p><b>" D_FULL_TOPIC "</b> (%s)<br><input id='mf' placeholder=\"%s\" value=\"%s\"></p>";
 
 void HandleMqttConfiguration(void)
 {
@@ -1190,7 +1264,7 @@ void HandleMqttConfiguration(void)
 
   AddLog_P(LOG_LEVEL_DEBUG, S_LOG_HTTP, S_CONFIGURE_MQTT);
 
-  if (WebServer->hasArg("save")) {
+  if (Webserver->hasArg("save")) {
     MqttSaveSettings();
     WebRestart(1);
     return;
@@ -1272,7 +1346,7 @@ bool Xdrv02(uint8_t function)
         WSContentSend_P(HTTP_BTN_MENU_MQTT);
         break;
       case FUNC_WEB_ADD_HANDLER:
-        WebServer->on("/" WEB_HANDLE_MQTT, HandleMqttConfiguration);
+        Webserver->on("/" WEB_HANDLE_MQTT, HandleMqttConfiguration);
         break;
 #endif  // USE_WEBSERVER
       case FUNC_COMMAND:

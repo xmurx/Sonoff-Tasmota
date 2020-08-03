@@ -205,19 +205,19 @@ void ExsSendCmd(uint8_t cmd, uint8_t value)
   ExsSerialSend(buffer, len);
 }
 
-uint8_t ExsSetPower(uint8_t device, uint8_t power)
+void ExsSetPower(uint8_t device, uint8_t power)
 {
   Exs.dimmer.channel[device].dimm = power;
   ExsSendCmd(EXS_DIMM_1_ON + 0x10 * device + power ^ 1, 0);
 }
 
-uint8_t ExsSetBri(uint8_t device, uint8_t bri)
+void ExsSetBri(uint8_t device, uint8_t bri)
 {
   Exs.dimmer.channel[device].bright_tbl = bri;
   ExsSendCmd(EXS_DIMM_1_TBL + 0x10 * device, bri);
 }
 
-uint8_t ExsSyncState(uint8_t device)
+void ExsSyncState(uint8_t device)
 {
 #ifdef EXS_DEBUG
   AddLog_P2(LOG_LEVEL_DEBUG, PSTR("EXS: Channel %d Power Want %d, Is %d"),
@@ -249,6 +249,7 @@ bool ExsSyncState()
 
   ExsSyncState(0);
   ExsSyncState(1);
+  return true;
 }
 
 void ExsDebugState()
@@ -395,11 +396,11 @@ void EsxMcuStart(void)
   int retries = 3;
 
 #ifdef EXS_DEBUG
-  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("EXS: Request MCU configuration, PIN %d to Low"), pin[GPIO_EXS_ENABLE]);
+  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("EXS: Request MCU configuration, PIN %d to Low"), Pin(GPIO_EXS_ENABLE));
 #endif
 
-  pinMode(pin[GPIO_EXS_ENABLE], OUTPUT);
-  digitalWrite(pin[GPIO_EXS_ENABLE], LOW);
+  pinMode(Pin(GPIO_EXS_ENABLE), OUTPUT);
+  digitalWrite(Pin(GPIO_EXS_ENABLE), LOW);
 
   delay(1); // wait 1ms fot the MCU to come online
 
@@ -413,13 +414,13 @@ void EsxMcuStart(void)
 void ExsInit(void)
 {
 #ifdef EXS_DEBUG
-  AddLog_P2(LOG_LEVEL_INFO, PSTR("EXS: Starting Tx %d Rx %d"), pin[GPIO_TXD], pin[GPIO_RXD]);
+  AddLog_P2(LOG_LEVEL_INFO, PSTR("EXS: Starting Tx %d Rx %d"), Pin(GPIO_TXD), Pin(GPIO_RXD));
 #endif
 
   Exs.buffer = (uint8_t *)malloc(EXS_BUFFER_SIZE);
   if (Exs.buffer != nullptr)
   {
-    ExsSerial = new TasmotaSerial(pin[GPIO_RXD], pin[GPIO_TXD], 2);
+    ExsSerial = new TasmotaSerial(Pin(GPIO_RXD), Pin(GPIO_TXD), 2);
     if (ExsSerial->begin(9600))
     {
       if (ExsSerial->hardwareSerial())
