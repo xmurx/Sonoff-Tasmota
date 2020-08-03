@@ -563,6 +563,13 @@ boolean Adafruit_SSD1306::begin(uint8_t vcs, uint8_t addr, boolean reset,
       SSD1306_SETCONTRAST };              // 0x81
     ssd1306_commandList(init4c, sizeof(init4c));
     ssd1306_command1((vccstate == SSD1306_EXTERNALVCC) ? 0x10 : 0xAF);
+  } else if((WIDTH == 64) && (HEIGHT == 48)) {
+    static const uint8_t PROGMEM init4d[] = {
+      SSD1306_SETCOMPINS,                 // 0xDA
+      0x12,
+      SSD1306_SETCONTRAST };              // 0x81
+    ssd1306_commandList(init4d, sizeof(init4d));
+    ssd1306_command1((vccstate == SSD1306_EXTERNALVCC) ? 0x9F : 0xCF);
   } else {
     // Other screen varieties -- TBD
   }
@@ -583,6 +590,22 @@ boolean Adafruit_SSD1306::begin(uint8_t vcs, uint8_t addr, boolean reset,
   return true; // Success
 }
 
+
+void Adafruit_SSD1306::DisplayInit(int8_t p,int8_t size,int8_t rot,int8_t font) {
+// ignore update mode
+  //if (p==DISPLAY_INIT_MODE) {
+    setRotation(rot);
+    invertDisplay(false);
+    setTextWrap(false);         // Allow text to run off edges
+    cp437(true);
+    setTextFont(font);
+    setTextSize(size);
+    setTextColor(WHITE,BLACK);
+    setCursor(0,0);
+    fillScreen(BLACK);
+    Updateframe();
+  //}
+}
 
 #if 0
 
@@ -893,15 +916,22 @@ uint8_t *Adafruit_SSD1306::getBuffer(void) {
             of graphics commands, as best needed by one's own application.
 */
 void Adafruit_SSD1306::display(void) {
+  int16_t col_start = 0;
+  int16_t col_end = WIDTH - 1;
+  if ((64 == WIDTH) && (48 == HEIGHT)) {    // for 64x48, we need to shift by 32 in both directions
+    col_start += 32;
+    col_end += 32;
+  }
+
   TRANSACTION_START
   static const uint8_t PROGMEM dlist1[] = {
     SSD1306_PAGEADDR,
     0,                         // Page start address
     0xFF,                      // Page end (not really, but works here)
-    SSD1306_COLUMNADDR,
-    0 };                       // Column start address
+    SSD1306_COLUMNADDR };
   ssd1306_commandList(dlist1, sizeof(dlist1));
-  ssd1306_command1(WIDTH - 1); // Column end address
+  ssd1306_command1(col_start); // Column start address
+  ssd1306_command1(col_end); // Column end address
 
 #if defined(ESP8266)
   // ESP8266 needs a periodic yield() call to avoid watchdog reset.

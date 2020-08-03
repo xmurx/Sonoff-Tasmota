@@ -32,8 +32,18 @@
 #define DISABLE_RESTORE_BUTTON    1 // [Default 0] Set to 1 to disable the "restore defaults" button in the web ui.
 
 // These values normally don't need adjustment
-#define MULTICAST_PORT            3671 // [Default 3671]
+#ifndef MULTICAST_IP
 #define MULTICAST_IP              IPAddress(224, 0, 23, 12) // [Default IPAddress(224, 0, 23, 12)]
+#else
+#warning USING CUSTOM MULTICAST_IP
+#endif
+
+#ifndef MULTICAST_PORT
+#define MULTICAST_PORT            3671 // [Default 3671]
+#else
+#warning USING CUSTOM MULTICAST_PORT
+#endif
+
 #define SEND_CHECKSUM             0
 
 // Uncomment to enable printing out debug messages.
@@ -260,7 +270,8 @@ typedef struct __cemi_msg
   uint8_t additional_info_len;
   union
   {
-    cemi_addi_t additional_info[];
+//    cemi_addi_t additional_info[];   // Errors in GCC 10.1
+    cemi_addi_t additional_info[10];   // Changed to arbitrary number to fix compilation
     cemi_service_t service_information;
   } data;
 } cemi_msg_t;
@@ -386,6 +397,9 @@ typedef struct __callback_assignment
   address_t address;
   callback_id_t callback_id;
 } callback_assignment_t;
+
+// FastPrecisePowf from tasmota/support_float.ino
+//extern float FastPrecisePowf(const float x, const float y);
 
 class ESPKNXIP {
   public:
@@ -553,6 +567,8 @@ class ESPKNXIP {
 
     callback_assignment_id_t __callback_register_assignment(address_t address, callback_id_t id);
     void __callback_delete_assignment(callback_assignment_id_t id);
+
+    //static inline float pow(float a, float b) { return FastPrecisePowf(a, b); }
 
     ESP8266WebServer *server;
     address_t physaddr;

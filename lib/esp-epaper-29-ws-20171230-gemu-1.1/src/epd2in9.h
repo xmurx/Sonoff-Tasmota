@@ -68,8 +68,8 @@ public:
     int16_t width;
     int16_t height;
 
-    Epd();
-    ~Epd();
+//    Epd();
+//    ~Epd();
     int  Init(const unsigned char* lut);
     void Init(int8_t p);
     void SendCommand(unsigned char command);
@@ -91,7 +91,7 @@ public:
 
     void DisplayOnff(int8_t on);
     void DisplayInit(int8_t p,int8_t size,int8_t rot,int8_t font);
-    int16_t Begin(int16_t p1,int16_t p2,int16_t p3);
+    void Begin(int16_t p1,int16_t p2,int16_t p3);
     void Updateframe();
 
 private:
