@@ -115,7 +115,7 @@ namespace xControl
             _stateControl->StartDelay(2000);
           
           String temperature(_data.Temperature());
-          temperature += (char)247;
+          temperature += (char)248;
           temperature += "C";
 
           _icon = xControl::Temperature();
