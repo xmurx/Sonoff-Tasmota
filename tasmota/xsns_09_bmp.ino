@@ -19,6 +19,7 @@
 
 #ifdef USE_I2C
 #ifdef USE_BMP
+
 /*********************************************************************************************\
  * BMP085, BMP180, BMP280, BME280, BME680 - Pressure, Temperature, Humidity (BME280/BME680) and gas (BME680)
  *

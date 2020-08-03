@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-#include "sonoff.h"
+#include "tasmota.h"
 #include "logging.h"
 #include "x_support.h"
 
