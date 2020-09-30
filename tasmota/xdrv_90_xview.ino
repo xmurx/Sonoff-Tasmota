@@ -12,7 +12,6 @@
 \*********************************************************************************************/
 
 #define XDRV_90 90
-
 namespace xControl
 {
   const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 120;
