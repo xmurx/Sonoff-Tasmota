@@ -28,3 +28,4 @@ platformio_tasmota_cenv.ini
 *.bak
 *.code-workspace
 lib/xControl-0.0.1/cov_xml.xml
+/putty.log

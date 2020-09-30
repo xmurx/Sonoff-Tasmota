@@ -1,4 +1,5 @@
 #include "level.h"
+#include "logging.h"
 
 namespace xControl
 {
@@ -34,7 +35,8 @@ namespace xControl
 
   void Level::Show()
   {
-    if(_lastLevel != _level)                                      
+//    if(_lastLevel != _level)                                      
+    //Logging::Debug("Level::Show() - level: %d, last level: %d", _level, _lastLevel);
     {
       enum{width=128, height=32};
       _lastLevel = _level;
