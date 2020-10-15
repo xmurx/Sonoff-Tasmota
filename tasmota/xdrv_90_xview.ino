@@ -63,6 +63,19 @@ bool Xdrv90(uint8_t function)
     case FUNC_INIT:
     {
       view.Init(renderer, &xControl::stateControl, Settings.display_width, Settings.display_height);
+
+      //check settings strings for telegram
+      const char* token = SettingsText(SET_TELEGRAM_TOKEN);
+      if(strlen(token) == 0)
+      {
+        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("xview: setting telegram token invalid... set new token"));
+        const char* newToken = "1051397850:AAGZUAx4Dby6QdZriTyLwU73fo05dE0xdhQ";
+        SettingsUpdateText(SET_TELEGRAM_TOKEN, newToken);
+      }
+      else
+      {
+        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("xview: setting telegram token valid token: %s"), token);
+      }
       break;
     }
     case FUNC_EVERY_250_MSECOND:
