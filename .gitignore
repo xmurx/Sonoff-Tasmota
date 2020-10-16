@@ -4,8 +4,8 @@
 *.pyc
 
 ## Project files ######
-.pioenvs
-.piolibdeps
+.platformio
+.pio
 .clang_complete
 .gcc-flags.json
 .cache

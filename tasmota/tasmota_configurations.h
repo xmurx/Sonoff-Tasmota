@@ -113,6 +113,7 @@
 //#define USE_SPS30                                // Enable Sensiron SPS30 particle sensor (I2C address 0x69) (+1.7 code)
 #define USE_ADE7953                              // Enable ADE7953 Energy monitor as used on Shelly 2.5 (I2C address 0x38) (+1k5)
 //#define USE_VL53L0X                              // Enable VL53L0x time of flight sensor (I2C address 0x29) (+4k code)
+//#define USE_VL53L1X                              // Enable support for VL53L1X sensor (I2C address 0x29) using Pololu VL53L1X library (+2k9 code)
 //#define USE_MLX90614                             // Enable MLX90614 ir temp sensor (I2C address 0x5a) (+0.6k code)
 //#define USE_CHIRP                                // Enable CHIRP soil moisture sensor (variable I2C address, default 0x20)
 //#define USE_PAJ7620                              // Enable PAJ7620 gesture sensor (I2C address 0x73) (+2.5k code)
@@ -120,7 +121,8 @@
 #define USE_HIH6                                 // Enable Honywell HIH Humidity and Temperature sensor (I2C address 0x27) (+0k6)
 #define USE_DHT12                                // Add I2C code for DHT12 temperature and humidity sensor (+0k7 code)
 #define USE_DS1624                               // Add I2C code for DS1624, DS1621 sensor
-//#define USE_AHT1x                                // Enable AHT10/15 humidity and temperature sensor (I2C address 0x38) (+0k8 code)
+//#define USE_AHT1x                                // Enable AHT10/15 humidity and temperature sensor (I2C address 0x38, 0x39) (+0k8 code)
+//  #define USE_AHT2x                                // Enable AHT20 instead of AHT1x humidity and temperature sensor (I2C address 0x38) (+0k8 code) (I2C address 0x38) (+0k8 code)
 #define USE_WEMOS_MOTOR_V1                       // Enable Wemos motor driver V1 (I2C addresses 0x2D - 0x30) (+0k7 code)
   #define WEMOS_MOTOR_V1_ADDR  0x30              // Default I2C address 0x30
   #define WEMOS_MOTOR_V1_FREQ  1000              // Default frequency
@@ -140,6 +142,8 @@
   //#define PMS_MODEL_PMS3003                      // Enable support of PMS3003 instead of PMS5003/PMS7003 (needs the USE_PMS5003 above)
 #define USE_NOVA_SDS                             // Add support for SDS011 and SDS021 particle concentration sensor (+0k7 code)
 #define USE_HPMA                                 // Add support for Honeywell HPMA115S0 particle concentration sensor
+#define USE_SR04                                 // Add support for HC-SR04 ultrasonic devices (+1k code)
+//#define USE_DYP                                  // Add support for DYP ME-007 ultrasonic distance sensor, serial port version (+0k5 code)
 #define USE_SERIAL_BRIDGE                        // Add support for software Serial Bridge (+0k8 code)
 #define USE_MP3_PLAYER                           // Use of the DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
   #define MP3_VOLUME           10                // Set the startup volume on init, the range can be 0..30(max)
@@ -154,6 +158,7 @@
 #define USE_HRXL                                 // Add support for MaxBotix HRXL-MaxSonar ultrasonic range finders (+0k7)
 //#define USE_TASMOTA_CLIENT                       // Add support for Arduino Uno/Pro Mini via serial interface including flashing (+2k3 code, 44 mem)
 //#define USE_OPENTHERM                            // Add support for OpenTherm (+15k code)
+//#define USE_MIEL_HVAC                            // Add support for Mitsubishi Electric HVAC serial interface (+5k code)
 //#define USE_MCP9808                            // Add support for MCP9808 temperature sensor (+0k9 code)
 //#define USE_HP303B                             // Add support for HP303B temperature and pressure sensor (I2C address 0x76 or 0x77) (+6k2 code)
 
@@ -169,6 +174,7 @@
 //#define USE_SOLAX_X1                             // Add support for Solax X1 series Modbus log info (+3k1 code)
 //#define USE_LE01MR                               // Add support for F&F LE-01MR modbus energy meter (+2k code)
 //#define USE_TELEINFO                             // Add support for French Energy Provider metering telemetry (+5k2 code, +168 RAM + SmartMeter LinkedList Values RAM)
+//#define USE_WE517                                // Add support for Orno WE517-Modbus energy monitor (+1k code)
 
 #define USE_DHT                                  // Add support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor
 #define USE_MAX31855                             // Add support for MAX31855 K-Type thermocouple sensor using softSPI
@@ -177,7 +183,6 @@
   #define USE_IR_RECEIVE                         // Support for IR receiver (+5k5 code, 264 iram)
 
 #define USE_LMT01                                // Add support for TI LMT01 temperature sensor, count pulses on single GPIO (+0k5 code)
-#define USE_SR04                                 // Add support for HC-SR04 ultrasonic devices (+1k code)
 #define USE_TM1638                               // Add support for TM1638 switches copying Switch1 .. Switch8 (+1k code)
 #define USE_HX711                                // Add support for HX711 load cell (+1k5 code)
 //#define USE_HX711_GUI                            // Add optional web GUI to HX711 as scale (+1k8 code)
@@ -267,6 +272,8 @@
   #undef USE_SOLAX_X1                            // Disable support for Solax X1 series Modbus log info (+3k1 code)
   #undef USE_LE01MR                              // Disable support for F&F LE-01MR Modbus energy meter (+2k code)
   #undef USE_TELEINFO                            // Disable support for French Energy Provider metering telemetry
+  #undef USE_IEM3000                             // Disable support for Schneider Electric iEM3000-Modbus series energy monitor (+0k8 code)
+  #undef USE_WE517                               // Disable support for Orno WE517-Modbus energy monitor (+1k code)
 
 
 #define USE_I2C                                  // I2C using library wire (+10k code, 0k2 mem, 124 iram)
@@ -361,6 +368,8 @@
   #undef USE_SOLAX_X1                            // Disable support for Solax X1 series Modbus log info (+3k1 code)
   #undef USE_LE01MR                              // Disable support for F&F LE-01MR Modbus energy meter (+2k code)
   #undef USE_TELEINFO                            // Disable support for French Energy Provider metering telemetry
+  #undef USE_IEM3000                             // Disable support for Schneider Electric iEM3000-Modbus series energy monitor (+0k8 code)
+  #undef USE_WE517                               // Disable support for Orno WE517-Modbus energy monitor (+1k code)
 
 //#undef USE_DS18x20                               // Disable support for DS18x20 sensors with id sort, single scan and read retry (+1k3 code)
 
@@ -374,6 +383,8 @@
 #undef USE_PMS5003                               // Disable support for PMS5003 and PMS7003 particle concentration sensor
 #undef USE_NOVA_SDS                              // Disable support for SDS011 and SDS021 particle concentration sensor
 #undef USE_HPMA                                  // Disable support for Honeywell HPMA115S0 particle concentration sensor
+#undef USE_SR04                                  // Disable support for HC-SR04 ultrasonic devices (+1k code)
+#undef USE_DYP                                   // Disable support for DYP ME-007 ultrasonic distance sensor, serial port version (+0k5 code)
 #undef USE_SERIAL_BRIDGE                         // Disable support for software Serial Bridge
 #undef USE_MP3_PLAYER                            // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
 #undef USE_AZ7798                                // Disable support for AZ-Instrument 7798 CO2 datalogger
@@ -387,11 +398,11 @@
 #undef USE_HRXL                                  // Disable support for MaxBotix HRXL-MaxSonar ultrasonic range finders (+0k7)
 #undef USE_TASMOTA_CLIENT                        // Disable support for Arduino Uno/Pro Mini via serial interface including flashing (+2k3 code, 44 mem)
 #undef USE_OPENTHERM                             // Disable support for OpenTherm (+15k code)
+#undef USE_MIEL_HVAC                             // Disable support for Mitsubishi Electric HVAC serial interface (+5k code)
 
 #undef USE_DHT                                   // Disable support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor
 #undef USE_MAX31855                              // Disable MAX31855 K-Type thermocouple sensor using softSPI
 #undef USE_MAX31865                              // Disable support for MAX31865 RTD sensors using softSPI
-#undef USE_SR04                                  // Disable support for for HC-SR04 ultrasonic devices
 #undef USE_TM1638                                // Disable support for TM1638 switches copying Switch1 .. Switch8
 #undef USE_HX711                                 // Disable support for HX711 load cell
 #undef USE_TX20_WIND_SENSOR                      // Disable support for La Crosse TX20 anemometer
@@ -477,7 +488,7 @@
 #undef USE_COUNTER                               // Disable counters
 #define USE_ADC_VCC                              // Display Vcc in Power status. Disable for use as Analog input on selected devices
 #undef USE_DS18x20                               // Disable DS18x20 sensor
-//#undef USE_I2C                                   // Enable I2C, zbbridge uses i2c EEprom 
+//#undef USE_I2C                                   // Enable I2C, zbbridge uses i2c EEprom
 #undef USE_SPI                                   // Disable all SPI devices
 #undef USE_DISPLAY                               // Disable Display support
 #undef USE_MHZ19                                 // Disable support for MH-Z19 CO2 sensor
@@ -485,6 +496,8 @@
 #undef USE_PMS5003                               // Disable support for PMS5003 and PMS7003 particle concentration sensor
 #undef USE_NOVA_SDS                              // Disable support for SDS011 and SDS021 particle concentration sensor
 #undef USE_HPMA                                  // Disable support for Honeywell HPMA115S0 particle concentration sensor
+#undef USE_SR04                                  // Disable support for HC-SR04 ultrasonic devices (+1k code)
+#undef USE_DYP                                   // Disable support for DYP ME-007 ultrasonic distance sensor, serial port version (+0k5 code)
 #undef USE_SERIAL_BRIDGE                         // Disable support for software Serial Bridge
 #undef USE_MP3_PLAYER                            // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
 #undef USE_AZ7798                                // Disable support for AZ-Instrument 7798 CO2 datalogger
@@ -498,6 +511,7 @@
 #undef USE_HRXL                                  // Disable support for MaxBotix HRXL-MaxSonar ultrasonic range finders (+0k7)
 #undef USE_TASMOTA_CLIENT                        // Disable support for Arduino Uno/Pro Mini via serial interface including flashing (+2k3 code, 44 mem)
 #undef USE_OPENTHERM                             // Disable support for OpenTherm (+15k code)
+#undef USE_MIEL_HVAC                             // Disable support for Mitsubishi Electric HVAC serial interface (+5k code)
 
 #undef USE_ENERGY_SENSOR                         // Disable energy sensors
 #undef USE_ADE7953                               // Disable ADE7953 Energy monitor as used on Shelly 2.5 (I2C address 0x38) (+1k5)
@@ -512,14 +526,14 @@
 #undef USE_SOLAX_X1                              // Disable support for Solax X1 series Modbus log info (+3k1 code)
 #undef USE_LE01MR                                // Disable support for F&F LE-01MR Modbus energy meter (+2k code)
 #undef USE_TELEINFO                              // Disable support for French Energy Provider metering telemetry
-
+#undef USE_IEM3000                               // Disable support for Schneider Electric iEM3000-Modbus series energy monitor (+0k8 code)
+#undef USE_WE517                                 // Disable support for Orno WE517-Modbus energy monitor (+1k code)
 
 #undef USE_DHT                                   // Disable support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor
 #undef USE_MAX31855                              // Disable MAX31855 K-Type thermocouple sensor using softSPI
 #undef USE_MAX31865                              // Disable support for MAX31865 RTD sensors using softSPI
 #undef USE_IR_REMOTE                             // Disable IR driver
 
-#undef USE_SR04                                  // Disable support for for HC-SR04 ultrasonic devices
 #undef USE_TM1638                                // Disable support for TM1638 switches copying Switch1 .. Switch8
 #undef USE_HX711                                 // Disable support for HX711 load cell
 #undef USE_TX20_WIND_SENSOR                      // Disable support for La Crosse TX20 anemometer
@@ -618,6 +632,8 @@
 #undef USE_PMS5003                               // Disable support for PMS5003 and PMS7003 particle concentration sensor
 #undef USE_NOVA_SDS                              // Disable support for SDS011 and SDS021 particle concentration sensor
 #undef USE_HPMA                                  // Disable support for Honeywell HPMA115S0 particle concentration sensor
+#undef USE_SR04                                  // Disable support for HC-SR04 ultrasonic devices (+1k code)
+#undef USE_DYP                                   // Disable support for DYP ME-007 ultrasonic distance sensor, serial port version (+0k5 code)
 #undef USE_SERIAL_BRIDGE                         // Disable support for software Serial Bridge
 #undef USE_MP3_PLAYER                            // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
 #undef USE_AZ7798                                // Disable support for AZ-Instrument 7798 CO2 datalogger
@@ -631,6 +647,7 @@
 #undef USE_HRXL                                  // Disable support for MaxBotix HRXL-MaxSonar ultrasonic range finders (+0k7)
 #undef USE_TASMOTA_CLIENT                        // Disable support for Arduino Uno/Pro Mini via serial interface including flashing (+2k3 code, 44 mem)
 #undef USE_OPENTHERM                             // Disable support for OpenTherm (+15k code)
+#undef USE_MIEL_HVAC                             // Disable support for Mitsubishi Electric HVAC serial interface (+5k code)
 
 //#undef USE_ENERGY_SENSOR                         // Disable energy sensors
 #undef USE_PZEM004T                              // Disable PZEM004T energy sensor
@@ -644,14 +661,14 @@
 #undef USE_SOLAX_X1                              // Disable support for Solax X1 series Modbus log info (+3k1 code)
 #undef USE_LE01MR                                // Disable support for F&F LE-01MR Modbus energy meter (+2k code)
 #undef USE_TELEINFO                              // Disable support for French Energy Provider metering telemetry
-
+#undef USE_IEM3000                               // Disable support for Schneider Electric iEM3000-Modbus series energy monitor (+0k8 code)
+#undef USE_WE517                                 // Disable support for Orno WE517-Modbus energy monitor (+1k code)
 
 #undef USE_DHT                                   // Disable support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor
 #undef USE_MAX31855                              // Disable MAX31855 K-Type thermocouple sensor using softSPI
 #undef USE_MAX31865                              // Disable support for MAX31865 RTD sensors using softSPI
 #undef USE_IR_REMOTE                             // Disable IR driver
 
-#undef USE_SR04                                  // Disable support for for HC-SR04 ultrasonic devices
 #undef USE_TM1638                                // Disable support for TM1638 switches copying Switch1 .. Switch8
 #undef USE_HX711                                 // Disable support for HX711 load cell
 #undef USE_TX20_WIND_SENSOR                      // Disable support for La Crosse TX20 anemometer
@@ -749,6 +766,8 @@
 #undef USE_PMS5003                               // Disable support for PMS5003 and PMS7003 particle concentration sensor
 #undef USE_NOVA_SDS                              // Disable support for SDS011 and SDS021 particle concentration sensor
 #undef USE_HPMA                                  // Disable support for Honeywell HPMA115S0 particle concentration sensor
+#undef USE_SR04                                  // Disable support for HC-SR04 ultrasonic devices (+1k code)
+#undef USE_DYP                                   // Disable support for DYP ME-007 ultrasonic distance sensor, serial port version (+0k5 code)
 #undef USE_SERIAL_BRIDGE                         // Disable support for software Serial Bridge
 #undef USE_TCP_BRIDGE                            // DIsable support for Serial to TCP bridge (+1.3k code)
 #undef USE_MP3_PLAYER                            // Disable DFPlayer Mini MP3 Player RB-DFR-562 commands: play, volume and stop
@@ -763,6 +782,7 @@
 #undef USE_HRXL                                  // Disable support for MaxBotix HRXL-MaxSonar ultrasonic range finders (+0k7)
 #undef USE_TASMOTA_CLIENT                        // Disable support for Arduino Uno/Pro Mini via serial interface including flashing (+2k3 code, 44 mem)
 #undef USE_OPENTHERM                             // Disable support for OpenTherm (+15k code)
+#undef USE_MIEL_HVAC                             // Disable support for Mitsubishi Electric HVAC serial interface (+5k code)
 
 #undef USE_ENERGY_SENSOR                         // Disable energy sensors
 #undef USE_PZEM004T                              // Disable PZEM004T energy sensor
@@ -778,13 +798,13 @@
 #undef USE_BL0940                                // Disable support for BL0940 Energy monitor as used in Blitzwolf SHP-10 (+1k6 code)
 #undef USE_TELEINFO                              // Disable support for French Energy Provider metering telemetry
 #undef USE_IEM3000                               // Disable support for Schneider Electric iEM3000-Modbus series energy monitor (+0k8 code)
+#undef USE_WE517                                 // Disable support for Orno WE517-Modbus energy monitor (+1k code)
 
 #undef USE_DHT                                   // Disable support for DHT11, AM2301 (DHT21, DHT22, AM2302, AM2321) and SI7021 Temperature and Humidity sensor
 #undef USE_MAX31855                              // Disable MAX31855 K-Type thermocouple sensor using softSPI
 #undef USE_MAX31865                              // Disable support for MAX31865 RTD sensors using softSPI
 #undef USE_LMT01                                 // Disable support for TI LMT01 temperature sensor, count pulses on single GPIO (+0k5 code)
 #undef USE_IR_REMOTE                             // Disable IR driver
-#undef USE_SR04                                  // Disable support for for HC-SR04 ultrasonic devices
 #undef USE_TM1638                                // Disable support for TM1638 switches copying Switch1 .. Switch8
 #undef USE_HX711                                 // Disable support for HX711 load cell
 #undef USE_TX20_WIND_SENSOR                      // Disable support for La Crosse TX20 anemometer
