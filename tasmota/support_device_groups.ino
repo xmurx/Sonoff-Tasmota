@@ -115,10 +115,11 @@ void DeviceGroupsInit(void)
 
     // If relays in sepaate device groups is enabled, set the device group count to highest numbered
     // relay.
-    if (Settings.flag4.remote_device_mode) {  // SetOption88 - Enable relays in separate device groups
+    if (Settings.flag4.multiple_device_groups) {  // SetOption88 - Enable relays in separate device groups
       for (uint32_t relay_index = 0; relay_index < MAX_RELAYS; relay_index++) {
         if (PinUsed(GPIO_REL1, relay_index)) device_group_count = relay_index + 1;
       }
+      if (device_group_count > MAX_DEV_GROUP_NAMES) device_group_count = MAX_DEV_GROUP_NAMES;
     }
 
     // Otherwise, set the device group count to 1.
@@ -312,6 +313,7 @@ void SendReceiveDeviceGroupMessage(struct device_group * device_group, struct de
 
 #ifdef DEVICE_GROUPS_DEBUG
     switch (item) {
+      case DGR_ITEM_FLAGS:
       case DGR_ITEM_LIGHT_FADE:
       case DGR_ITEM_LIGHT_SPEED:
       case DGR_ITEM_LIGHT_BRI:
@@ -385,7 +387,7 @@ void SendReceiveDeviceGroupMessage(struct device_group * device_group, struct de
       log_remaining--;
       switch (item) {
         case DGR_ITEM_POWER:
-          if (Settings.flag4.remote_device_mode) {  // SetOption88 - Enable relays in separate device groups
+          if (Settings.flag4.multiple_device_groups) {  // SetOption88 - Enable relays in separate device groups
             bool on = (value & 1);
             if (on != (power & (1 << device_group_index))) ExecuteCommandPower(device_group_index + 1, (on ? POWER_ON : POWER_OFF), SRC_REMOTE);
           }
@@ -463,6 +465,13 @@ bool _SendDeviceGroupMessage(uint8_t device_group_index, DevGroupMessageType mes
   // If device groups is not up, ignore this request.
   if (!device_groups_up) return 1;
 
+  // If the device group index is higher then the number of device groups, ignore this request.
+  if (device_group_index >= device_group_count) return 0;
+
+  // Extract the flags from the message type.
+  bool with_local = ((message_type & DGR_MSGTYPFLAG_WITH_LOCAL) != 0);
+  message_type = (DevGroupMessageType)(message_type & 0x7F);
+
   // If we're currently processing a remote device message, ignore this request.
   if (ignore_dgr_sends && message_type != DGR_MSGTYPE_UPDATE_COMMAND) return 0;
 
@@ -496,7 +505,7 @@ bool _SendDeviceGroupMessage(uint8_t device_group_index, DevGroupMessageType mes
     building_status_message = true;
 
     // Call the drivers to build the status update.
-    if (device_group->local || Settings.flag4.remote_device_mode) {  // SetOption88 - Enable relays in separate device groups
+    if (device_group->local || Settings.flag4.multiple_device_groups) {  // SetOption88 - Enable relays in separate device groups
       SendDeviceGroupMessage(device_group_index, DGR_MSGTYP_PARTIAL_UPDATE, DGR_ITEM_POWER, power);
     }
     XdrvMailbox.index = device_group_index << 16;
@@ -718,8 +727,8 @@ bool _SendDeviceGroupMessage(uint8_t device_group_index, DevGroupMessageType mes
   SendReceiveDeviceGroupMessage(device_group, nullptr, device_group->message, device_group->message_length, false);
 
 #ifdef USE_DEVICE_GROUPS_SEND
-  // If this is the DevGroupSend command, also handle the update locally.
-  if (message_type == DGR_MSGTYPE_UPDATE_COMMAND) {
+  // If requested, handle this updated locally as well.
+  if (with_local) {
     struct XDRVMAILBOX save_XdrvMailbox = XdrvMailbox;
     SendReceiveDeviceGroupMessage(device_group, nullptr, device_group->message, device_group->message_length, true);
     XdrvMailbox = save_XdrvMailbox;
@@ -792,7 +801,7 @@ void DeviceGroupStatus(uint8_t device_group_index)
       snprintf_P(buffer, sizeof(buffer), PSTR("%s,{\"IPAddress\":\"%s\",\"ResendCount\":%u,\"LastRcvdSeq\":%u,\"LastAckedSeq\":%u}"), buffer, IPAddressToString(device_group_member->ip_address), device_group_member->unicast_count, device_group_member->received_sequence, device_group_member->acked_sequence);
       member_count++;
     }
-    Response_P(PSTR("{\"" D_CMND_DEVGROUPSTATUS "\":{\"Index\":%u,\"GroupName\":\"%s\",\"MessageSeq\":%u,\"MemberCount\":%d,\"Members\":[%s]}"), device_group_index, device_group->group_name, device_group->outgoing_sequence, member_count, &buffer[1]);
+    Response_P(PSTR("{\"" D_CMND_DEVGROUPSTATUS "\":{\"Index\":%u,\"GroupName\":\"%s\",\"MessageSeq\":%u,\"MemberCount\":%d,\"Members\":[%s]}}"), device_group_index, device_group->group_name, device_group->outgoing_sequence, member_count, &buffer[1]);
   }
 }
 
