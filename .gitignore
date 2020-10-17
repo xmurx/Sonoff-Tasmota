@@ -27,3 +27,4 @@ platformio_tasmota_cenv.ini
 .vscode/launch.json
 *.bak
 *.code-workspace
+/lib/xControl-0.0.1/cov_xml.xml
