@@ -1,9 +1,8 @@
-#include "ArduinoJson.h"
-
 #include "x_support.h"
 #include "logging.h"
 #include "images.h"
 #include "view.h"
+#include "JsonParser.h"
 
 #ifdef USE_X_VIEW_DRIVER
 
@@ -14,8 +13,6 @@
 #define XDRV_90 90
 namespace xControl
 {
-  const size_t capacity = JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 120;
-  StaticJsonBuffer<capacity> jsonBuffer;
   ViewData data;
   StateControl<xControl::State> stateControl;
 
@@ -28,24 +25,24 @@ namespace xControl
    */
   bool ExtractValues( ViewData& data )
   {
-    jsonBuffer.clear();
     bool result = false;
-    JsonObject& root = jsonBuffer.parseObject(MQTTResponse::Get());
-    if(root.success())
+    JsonParser parser((char*)MQTTResponse::Get());
+    JsonParserObject root = parser.getRootObject();
+    if(root)
     {
-      const JsonObject& BME280 = root["BME280"];
-      if(BME280.success())
+      JsonParserObject BME280 = root["BME280"].getObject();  
+      if(BME280)
       {
-        data.SetTemperature(BME280["Temperature"]);
-        data.SetHumidity(BME280["Humidity"]);
-        data.SetPressure(BME280["Pressure"]);
+        data.SetTemperature(BME280.getFloat("Temperature", 0.0F));
+        data.SetHumidity(BME280.getFloat("Humidity", 0.0F));
+        data.SetPressure(BME280.getFloat("Pressure", 0.0F));
         result = true;
       }
 
-      const JsonObject& VL53L0X = root["VL53L0X"];
-      if(VL53L0X.success())
+      JsonParserObject VL53L0X = root["VL53L0X"].getObject();
+      if(VL53L0X)
       {
-        data.SetDistance(VL53L0X["Distance"]);
+        data.SetDistance(VL53L0X.getInt("Distance", 9999));
         result = true;
       }
     }
