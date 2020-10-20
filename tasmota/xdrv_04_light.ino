@@ -1859,7 +1859,7 @@ void LightAnimate(void)
   // or set a maximum of PWM_MAX_SLEEP if light is on or Fade is running
   if (Light.power || Light.fade_running) {
     if (Settings.sleep > PWM_MAX_SLEEP) {
-      ssleep = PWM_MAX_SLEEP;      // set a maxumum value of 50 milliseconds to ensure that animations are smooth
+      ssleep = PWM_MAX_SLEEP;      // set a maxumum value of 10 milliseconds to ensure that animations are smooth
     } else {
       ssleep = Settings.sleep;     // or keep the current sleep if it's lower than 50
     }
@@ -2336,11 +2336,12 @@ void LightHandleDevGroupItem(void)
 {
   static bool send_state = false;
   static bool restore_power = false;
+
+#ifdef USE_PWM_DIMMER_REMOTE
+  if (!(XdrvMailbox.index & DGR_FLAG_LOCAL)) return;
+#endif  // USE_PWM_DIMMER_REMOTE
   bool more_to_come;
   uint32_t value = XdrvMailbox.payload;
-#ifdef USE_PWM_DIMMER_REMOTE
-  if (*XdrvMailbox.topic) return; // Ignore updates from other device groups
-#endif  // USE_PWM_DIMMER_REMOTE
   switch (XdrvMailbox.command_code) {
     case DGR_ITEM_EOL:
       more_to_come = (XdrvMailbox.index & DGR_FLAG_MORE_TO_COME);
