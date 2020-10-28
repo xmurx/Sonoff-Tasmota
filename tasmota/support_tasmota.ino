@@ -161,6 +161,7 @@ void SetLatchingRelay(power_t lpower, uint32_t state)
   // power xx01 - toggle REL2 (On)  and REL3 (Off) - device 1 On,  device 2 Off
   // power xx10 - toggle REL1 (Off) and REL4 (On)  - device 1 Off, device 2 On
   // power xx11 - toggle REL2 (On)  and REL4 (On)  - device 1 On,  device 2 On
+  static power_t latching_power = 0;     // Power state at latching start
 
   if (state && !latching_relay_pulse) {  // Set latching relay to power if previous pulse has finished
     latching_power = lpower;
@@ -420,12 +421,12 @@ void SetLedLink(uint32_t state)
 
 void SetPulseTimer(uint32_t index, uint32_t time)
 {
-  pulse_timer[index] = (time > 111) ? millis() + (1000 * (time - 100)) : (time > 0) ? millis() + (100 * time) : 0L;
+  TasmotaGlobal.pulse_timer[index] = (time > 111) ? millis() + (1000 * (time - 100)) : (time > 0) ? millis() + (100 * time) : 0L;
 }
 
 uint32_t GetPulseTimer(uint32_t index)
 {
-  long time = TimePassedSince(pulse_timer[index]);
+  long time = TimePassedSince(TasmotaGlobal.pulse_timer[index]);
   if (time < 0) {
     time *= -1;
     return (time > 11100) ? (time / 1000) + 100 : (time > 0) ? time / 100 : 0;
@@ -540,6 +541,7 @@ void ExecuteCommandPower(uint32_t device, uint32_t state, uint32_t source)
 
   SetPulseTimer((device -1) % MAX_PULSETIMERS, 0);
 
+  static bool interlock_mutex = false;    // Interlock power command pending
   power_t mask = 1 << (device -1);        // Device to control
   if (state <= POWER_TOGGLE) {
     if ((blink_mask & mask)) {
@@ -604,7 +606,7 @@ void ExecuteCommandPower(uint32_t device, uint32_t state, uint32_t source)
       blink_powersave = (blink_powersave & (POWER_MASK ^ mask)) | (power & mask);  // Save state
       blink_power = (power >> (device -1))&1;  // Prep to Toggle
     }
-    blink_timer = millis() + 100;
+    TasmotaGlobal.blink_timer = millis() + 100;
     blink_counter = ((!Settings.blinkcount) ? 64000 : (Settings.blinkcount *2)) +1;
     blink_mask |= mask;  // Set device mask
     MqttPublishPowerBlinkState(device);
@@ -667,7 +669,7 @@ void MqttShowState(void)
 
   ResponseAppend_P(PSTR(",\"" D_JSON_HEAPSIZE "\":%d,\"SleepMode\":\"%s\",\"Sleep\":%u,\"LoadAvg\":%u,\"MqttCount\":%u"),
     ESP_getFreeHeap()/1024, GetTextIndexed(stemp1, sizeof(stemp1), Settings.flag3.sleep_normal, kSleepMode),  // SetOption60 - Enable normal sleep instead of dynamic sleep
-    ssleep, loop_load_avg, MqttConnectCount());
+    ssleep, TasmotaGlobal.loop_load_avg, MqttConnectCount());
 
   for (uint32_t i = 1; i <= devices_present; i++) {
 #ifdef USE_LIGHT
@@ -787,13 +789,13 @@ void MqttPublishSensor(void)
 
 void PerformEverySecond(void)
 {
-  uptime++;
+  TasmotaGlobal.uptime++;
 
-  if (POWER_CYCLE_TIME == uptime) {
+  if (POWER_CYCLE_TIME == TasmotaGlobal.uptime) {
     UpdateQuickPowerCycle(false);
   }
 
-  if (BOOT_LOOP_TIME == uptime) {
+  if (BOOT_LOOP_TIME == TasmotaGlobal.uptime) {
     RtcRebootReset();
 
 #ifdef USE_DEEPSLEEP
@@ -865,8 +867,8 @@ void PerformEverySecond(void)
   wifiKeepAlive();
 
 #ifdef ESP32
-  if (11 == uptime) {      // Perform one-time ESP32 houskeeping
-    ESP_getSketchSize();   // Init sketchsize as it can take up to 2 seconds
+  if (11 == TasmotaGlobal.uptime) {  // Perform one-time ESP32 houskeeping
+    ESP_getSketchSize();             // Init sketchsize as it can take up to 2 seconds
   }
 #endif
 }
@@ -890,9 +892,9 @@ void Every100mSeconds(void)
   }
 
   for (uint32_t i = 0; i < MAX_PULSETIMERS; i++) {
-    if (pulse_timer[i] != 0L) {           // Timer active?
-      if (TimeReached(pulse_timer[i])) {  // Timer finished?
-        pulse_timer[i] = 0L;              // Turn off this timer
+    if (TasmotaGlobal.pulse_timer[i] != 0L) {           // Timer active?
+      if (TimeReached(TasmotaGlobal.pulse_timer[i])) {  // Timer finished?
+        TasmotaGlobal.pulse_timer[i] = 0L;              // Turn off this timer
         for (uint32_t j = 0; j < devices_present; j = j +MAX_PULSETIMERS) {
           ExecuteCommandPower(i + j +1, (POWER_ALL_OFF_PULSETIME_ON == Settings.poweronstate) ? POWER_ON : POWER_OFF, SRC_PULSETIMER);
         }
@@ -901,8 +903,8 @@ void Every100mSeconds(void)
   }
 
   if (blink_mask) {
-    if (TimeReached(blink_timer)) {
-      SetNextTimeInterval(blink_timer, 100 * Settings.blinktime);
+    if (TimeReached(TasmotaGlobal.blink_timer)) {
+      SetNextTimeInterval(TasmotaGlobal.blink_timer, 100 * Settings.blinktime);
       blink_counter--;
       if (!blink_counter) {
         StopAllPowerBlink();
@@ -923,6 +925,7 @@ void Every250mSeconds(void)
 {
 // As the max amount of sleep = 250 mSec this loop should always be taken...
 
+  static uint8_t blinkspeed = 1;                          // LED blink rate
   uint32_t blinkinterval = 1;
 
   state_250mS++;
@@ -968,6 +971,9 @@ void Every250mSeconds(void)
 /*-------------------------------------------------------------------------------------------*\
  * Every second at 0.25 second interval
 \*-------------------------------------------------------------------------------------------*/
+
+  static int ota_result = 0;
+  static uint8_t ota_retry_counter = OTA_ATTEMPTS;
 
   switch (state_250mS) {
   case 0:                                                 // Every x.0 second
@@ -1320,6 +1326,9 @@ void ArduinoOtaLoop(void)
 
 void SerialInput(void)
 {
+  static uint32_t serial_polling_window = 0;
+  static bool serial_buffer_overrun = false;
+
   while (Serial.available()) {
 //    yield();
     delay(0);
@@ -1642,12 +1651,20 @@ void GpioInit(void)
 #endif  // ESP8266 - ESP32
   soft_spi_flg = (PinUsed(GPIO_SSPI_SCLK) && (PinUsed(GPIO_SSPI_MOSI) || PinUsed(GPIO_SSPI_MISO)));
 
-  // Set any non-used GPIO to INPUT - Related to resetPins() in support_legacy_cores.ino
-  // Doing it here solves relay toggles at restart.
   for (uint32_t i = 0; i < ARRAY_SIZE(my_module.io); i++) {
     uint32_t mpin = ValidPin(i, my_module.io[i]);
 //    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("INI: gpio pin %d, mpin %d"), i, mpin);
-    if (((i < 6) || (i > 11)) && (0 == mpin)) {  // Skip SPI flash interface
+    if (AGPIO(GPIO_OUTPUT_HI) == mpin) {
+      pinMode(i, OUTPUT);
+      digitalWrite(i, 1);
+    }
+    else if (AGPIO(GPIO_OUTPUT_LO) == mpin) {
+      pinMode(i, OUTPUT);
+      digitalWrite(i, 0);
+    }
+    // Set any non-used GPIO to INPUT - Related to resetPins() in support_legacy_cores.ino
+    // Doing it here solves relay toggles at restart.
+    else if (((i < 6) || (i > 11)) && (GPIO_NONE == mpin)) {  // Skip SPI flash interface
       if (!((1 == i) || (3 == i))) {             // Skip serial
         pinMode(i, INPUT);
       }

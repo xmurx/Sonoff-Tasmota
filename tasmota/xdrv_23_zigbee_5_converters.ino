@@ -129,7 +129,7 @@ enum Cx_cluster_short {
   Cx0010, Cx0011, Cx0012, Cx0013, Cx0014, Cx001A, Cx0020, Cx0100,
   Cx0101, Cx0102, Cx0201, Cx0300, Cx0400, Cx0401, Cx0402, Cx0403,
   Cx0404, Cx0405, Cx0406, Cx0500, Cx0702, Cx0B01, Cx0B04, Cx0B05,
-  CxEF00,
+  CxEF00, CxFCCC,
 };
 
 const uint16_t Cx_cluster[] PROGMEM = {
@@ -138,7 +138,7 @@ const uint16_t Cx_cluster[] PROGMEM = {
   0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x001A, 0x0020, 0x0100,
   0x0101, 0x0102, 0x0201, 0x0300, 0x0400, 0x0401, 0x0402, 0x0403,
   0x0404, 0x0405, 0x0406, 0x0500, 0x0702, 0x0B01, 0x0B04, 0x0B05,
-  0xEF00, 
+  0xEF00, 0xFCCC,
 };
 
 uint16_t CxToCluster(uint8_t cx) {
@@ -611,6 +611,10 @@ const Z_AttributeConverter Z_PostProcess[] PROGMEM = {
   { Ztuya1,   CxEF00, 0x0405,  Z_(TuyaFanMode),          Cm1, 0 },
   { Ztuya1,   CxEF00, 0x046A,  Z_(TuyaForceMode),        Cm1, 0 },
   { Ztuya1,   CxEF00, 0x046F,  Z_(TuyaWeekSelect),       Cm1, 0 },
+
+  // Terncy specific - 0xFCCC
+  { Zuint16, CxFCCC, 0x001A,  Z_(TerncyDuration),        Cm1, 0 },
+  { Zint16,  CxFCCC, 0x001B,  Z_(TerncyRotate),          Cm1, 0 },
 };
 #pragma GCC diagnostic pop
 
@@ -1328,7 +1332,7 @@ void ZCLFrame::parseReadAttributes(Z_attribute_list& attr_list) {
 
   attr_list.addAttribute(F(D_CMND_ZIGBEE_CLUSTER)).setUInt(_cluster_id);
 
-  Z_json_array attr_numbers;
+  JsonGeneratorArray attr_numbers;
   Z_attribute_list attr_names;
   while (len >= 2 + i) {
     uint16_t attrid = _payload.get16(i);
@@ -1759,14 +1763,23 @@ void Z_OccupancyCallback(uint16_t shortaddr, uint16_t groupaddr, uint16_t cluste
 void ZCLFrame::postProcessAttributes(uint16_t shortaddr, Z_attribute_list& attr_list) {
   // source endpoint
   uint8_t src_ep = _srcendpoint;
+  uint8_t count_ep = zigbee_devices.countEndpoints(shortaddr);
+  Z_Device & device = zigbee_devices.getShortAddr(shortaddr);
   
   for (auto &attr : attr_list) {
+    // add endpoint suffix if needed
+    if ((Settings.flag4.zb_index_ep) && (src_ep != 1) && (count_ep > 1)) {
+      // we need to add suffix if the suffix is not already different from 1
+      if (attr.key_suffix == 1) {
+        attr.key_suffix = src_ep;
+      }
+    }
+
     // attr is Z_attribute&
     if (!attr.key_is_str) {
       uint16_t cluster = attr.key.id.cluster;
       uint16_t attribute = attr.key.id.attr_id;
       uint32_t ccccaaaa = (attr.key.id.cluster << 16) | attr.key.id.attr_id;
-      Z_Device & device = zigbee_devices.getShortAddr(shortaddr);
 
       // Look for an entry in the converter table
       bool found = false;
@@ -1799,6 +1812,8 @@ void ZCLFrame::postProcessAttributes(uint16_t shortaddr, Z_attribute_list& attr_
         // First we find or instantiate the correct Z_Data_XXX accorfing to the endpoint
         // Then store the attribute at the attribute addres (via offset) and according to size 8/16/32 bits
 
+        // add the endpoint if it was not already known
+        zigbee_devices.addEndpoint(shortaddr, src_ep);
         // we don't apply the multiplier, but instead store in Z_Data_XXX object
         Z_Data & data = device.data.getByType(map_type, src_ep);
         uint8_t *attr_address = ((uint8_t*)&data) + sizeof(Z_Data) + map_offset;
@@ -1824,7 +1839,7 @@ void ZCLFrame::postProcessAttributes(uint16_t shortaddr, Z_attribute_list& attr_
       switch (ccccaaaa) {
         case 0x00000004: zigbee_devices.setManufId(shortaddr, attr.getStr());         break;
         case 0x00000005: zigbee_devices.setModelId(shortaddr, attr.getStr());         break;
-        case 0x00010021: zigbee_devices.setBatteryPercent(shortaddr, uval16);         break;
+        case 0x00010021: zigbee_devices.setBatteryPercent(shortaddr, uval16 / 2);     break;
         case 0x00060000:
         case 0x00068000: device.setPower(attr.getBool(), src_ep);                     break;
       }
