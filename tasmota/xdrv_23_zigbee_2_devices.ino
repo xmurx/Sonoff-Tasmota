@@ -74,6 +74,10 @@ public:
 
   void toAttributes(Z_attribute_list & attr_list, Z_Data_Type type) const;
 
+  // update internal structures after an attribut update
+  // True if a configuration was changed
+  inline bool update(void) { return false; }
+
   static const Z_Data_Type type = Z_Data_Type::Z_Unknown;
   static bool ConfigToZData(const char * config_str, Z_Data_Type * type, uint8_t * ep, uint8_t * config);
 
@@ -172,7 +176,7 @@ void Z_Data_OnOff::setPower(bool val, uint32_t relay) {
 }
 
 /*********************************************************************************************\
- * Device specific: Light device
+ * Device specific: Plug device
 \*********************************************************************************************/
 class Z_Data_Plug : public Z_Data {
 public:
@@ -248,6 +252,65 @@ public:
 };
 
 /*********************************************************************************************\
+ * Device specific: PIR
+ * 
+  // List of occupancy time-outs:
+  // 0xF = default (90 s)
+  // 0x0 = no time-out
+  // 0x1 = 15 s
+  // 0x2 = 30 s
+  // 0x3 = 45 s
+  // 0x4 = 60 s
+  // 0x5 = 75 s
+  // 0x6 = 90 s -- default
+  // 0x7 = 105 s
+  // 0x8 = 120 s
+\*********************************************************************************************/
+class Z_Data_PIR : public Z_Data {
+public:
+  Z_Data_PIR(uint8_t endpoint = 0) :
+    Z_Data(Z_Data_Type::Z_PIR, endpoint),
+    occupancy(0xFF),
+    illuminance(0xFFFF)
+    {}
+
+  inline bool validOccupancy(void)      const { return 0xFF != occupancy; }
+  inline bool validIlluminance(void)    const { return 0xFFFF != illuminance; }
+
+  inline uint8_t  getOccupancy(void)    const { return occupancy; }
+  inline uint16_t getIlluminance(void)  const { return illuminance; }
+  
+  inline void setOccupancy(uint8_t _occupancy)          { occupancy = _occupancy; }
+  inline void setIlluminance(uint16_t _illuminance)     { illuminance = _illuminance; }
+
+  uint32_t getTimeoutSeconds(void) const;
+  void setTimeoutSeconds(int32_t value);
+
+  static const Z_Data_Type type = Z_Data_Type::Z_PIR;
+  // PIR
+  uint8_t               occupancy;      // map8
+  uint16_t              illuminance;    // illuminance
+};
+
+uint32_t Z_Data_PIR::getTimeoutSeconds(void) const {
+  if (_config != 0xF) {
+    return _config * 15;
+  } else {
+    return 90;
+  }
+}
+
+void Z_Data_PIR::setTimeoutSeconds(int32_t value) {
+  if (value < 0) {
+    _config = 0xF;
+  } else {
+    uint32_t val_15 = (value + 14)/ 15;   // always round up
+    if (val_15 > 8) { val_15 = 8; }
+    _config = val_15;
+  }
+}
+
+/*********************************************************************************************\
  * Device specific: Sensors: temp, humidity, pressure...
 \*********************************************************************************************/
 class Z_Data_Thermo : public Z_Data {
@@ -293,6 +356,30 @@ public:
 /*********************************************************************************************\
  * Device specific: Alarm
 \*********************************************************************************************/
+// We're lucky that alarm type fits in 12 bits, so we can have a total entry of 16 bits
+typedef union Z_Alarm_Types_t {
+  struct {
+    uint16_t    zcl_type : 12;
+    uint8_t     config : 4;
+  } t;
+  uint16_t i;
+} Z_Alarm_Types_t;
+
+static const Z_Alarm_Types_t Z_Alarm_Types[] PROGMEM = {
+  { .t = { 0x000, 0x0 }},      // 0x0 : Standard CIE
+  { .t = { 0x00d, 0x1 }},      // 0x1 : PIR
+  { .t = { 0x015, 0x2 }},      // 0x2 : Contact
+  { .t = { 0x028, 0x3 }},      // 0x3 : Fire
+  { .t = { 0x02a, 0x4 }},      // 0x4 : Leak
+  { .t = { 0x02b, 0x5 }},      // 0x5 : CO
+  { .t = { 0x02c, 0x6 }},      // 0x6 : Personal
+  { .t = { 0x02d, 0x7 }},      // 0x7 : Movement
+  { .t = { 0x10f, 0x8 }},      // 0x8 : Panic
+  { .t = { 0x115, 0x8 }},      // 0x8 : Panic
+  { .t = { 0x21d, 0x8 }},      // 0x8 : Panic
+  { .t = { 0x226, 0x9 }},      // 0x9 : Glass break
+};
+
 class Z_Data_Alarm : public Z_Data {
 public:
   Z_Data_Alarm(uint8_t endpoint = 0) :
@@ -305,11 +392,29 @@ public:
   inline bool validZoneType(void)   const { return 0xFFFF != zone_type; }
 
   inline uint16_t getZoneType(void) const { return zone_type; }
+  inline bool isPIR(void) const { return 0x1 == _config; }
+  inline bool isContact(void) const { return 0x2 == _config; }
 
   inline void setZoneType(uint16_t _zone_type)  { zone_type = _zone_type; }
 
+  bool update(void) {
+    for (uint32_t i=0; i<ARRAY_SIZE(Z_Alarm_Types); i++) {
+      Z_Alarm_Types_t conv_type;
+      conv_type.i = pgm_read_word(&Z_Alarm_Types[i].i);
+      if (zone_type == conv_type.t.zcl_type) {
+        if (_config == conv_type.t.config) {
+          return false;     // no change
+        } else {
+          _config = conv_type.t.config;
+          return true;
+        }
+      }
+    }
+  }
+  
   // 4 bytes
-  uint16_t               zone_type;       // mapped to the Zigbee standard
+  uint16_t              zone_status;      // last known state for sensor 1 & 2
+  uint16_t              zone_type;        // mapped to the Zigbee standard
     // 0x0000  Standard CIE
     // 0x000d  Motion sensor
     // 0x0015  Contact switch
@@ -339,6 +444,8 @@ public:
   // getX() always returns a valid object, and creates the object if there is none
   // find() does not create an object if it does not exist, and returns *(X*)nullptr
 
+  // Emulate a virtuel update method for Z_Data
+  static bool updateData(Z_Data & elt);
 
   template <class M>
   M & get(uint8_t ep = 0);
@@ -350,6 +457,18 @@ public:
   template <class M>
   M & addIfNull(M & cur, uint8_t ep = 0);
 };
+
+bool Z_Data_Set::updateData(Z_Data & elt) {
+  switch (elt._type) {
+    case Z_Data_Type::Z_Light:  return ((Z_Data_Light&) elt).update();       break;
+    case Z_Data_Type::Z_Plug:   return ((Z_Data_Plug&) elt).update();        break;
+    case Z_Data_Type::Z_Alarm:  return ((Z_Data_Alarm&) elt).update();       break;
+    case Z_Data_Type::Z_Thermo: return ((Z_Data_Thermo&) elt).update();      break;
+    case Z_Data_Type::Z_OnOff:  return ((Z_Data_OnOff&) elt).update();       break;
+    case Z_Data_Type::Z_PIR:    return ((Z_Data_PIR&) elt).update();         break;
+    default: return false;
+  }
+}
 
 Z_Data & Z_Data_Set::getByType(Z_Data_Type type, uint8_t ep) {
   switch (type) {
@@ -363,6 +482,8 @@ Z_Data & Z_Data_Set::getByType(Z_Data_Type type, uint8_t ep) {
       return get<Z_Data_Thermo>(ep);
     case Z_Data_Type::Z_OnOff:
       return get<Z_Data_OnOff>(ep);
+    case Z_Data_Type::Z_PIR:
+      return get<Z_Data_PIR>(ep);
     default:
       return *(Z_Data*)nullptr;
   }
@@ -482,6 +603,20 @@ public:
   inline bool getReachable(void)        const { return reachable; }
   inline bool getPower(uint8_t ep =0)   const;
 
+  inline void setLQI(uint8_t _lqi)            { lqi = _lqi; }
+  inline void setBatteryPercent(uint8_t bp)   { batterypercent = bp; }
+
+  // Add an endpoint to a device
+  bool addEndpoint(uint8_t endpoint);
+  void clearEndpoints(void);
+  uint32_t countEndpoints(void) const;    // return the number of known endpoints (0 if unknown)
+
+  void setManufId(const char * str);
+  void setModelId(const char * str);
+  void setFriendlyName(const char * str);
+
+  void setLastSeenNow(void);
+
   // dump device attributes to ZbData
   void toAttributes(Z_attribute_list & attr_list) const;
 
@@ -498,28 +633,11 @@ public:
     }
   }
 
-  // returns: dirty flag, did we change the value of the object
-  bool setLightChannels(int8_t channels) {
-    bool dirty = false;
-    if (channels >= 0) {
-      // retrieve of create light object
-      Z_Data_Light & light = data.get<Z_Data_Light>(0);
-      if (channels != light.getConfig()) {
-        light.setConfig(channels);
-        dirty = true;
-      }
-    } else {
-      // remove light object if any
-      for (auto & data_elt : data) {
-        if (data_elt.getType() == Z_Data_Type::Z_Light) {
-          // remove light object
-          data.remove(&data_elt);
-          dirty = true;
-        }
-      }
-    }
-    return dirty;
-  }
+  void setLightChannels(int8_t channels);
+
+protected:
+
+  static void setStringAttribute(char*& attr, const char * str);
 };
 
 /*********************************************************************************************\
@@ -580,9 +698,9 @@ public:
   // - 0x0000 = not found
   // - BAD_SHORTADDR = bad parameter
   // - 0x<shortaddr> = the device's short address
-  uint16_t isKnownLongAddr(uint64_t  longaddr) const;
-  uint16_t isKnownIndex(uint32_t index) const;
-  uint16_t isKnownFriendlyName(const char * name) const;
+  Z_Device & isKnownLongAddrDevice(uint64_t  longaddr) const;
+  Z_Device & isKnownIndexDevice(uint32_t index) const;
+  Z_Device & isKnownFriendlyNameDevice(const char * name) const;
   
   Z_Device & findShortAddr(uint16_t shortaddr);
   const Z_Device & findShortAddr(uint16_t shortaddr) const;
@@ -591,9 +709,7 @@ public:
   Z_Device & getShortAddr(uint16_t shortaddr);   // find Device from shortAddr, creates it if does not exist
   Z_Device & getLongAddr(uint64_t longaddr);     // find Device from shortAddr, creates it if does not exist
   // check if a device was found or if it's the fallback device
-  inline bool foundDevice(const Z_Device & device) const {
-    return (&device != &device_unk);
-  }
+  inline bool foundDevice(const Z_Device & device) const { return device.valid(); }
 
   int32_t findFriendlyName(const char * name) const;
   uint64_t getDeviceLongAddr(uint16_t shortaddr) const;
@@ -604,14 +720,6 @@ public:
   // If it is already registered, update information, otherwise create the entry
   Z_Device &  updateDevice(uint16_t shortaddr, uint64_t longaddr = 0);
 
-  // Add an endpoint to a device
-  void addEndpoint(uint16_t shortaddr, uint8_t endpoint);
-  void clearEndpoints(uint16_t shortaddr);
-  uint32_t countEndpoints(uint16_t shortaddr) const;    // return the number of known endpoints (0 if unknown)
-
-  void setManufId(uint16_t shortaddr, const char * str);
-  void setModelId(uint16_t shortaddr, const char * str);
-  void setFriendlyName(uint16_t shortaddr, const char * str);
   inline const char * getFriendlyName(uint16_t shortaddr) const {
     return findShortAddr(shortaddr).friendlyName;
   }
@@ -622,25 +730,14 @@ public:
     return findShortAddr(shortaddr).manufacturerId;
   }
 
-  void setReachable(uint16_t shortaddr, bool reachable);
-  void setLQI(uint16_t shortaddr, uint8_t lqi);
-  void setLastSeenNow(uint16_t shortaddr);
-  // uint8_t getLQI(uint16_t shortaddr) const;
-  void setBatteryPercent(uint16_t shortaddr, uint8_t bp);
-  uint8_t getBatteryPercent(uint16_t shortaddr) const;
-
   // get next sequence number for (increment at each all)
   uint8_t getNextSeqNumber(uint16_t shortaddr);
 
   // Dump json
-  static void addLightState(Z_attribute_list & attr_list, const Z_Data_Light & light);
-  String dumpLightState(uint16_t shortaddr) const;
-  String dump(uint32_t dump_mode, uint16_t status_shortaddr = 0) const;
+  static String dumpLightState(const Z_Device & device);
+  String dumpDevice(uint32_t dump_mode, const Z_Device & device) const;
+  static String dumpSingleDevice(uint32_t dump_mode, const Z_Device & device);
   int32_t deviceRestore(JsonParserObject json);
-
-  // General Zigbee device profile support
-  void setLightProfile(uint16_t shortaddr, uint8_t light_profile);
-  uint8_t getLightProfile(uint16_t shortaddr) const ;
 
   // Hue support
   int8_t getHueBulbtype(uint16_t shortaddr) const ;
@@ -664,14 +761,7 @@ public:
   size_t devicesSize(void) const {
     return _devices.length();
   }
-  const Z_Device & devicesAt(size_t i) const {
-    const Z_Device * devp = _devices.at(i);
-    if (devp) {
-      return *devp;
-    } else {
-      return device_unk;
-    }
-  }
+  Z_Device & devicesAt(size_t i) const;
 
   // Remove device from list
   bool removeDevice(uint16_t shortaddr);
@@ -679,10 +769,10 @@ public:
   // Mark data as 'dirty' and requiring to save in Flash
   void dirty(void);
   void clean(void);   // avoid writing to flash the last changes
-  void shrinkToFit(uint16_t shortaddr);
 
   // Find device by name, can be short_addr, long_addr, number_in_array or name
-  uint16_t parseDeviceParam(const char * param, bool short_must_be_known = false) const;
+  Z_Device & parseDeviceFromName(const char * param, bool short_must_be_known = false);
+
 
 private:
   LList<Z_Device>           _devices;     // list of devices
@@ -690,22 +780,20 @@ private:
   uint32_t                  _saveTimer = 0;
   uint8_t                   _seqNumber = 0;     // global seqNumber if device is unknown
 
-  // Following device is used represent the unknown device, with all defaults
-  // Any find() function will not return Null, instead it will return this instance
-  const Z_Device device_unk = Z_Device(BAD_SHORTADDR);
-
   //int32_t findShortAddrIdx(uint16_t shortaddr) const;
   // Create a new entry in the devices list - must be called if it is sure it does not already exist
   Z_Device & createDeviceEntry(uint16_t shortaddr, uint64_t longaddr = 0);
   void freeDeviceEntry(Z_Device *device);
-
-  void setStringAttribute(char*& attr, const char * str);
 };
 
 /*********************************************************************************************\
  * Singleton variable
 \*********************************************************************************************/
 Z_Devices zigbee_devices = Z_Devices();
+
+// Following device is used represent the unknown device, with all defaults
+// Any find() function will not return Null, instead it will return this instance
+Z_Device device_unk = Z_Device(BAD_SHORTADDR);
 
 // Local coordinator information
 uint64_t localIEEEAddr = 0;

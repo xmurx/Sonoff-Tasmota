@@ -80,33 +80,33 @@
 
 #include <ETH.h>
 
-char eth_hostname[sizeof(my_hostname)];
+char eth_hostname[sizeof(TasmotaGlobal.hostname)];
 
 void EthernetEvent(WiFiEvent_t event) {
   switch (event) {
     case SYSTEM_EVENT_ETH_START:
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ETH: " D_ATTEMPTING_CONNECTION));
+      AddLog_P(LOG_LEVEL_DEBUG, PSTR("ETH: " D_ATTEMPTING_CONNECTION));
       ETH.setHostname(eth_hostname);
       break;
     case SYSTEM_EVENT_ETH_CONNECTED:
-      AddLog_P2(LOG_LEVEL_INFO, PSTR("ETH: " D_CONNECTED " at %dMbps%s"),
+      AddLog_P(LOG_LEVEL_INFO, PSTR("ETH: " D_CONNECTED " at %dMbps%s"),
         ETH.linkSpeed(), (ETH.fullDuplex()) ? " Full Duplex" : "");
       break;
     case SYSTEM_EVENT_ETH_GOT_IP:
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ETH: Mac %s, IPAddress %s, Hostname %s"),
+      AddLog_P(LOG_LEVEL_DEBUG, PSTR("ETH: Mac %s, IPAddress %s, Hostname %s"),
         ETH.macAddress().c_str(), ETH.localIP().toString().c_str(), eth_hostname);
       Settings.ip_address[1] = (uint32_t)ETH.gatewayIP();
       Settings.ip_address[2] = (uint32_t)ETH.subnetMask();
       Settings.ip_address[3] = (uint32_t)ETH.dnsIP();
-      global_state.eth_down = 0;
+      TasmotaGlobal.global_state.eth_down = 0;
       break;
     case SYSTEM_EVENT_ETH_DISCONNECTED:
-      AddLog_P2(LOG_LEVEL_INFO, PSTR("ETH: Disconnected"));
-      global_state.eth_down = 1;
+      AddLog_P(LOG_LEVEL_INFO, PSTR("ETH: Disconnected"));
+      TasmotaGlobal.global_state.eth_down = 1;
       break;
     case SYSTEM_EVENT_ETH_STOP:
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ETH: Stopped"));
-      global_state.eth_down = 1;
+      AddLog_P(LOG_LEVEL_DEBUG, PSTR("ETH: Stopped"));
+      TasmotaGlobal.global_state.eth_down = 1;
       break;
     default:
       break;
@@ -116,12 +116,12 @@ void EthernetEvent(WiFiEvent_t event) {
 void EthernetInit(void) {
   if (!Settings.flag4.network_ethernet) { return; }
   if (!PinUsed(GPIO_ETH_PHY_MDC) && !PinUsed(GPIO_ETH_PHY_MDIO)) {
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ETH: No ETH MDC and/or ETH MDIO GPIO defined"));
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("ETH: No ETH MDC and/or ETH MDIO GPIO defined"));
     return;
   }
 
-//  snprintf_P(Eth.hostname, sizeof(Eth.hostname), PSTR("%s_eth"), my_hostname);
-  strlcpy(eth_hostname, my_hostname, sizeof(eth_hostname) -5);  // Make sure there is room for "_eth"
+//  snprintf_P(Eth.hostname, sizeof(Eth.hostname), PSTR("%s_eth"), TasmotaGlobal.hostname);
+  strlcpy(eth_hostname, TasmotaGlobal.hostname, sizeof(eth_hostname) -5);  // Make sure there is room for "_eth"
   strcat(eth_hostname, "_eth");
 
   WiFi.onEvent(EthernetEvent);
@@ -130,7 +130,7 @@ void EthernetInit(void) {
   int eth_mdc = Pin(GPIO_ETH_PHY_MDC);
   int eth_mdio = Pin(GPIO_ETH_PHY_MDIO);
   if (!ETH.begin(Settings.eth_address, eth_power, eth_mdc, eth_mdio, (eth_phy_type_t)Settings.eth_type, (eth_clock_mode_t)Settings.eth_clk_mode)) {
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ETH: Bad PHY type or init error"));
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("ETH: Bad PHY type or init error"));
   };
 }
 
@@ -164,7 +164,7 @@ void CmndEthernet(void)
 {
   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
     Settings.flag4.network_ethernet = XdrvMailbox.payload;
-    restart_flag = 2;
+    TasmotaGlobal.restart_flag = 2;
   }
   ResponseCmndStateText(Settings.flag4.network_ethernet);
 }
@@ -173,7 +173,7 @@ void CmndEthAddress(void)
 {
   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 31)) {
     Settings.eth_address = XdrvMailbox.payload;
-    restart_flag = 2;
+    TasmotaGlobal.restart_flag = 2;
   }
   ResponseCmndNumber(Settings.eth_address);
 }
@@ -182,7 +182,7 @@ void CmndEthType(void)
 {
   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 2)) {
     Settings.eth_type = XdrvMailbox.payload;
-    restart_flag = 2;
+    TasmotaGlobal.restart_flag = 2;
   }
   ResponseCmndNumber(Settings.eth_type);
 }
@@ -191,7 +191,7 @@ void CmndEthClockMode(void)
 {
   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 3)) {
     Settings.eth_clk_mode = XdrvMailbox.payload;
-    restart_flag = 2;
+    TasmotaGlobal.restart_flag = 2;
   }
   ResponseCmndNumber(Settings.eth_clk_mode);
 }

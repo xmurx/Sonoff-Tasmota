@@ -208,7 +208,7 @@ void PzemEvery250ms(void)
         Pzem.read_state = 1;
       }
 
-//      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("PZM: Retry %d"), 5 - Pzem.send_retry);
+//      AddLog_P(LOG_LEVEL_DEBUG, PSTR("PZM: Retry %d"), 5 - Pzem.send_retry);
     }
   }
 
@@ -220,7 +220,7 @@ void PzemEvery250ms(void)
         Pzem.phase--;
       }
 
-//      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("PZM: Probing address %d, Max phases %d"), Pzem.phase +1, Energy.phase_count);
+//      AddLog_P(LOG_LEVEL_DEBUG, PSTR("PZM: Probing address %d, Max phases %d"), Pzem.phase +1, Energy.phase_count);
     }
 
     if (Pzem.address) {
@@ -250,14 +250,14 @@ void PzemSnsInit(void)
     Pzem.phase = 0;
     Pzem.read_state = 1;
   } else {
-    energy_flg = ENERGY_NONE;
+    TasmotaGlobal.energy_driver = ENERGY_NONE;
   }
 }
 
 void PzemDrvInit(void)
 {
   if (PinUsed(GPIO_PZEM004_RX) && PinUsed(GPIO_PZEM0XX_TX)) {  // Any device with a Pzem004T
-    energy_flg = XNRG_03;
+    TasmotaGlobal.energy_driver = XNRG_03;
   }
 }
 
@@ -285,7 +285,7 @@ bool Xnrg03(uint8_t function)
 
   switch (function) {
     case FUNC_EVERY_250_MSECOND:
-      if (PzemSerial && (TasmotaGlobal.uptime > 4)) { PzemEvery250ms(); }
+      if (PzemSerial) { PzemEvery250ms(); }
       break;
     case FUNC_COMMAND:
       result = PzemCommand();

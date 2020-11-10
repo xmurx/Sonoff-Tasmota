@@ -97,7 +97,8 @@ void AriluxRfHandler(void)
     }
     uint16_t stored_hostcode = Settings.rf_code[1][6] << 8 | Settings.rf_code[1][7];
 
-    DEBUG_DRIVER_LOG(PSTR(D_LOG_RFR D_HOST D_CODE " 0x%04X, " D_RECEIVED " 0x%06X"), stored_hostcode, Arilux.rf_received_value);
+//    DEBUG_DRIVER_LOG(PSTR(D_LOG_RFR D_HOST D_CODE " 0x%04X, " D_RECEIVED " 0x%06X"), stored_hostcode, Arilux.rf_received_value);
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR(D_LOG_RFR D_HOST D_CODE " 0x%04X, " D_RECEIVED " 0x%06X"), stored_hostcode, Arilux.rf_received_value);
 
     if (hostcode == stored_hostcode) {
       char command[33];
@@ -146,10 +147,9 @@ void AriluxRfHandler(void)
 void AriluxRfInit(void)
 {
   if (PinUsed(GPIO_ARIRFRCV) && PinUsed(GPIO_ARIRFSEL)) {
-    if (Settings.last_module != Settings.module) {
+    if (TasmotaGlobal.module_changed) {
       Settings.rf_code[1][6] = 0;
       Settings.rf_code[1][7] = 0;
-      Settings.last_module = Settings.module;
     }
     Arilux.rf_received_value = 0;
 

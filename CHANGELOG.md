@@ -3,21 +3,65 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] - Development
 
-## [9.0.0.3]
+## [9.1.0.1]
+### Added
+- Zigbee support for Mi Door and Contact (#9759)
+- Zigbee alarm persistence (#9785)
+- Support for EZO PMP sensors by Christopher Tremblay (#9760)
+- Commands ``TuyaRGB``, ``TuyaEnum`` and ``TuyaEnumList`` (#9769)
+
+### Changed
+- Core library from v2.7.4.5 to v2.7.4.7
+- Platformio compiler option `no target align` enabled (#9749)
+- Consolidate `AddLog_P` into `AddLog_P2` and rename to `AddLog_P`
+- Sonoff L1 color up scaling and color margin detection (#9545)
+
+### Fixed
+- NTP fallback server functionality (#9739)
+
+### Removed
+- Version compatibility check
+
+## [Released]
+
+### 9.1.0 20201105
+
+- Release Imogen
+
+## [9.0.0.3] - 20201105
 ### Added
 - TLS in binary tasmota-zbbridge (#9635)
 - Support for EZO O2 sensors by Christopher Tremblay (#9619)
+- Support for EZO PRS sensors by Christopher Tremblay (#9659)
+- Support for EZO FLO sensors by Christopher Tremblay (#9697)
+- Support for EZO DO sensors by Christopher Tremblay (#9707)
+- Support for EZO RGB sensors by Christopher Tremblay (#9723)
 - Zigbee reduce battery drain (#9642)
-- Zigbee added ``ZbMap`` command to describe Zigbee topology (#9651)
+- Zigbee command ``ZbMap`` to describe Zigbee topology (#9651)
+- Zigbee command ``ZbOccupancy`` to configure the time-out for PIR
+- Command ``Gpios 255`` to show all possible GPIO configurations
+- Command ``SwitchText`` to change JSON switch names by barbudor (#9691)
+- Command ``SetOption114 1`` to detach Switches from Relays and enable MQTT action state for all the SwitchModes returning `{"Switch1":{"Action":"ON"}}`
+- Command ``DimmerStep 1..50`` to change default dimmer up and down step of 10% by James Turton (#9733)
+- HM10 Beacon support and refactoring by Christian Baars (#9702)
+- Support for Hass discovery of TuyaMcu and Sonoff Ifan by Federico Leoni (#9727)
+- Initial support for iBeacons (Sensor52) on ESP32 using internal BLE by rvbglas (#9732)
 
 ### Changed
 - PlatformIO library structure redesigned for compilation speed by Jason2866
 - Zigbee flash storage refactor adding commands ``ZbProbe``, ``ZbStatus2`` and ``ZbRestore`` (#9641)
 - Default otaurl in my_user_config.h to http://ota.tasmota.com/tasmota/release/tasmota.bin.gz
+- When ``SetOption73 1`` JSON result from `{"ACTION":"SINGLE"}` to `{"Button1":{"Action":"SINGLE"}}`
 
 ### Fixed
 - Rule Break not working as expected when ONCE is enabled (#9245)
 - Rule expressions using mems corrupts character pool (#9301)
+- Button press rules regression introduced by #9589 (#9700)
+- Rule handling of JSON ``null`` regression from v8.5.0.1 (#9685)
+- Arilux RF remote detection regression from v8.3.0
+
+### Removed
+- Auto output selection of decimal or hexadecimal data based on user input. Now only based on ``SetOption17``
 
 ## [9.0.0.2] - 20201025
 ### Added
@@ -34,9 +78,10 @@ All notable changes to this project will be documented in this file.
 - Support for EZO CO2 sensors by Christopher Tremblay (#9619)
 - On ZigbeeBridge support for glowing led when permit join is active (#9581)
 - Support for PWM Dimmer multi-press and ledmask (#9584)
+- Make button press rules override PWM Dimmer functions (#9589)
 - Support for fixed output Hi or Lo GPIO selection
 - ESP32 support for Wireless-Tag WT32-ETH01 (#9496)
-- ESP32 MI32 Beacon support, RSSI at TELEPERIOD, refactoring (#9609)
+- ESP32 MI32 Beacon support, RSSI at TELEPERIOD, refactoring by Christian Baars (#9609)
 
 ### Changed
 - Command ``Gpio17`` replaces command ``Adc``
@@ -94,8 +139,6 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - Support for direct upgrade from Tasmota versions before v7.0
 - Auto config update for all Friendlynames and Switchtopic from Tasmota versions before v8.0
-
-## [Released]
 
 ## [8.5.1] - 20201002
 - Release Hannah

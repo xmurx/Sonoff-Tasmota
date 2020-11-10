@@ -62,7 +62,7 @@ void PzemDcEverySecond(void)
     AddLogBuffer(LOG_LEVEL_DEBUG_MORE, buffer, PzemDcModbus->ReceiveCount());
 
     if (error) {
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("PDC: PzemDc %d error %d"), PZEM_DC_DEVICE_ADDRESS + PzemDc.channel, error);
+      AddLog_P(LOG_LEVEL_DEBUG, PSTR("PDC: PzemDc %d error %d"), PZEM_DC_DEVICE_ADDRESS + PzemDc.channel, error);
     } else {
       Energy.data_valid[PzemDc.channel] = 0;
       if (8 == registers) {
@@ -121,14 +121,14 @@ void PzemDcSnsInit(void)
     Energy.phase_count = 3;  // Start off with three channels
     PzemDc.channel = 0;
   } else {
-    energy_flg = ENERGY_NONE;
+    TasmotaGlobal.energy_driver = ENERGY_NONE;
   }
 }
 
 void PzemDcDrvInit(void)
 {
   if (PinUsed(GPIO_PZEM017_RX) && PinUsed(GPIO_PZEM0XX_TX)) {
-    energy_flg = XNRG_06;
+    TasmotaGlobal.energy_driver = XNRG_06;
   }
 }
 

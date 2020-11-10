@@ -51,7 +51,11 @@ enum {
 
 // The order of the EZO devices must map with the enum declared above
 const char *const EZOSupport[EZO_ADDR_n] PROGMEM = {
-  EZOStruct::id,  // "DO"
+#ifdef USE_EZODO
+  EZODO::id,
+#else
+  EZOStruct::id,
+#endif
 #ifdef USE_EZOORP
   EZOORP::id,
 #else
@@ -67,34 +71,50 @@ const char *const EZOSupport[EZO_ADDR_n] PROGMEM = {
 #else
   EZOStruct::id,
 #endif
-  EZOStruct::id,
+  EZOStruct::id,  // <unnamed>
 #ifdef USE_EZORTD
   EZORTD::id,
 #else
   EZOStruct::id,
 #endif
-  EZOStruct::id,  // "PMP"
-  EZOStruct::id,  // "FLO"
+#ifdef USE_EZOPMP
+  EZOPMP::id,
+#else
+  EZOStruct::id,
+#endif
+#ifdef USE_EZOFLO
+  EZOFLO::id,
+#else
+  EZOStruct::id,
+#endif
 #ifdef USE_EZOCO2
   EZOCO2::id,
 #else
   EZOStruct::id,
 #endif
-  EZOStruct::id,  // "PRS"
+#ifdef USE_EZOPRS
+  EZOPRS::id,
+#else
   EZOStruct::id,
+#endif
+  EZOStruct::id,  // <unnamed>
 #ifdef USE_EZOO2
   EZOO2::id,
 #else
   EZOStruct::id,
 #endif
-  EZOStruct::id,
-  EZOStruct::id,
+  EZOStruct::id,  // <unnamed>
+  EZOStruct::id,  // <unnamed>
 #ifdef USE_EZOHUM
   EZOHUM::id,
 #else
   EZOStruct::id,
 #endif
-  EZOStruct::id,  // "RGB"
+#ifdef USE_EZORGB
+  EZORGB::id,
+#else
+  EZOStruct::id,
+#endif
 };
 
 #define CREATE_EZO_CLASS(CLASS)             \
@@ -226,6 +246,9 @@ private:
 
                 // We use switch intead of virtual function to save RAM
                 switch (j + EZO_ADDR_0) {
+#ifdef USE_EZODO
+                  CREATE_EZO_CLASS(DO)
+#endif
 #ifdef USE_EZOORP
                   CREATE_EZO_CLASS(ORP)
 #endif
@@ -238,14 +261,26 @@ private:
 #ifdef USE_EZORTD
                   CREATE_EZO_CLASS(RTD)
 #endif
+#ifdef USE_EZOPMP
+                  CREATE_EZO_CLASS(PMP)
+#endif
+#ifdef USE_EZOFLO
+                  CREATE_EZO_CLASS(FLO)
+#endif
 #ifdef USE_EZOCO2
                   CREATE_EZO_CLASS(CO2)
+#endif
+#ifdef USE_EZOPRS
+                  CREATE_EZO_CLASS(PRS)
 #endif
 #ifdef USE_EZOO2
                   CREATE_EZO_CLASS(O2)
 #endif
 #ifdef USE_EZOHUM
                   CREATE_EZO_CLASS(HUM)
+#endif
+#ifdef USE_EZORGB
+                  CREATE_EZO_CLASS(RGB)
 #endif
                 }
                 count++;

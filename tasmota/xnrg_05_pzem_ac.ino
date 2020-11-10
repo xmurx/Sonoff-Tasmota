@@ -63,7 +63,7 @@ void PzemAcEverySecond(void)
     AddLogBuffer(LOG_LEVEL_DEBUG_MORE, buffer, PzemAcModbus->ReceiveCount());
 
     if (error) {
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("PAC: PzemAc %d error %d"), PZEM_AC_DEVICE_ADDRESS + PzemAc.phase, error);
+      AddLog_P(LOG_LEVEL_DEBUG, PSTR("PAC: PzemAc %d error %d"), PZEM_AC_DEVICE_ADDRESS + PzemAc.phase, error);
     } else {
       Energy.data_valid[PzemAc.phase] = 0;
       if (10 == registers) {
@@ -124,14 +124,14 @@ void PzemAcSnsInit(void)
     Energy.phase_count = 3;  // Start off with three phases
     PzemAc.phase = 0;
   } else {
-    energy_flg = ENERGY_NONE;
+    TasmotaGlobal.energy_driver = ENERGY_NONE;
   }
 }
 
 void PzemAcDrvInit(void)
 {
   if (PinUsed(GPIO_PZEM016_RX) && PinUsed(GPIO_PZEM0XX_TX)) {
-    energy_flg = XNRG_05;
+    TasmotaGlobal.energy_driver = XNRG_05;
   }
 }
 
