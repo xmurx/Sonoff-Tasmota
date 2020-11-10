@@ -31,7 +31,7 @@
 #include <Wire.h>
 #include "VL53L0X.h"
 VL53L0X sensor;
-
+static uint16_t _restartCount_ = 0;
 struct {
   uint16_t distance;
   uint16_t distance_prev;
@@ -42,12 +42,16 @@ struct {
 
 /********************************************************************************************/
 
-void Vl53l0Detect(void) {
-  if (!I2cSetDevice(0x29)) { return; }
+void Vl53l0Detect(bool restart) {
+  
+  if (!restart && !I2cSetDevice(0x29)) { return; }
 
   if (!sensor.init()) { return; }
 
-  I2cSetActiveFound(sensor.getAddress(), "VL53L0X");
+  if (!restart)
+  {
+    I2cSetActiveFound(sensor.getAddress(), "VL53L0X");
+  }
 
   sensor.setTimeout(500);
 
@@ -71,6 +75,11 @@ const char HTTP_SNS_VL53L0X[] PROGMEM =
 void Vl53l0Every_250MSecond(void) {
   // every 200 ms
   uint16_t dist = sensor.readRangeContinuousMillimeters();
+  if(sensor.timeoutOccurred())
+  {
+    Vl53l0x.ready = 0;
+  }
+
   if ((0 == dist) || (dist > 2000)) {
     dist = 9999;
   }
@@ -139,29 +148,37 @@ bool Xsns45(byte function)
   if (!I2cEnabled(XI2C_31)) { return false; }
 
   bool result = false;
-
-  if (FUNC_INIT == function) {
-    Vl53l0Detect();
+  if (FUNC_INIT == function)
+  {
+    Vl53l0Detect(false);
   }
-  else if (Vl53l0x.ready) {
-    switch (function) {
+  else if (Vl53l0x.ready)
+  {
+    switch (function)
+    {
       case FUNC_EVERY_250_MSECOND:
         Vl53l0Every_250MSecond();
         break;
-#ifdef USE_DOMOTICZ
-     case FUNC_EVERY_SECOND:
+  #ifdef USE_DOMOTICZ
+      case FUNC_EVERY_SECOND:
         Vl53l0Every_Second();
         break;
-#endif  // USE_DOMOTICZ
+  #endif  // USE_DOMOTICZ
       case FUNC_JSON_APPEND:
         Vl53l0Show(1);
         break;
-#ifdef USE_WEBSERVER
+  #ifdef USE_WEBSERVER
       case FUNC_WEB_SENSOR:
         Vl53l0Show(0);
         break;
-#endif  // USE_WEBSERVER
+  #endif  // USE_WEBSERVER
     }
+  }
+  else if(Vl53l0x.ready == 0) //sensor was ready but timeout occured
+  {
+    _restartCount_++;
+    Vl53l0Detect(true);
+    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("Vl53l0: number of restarts %d"), _restartCount_);
   }
   return result;
 }
