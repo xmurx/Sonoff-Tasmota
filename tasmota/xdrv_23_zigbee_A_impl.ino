@@ -32,7 +32,8 @@ const char kZbCommands[] PROGMEM = D_PRFX_ZB "|"    // prefix
   D_CMND_ZIGBEE_STATUS "|" D_CMND_ZIGBEE_RESET "|" D_CMND_ZIGBEE_SEND "|" D_CMND_ZIGBEE_PROBE "|"
   D_CMND_ZIGBEE_FORGET "|" D_CMND_ZIGBEE_SAVE "|" D_CMND_ZIGBEE_NAME "|"
   D_CMND_ZIGBEE_BIND "|" D_CMND_ZIGBEE_UNBIND "|" D_CMND_ZIGBEE_PING "|" D_CMND_ZIGBEE_MODELID "|"
-  D_CMND_ZIGBEE_LIGHT "|" D_CMND_ZIGBEE_RESTORE "|" D_CMND_ZIGBEE_BIND_STATE "|"
+  D_CMND_ZIGBEE_LIGHT "|" D_CMND_ZIGBEE_OCCUPANCY "|"
+  D_CMND_ZIGBEE_RESTORE "|" D_CMND_ZIGBEE_BIND_STATE "|" D_CMND_ZIGBEE_MAP "|"
   D_CMND_ZIGBEE_CONFIG "|" D_CMND_ZIGBEE_DATA
   ;
 
@@ -47,7 +48,8 @@ void (* const ZigbeeCommand[])(void) PROGMEM = {
   &CmndZbStatus, &CmndZbReset, &CmndZbSend, &CmndZbProbe,
   &CmndZbForget, &CmndZbSave, &CmndZbName,
   &CmndZbBind, &CmndZbUnbind, &CmndZbPing, &CmndZbModelId,
-  &CmndZbLight, &CmndZbRestore, &CmndZbBindState,
+  &CmndZbLight, &CmndZbOccupancy,
+  &CmndZbRestore, &CmndZbBindState, &CmndZbMap,
   &CmndZbConfig, CmndZbData,
   };
 
@@ -63,7 +65,7 @@ void ZigbeeInit(void)
   // Check if settings in Flash are set
   if (PinUsed(GPIO_ZIGBEE_RX) && PinUsed(GPIO_ZIGBEE_TX)) {
     if (0 == Settings.zb_channel) {
-      AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "Randomizing Zigbee parameters, please check with 'ZbConfig'"));
+      AddLog_P(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "Randomizing Zigbee parameters, please check with 'ZbConfig'"));
       uint64_t mac64 = 0;     // stuff mac address into 64 bits
       WiFi.macAddress((uint8_t*) &mac64);
       uint32_t esp_id = ESP_getChipId();
@@ -126,7 +128,7 @@ void CmndZbReset(void) {
       eraseZigbeeDevices();
     case 2:   // fall through
       Settings.zb_txradio_dbm = - abs(Settings.zb_txradio_dbm);
-      restart_flag = 2;
+      TasmotaGlobal.restart_flag = 2;
 #ifdef USE_ZIGBEE_ZNP
       ResponseCmndChar_P(PSTR(D_JSON_ZIGBEE_CC2530 " " D_JSON_RESET_AND_RESTARTING));
 #endif // USE_ZIGBEE_ZNP
@@ -170,13 +172,13 @@ void zigbeeZCLSendStr(uint16_t shortaddr, uint16_t groupaddr, uint8_t endpoint, 
   if ((0 == endpoint) && (BAD_SHORTADDR != shortaddr)) {
     // endpoint is not specified, let's try to find it from shortAddr, unless it's a group address
     endpoint = zigbee_devices.findFirstEndpoint(shortaddr);
-    //AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ZbSend: guessing endpoint 0x%02X"), endpoint);
+    //AddLog_P(LOG_LEVEL_DEBUG, PSTR("ZbSend: guessing endpoint 0x%02X"), endpoint);
   }
-  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ZbSend: shortaddr 0x%04X, groupaddr 0x%04X, cluster 0x%04X, endpoint 0x%02X, cmd 0x%02X, data %s"),
+  AddLog_P(LOG_LEVEL_DEBUG, PSTR("ZbSend: shortaddr 0x%04X, groupaddr 0x%04X, cluster 0x%04X, endpoint 0x%02X, cmd 0x%02X, data %s"),
     shortaddr, groupaddr, cluster, endpoint, cmd, param);
 
   if ((0 == endpoint) && (BAD_SHORTADDR != shortaddr)) {     // endpoint null is ok for group address
-    AddLog_P2(LOG_LEVEL_INFO, PSTR("ZbSend: unspecified endpoint"));
+    AddLog_P(LOG_LEVEL_INFO, PSTR("ZbSend: unspecified endpoint"));
     return;
   }
 
@@ -192,6 +194,7 @@ void zigbeeZCLSendStr(uint16_t shortaddr, uint16_t groupaddr, uint8_t endpoint, 
     manuf,  /* manuf */
     clusterSpecific /* not cluster specific */,
     true /* response */,
+    false /* discover route */,
     seq,  /* zcl transaction id */
     buf.getBuffer(), buf.len()
   }));
@@ -219,13 +222,36 @@ void ZbApplyMultiplier(double &val_d, int8_t multiplier) {
 }
 
 //
+// Write Tuya-Moes attribute
+//
+bool ZbTuyaWrite(SBuffer & buf, const Z_attribute & attr, uint8_t transid) {
+  double val_d = attr.getFloat();
+  const char * val_str = attr.getStr();
+
+  if (attr.key_is_str) { return false; }    // couldn't find attr if so skip
+  if (attr.isNum() && (1 != attr.attr_multiplier)) {
+    ZbApplyMultiplier(val_d, attr.attr_multiplier);
+  }
+  buf.add8(0);                      // status
+  buf.add8(transid);                // transid
+  buf.add16(attr.key.id.attr_id);   // dp
+  buf.add8(0);                      // fn
+  int32_t res = encodeSingleAttribute(buf, val_d, val_str, attr.attr_type);
+  if (res < 0) {
+    AddLog_P(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "Error for Tuya attribute type %04X/%04X '0x%02X'"), attr.key.id.cluster, attr.key.id.attr_id, attr.attr_type);
+    return false;
+  }
+  return true;
+}
+
+//
 // Send Attribute Write, apply mutlipliers before
 //
 bool ZbAppendWriteBuf(SBuffer & buf, const Z_attribute & attr, bool prepend_status_ok) {
   double val_d = attr.getFloat();
   const char * val_str = attr.getStr();
 
-  if (attr.key_is_str) { return false; }
+  if (attr.key_is_str) { return false; }    // couldn't find attr if so skip
   if (attr.isNum() && (1 != attr.attr_multiplier)) {
     ZbApplyMultiplier(val_d, attr.attr_multiplier);
   }
@@ -240,15 +266,17 @@ bool ZbAppendWriteBuf(SBuffer & buf, const Z_attribute & attr, bool prepend_stat
   if (res < 0) {
     // remove the attribute type we just added
     // buf.setLen(buf.len() - (operation == ZCL_READ_ATTRIBUTES_RESPONSE ? 4 : 3));
-    AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "Unsupported attribute type %04X/%04X '0x%02X'"), attr.key.id.cluster, attr.key.id.attr_id, attr.attr_type);
+    AddLog_P(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "Unsupported attribute type %04X/%04X '0x%02X'"), attr.key.id.cluster, attr.key.id.attr_id, attr.attr_type);
     return false;
   }
   return true;
 }
 
-// Parse "Report", "Write", "Response" or "Condig" attribute
+//
+// Parse "Report", "Write", "Response" or "Config" attribute
 // Operation is one of: ZCL_REPORT_ATTRIBUTES (0x0A), ZCL_WRITE_ATTRIBUTES (0x02) or ZCL_READ_ATTRIBUTES_RESPONSE (0x01)
-void ZbSendReportWrite(class JsonParserToken val_pubwrite, uint16_t device, uint16_t groupaddr, uint16_t cluster, uint8_t endpoint, uint16_t manuf, uint8_t operation) {
+//
+void ZbSendReportWrite(class JsonParserToken val_pubwrite, class ZigbeeZCLSendMessage & packet) {
   SBuffer buf(200);       // buffer to store the binary output of attibutes
 
   if (nullptr == XdrvMailbox.command) {
@@ -263,9 +291,11 @@ void ZbSendReportWrite(class JsonParserToken val_pubwrite, uint16_t device, uint
     attr.setKeyName(key.getStr());
     if (Z_parseAttributeKey(attr)) {
       // Buffer ready, do some sanity checks
-      if (0xFFFF == cluster) {
-        cluster = attr.key.id.cluster;       // set the cluster for this packet
-      } else if (cluster != attr.key.id.cluster) {
+
+      // all attributes must use the same cluster
+      if (0xFFFF == packet.cluster) {
+        packet.cluster = attr.key.id.cluster;       // set the cluster for this packet
+      } else if (packet.cluster != attr.key.id.cluster) {
         ResponseCmndChar_P(PSTR("No more than one cluster id per command"));
         return;
       }
@@ -281,6 +311,7 @@ void ZbSendReportWrite(class JsonParserToken val_pubwrite, uint16_t device, uint
       }
     }
 
+    // copy value from input to attribute, in numerical or string format
     if (value.isStr()) {
       attr.setStr(value.getStr());
     } else if (value.isNum()) {
@@ -291,8 +322,19 @@ void ZbSendReportWrite(class JsonParserToken val_pubwrite, uint16_t device, uint
     const char* val_str = "";       // variant as string
     ////////////////////////////////////////////////////////////////////////////////
     // Split encoding depending on message
-    if (operation != ZCL_CONFIGURE_REPORTING) {
-      if (!ZbAppendWriteBuf(buf, attr, operation == ZCL_READ_ATTRIBUTES_RESPONSE)) {
+    if (packet.cmd != ZCL_CONFIGURE_REPORTING) {
+      if ((packet.cluster == 0XEF00) && (packet.cmd == ZCL_WRITE_ATTRIBUTES)) {
+        // special case of Tuya / Moes attributes
+        if (buf.len() > 0) {
+          AddLog_P(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "Only 1 attribute allowed for Tuya"));
+          return;
+        }
+        packet.clusterSpecific = true;
+        packet.cmd = 0x00;
+        if (!ZbTuyaWrite(buf, attr, zigbee_devices.getNextSeqNumber(packet.shortaddr))) {
+          return;   // error
+        }
+      } else if (!ZbAppendWriteBuf(buf, attr, packet.cmd == ZCL_READ_ATTRIBUTES_RESPONSE)) { // general case
         return;   // error
       }
     } else {
@@ -353,19 +395,10 @@ void ZbSendReportWrite(class JsonParserToken val_pubwrite, uint16_t device, uint
   }
 
   // all good, send the packet
-  uint8_t seq = zigbee_devices.getNextSeqNumber(device);
-  ZigbeeZCLSend_Raw(ZigbeeZCLSendMessage({
-    device,
-    groupaddr,
-    cluster /*cluster*/,
-    endpoint,
-    operation,
-    manuf,  /* manuf */
-    false /* not cluster specific */,
-    false /* no response */,
-    seq,  /* zcl transaction id */
-    buf.getBuffer(), buf.len()
-  }));
+  packet.transacId = zigbee_devices.getNextSeqNumber(packet.shortaddr);
+  packet.msg = buf.getBuffer();
+  packet.len = buf.len();
+  ZigbeeZCLSend_Raw(packet);
   ResponseCmndDone();
 }
 
@@ -442,7 +475,7 @@ void ZbSendSend(class JsonParserToken val_cmd, uint16_t device, uint16_t groupad
         }
       }
 
-      //AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ZbSend: command_template = %s"), cmd_str.c_str());
+      //AddLog_P(LOG_LEVEL_DEBUG, PSTR("ZbSend: command_template = %s"), cmd_str.c_str());
       if (0xFF == cmd_var) {      // if command number is a variable, replace it with x
         cmd = x;
         x = y;                  // and shift other variables
@@ -451,7 +484,7 @@ void ZbSendSend(class JsonParserToken val_cmd, uint16_t device, uint16_t groupad
         cmd = cmd_var;          // or simply copy the cmd number
       }
       cmd_str = zigbeeCmdAddParams(cmd_str.c_str(), x, y, z);   // fill in parameters
-      //AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ZbSend: command_final    = %s"), cmd_str.c_str());
+      //AddLog_P(LOG_LEVEL_DEBUG, PSTR("ZbSend: command_final    = %s"), cmd_str.c_str());
       cmd_s = cmd_str.c_str();
     } else {
       // we have zero command, pass through until last error for missing command
@@ -493,7 +526,7 @@ void ZbSendSend(class JsonParserToken val_cmd, uint16_t device, uint16_t groupad
     // we have an unsupported command type, just ignore it and fallback to missing command
   }
 
-  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ZigbeeZCLSend device: 0x%04X, group: 0x%04X, endpoint:%d, cluster:0x%04X, cmd:0x%02X, send:\"%s\""),
+  AddLog_P(LOG_LEVEL_DEBUG, PSTR("ZigbeeZCLSend device: 0x%04X, group: 0x%04X, endpoint:%d, cluster:0x%04X, cmd:0x%02X, send:\"%s\""),
             device, groupaddr, endpoint, cluster, cmd, cmd_s);
   zigbeeZCLSendStr(device, groupaddr, endpoint, clusterSpecific, manuf, cluster, cmd, cmd_s);
   ResponseCmndDone();
@@ -501,7 +534,7 @@ void ZbSendSend(class JsonParserToken val_cmd, uint16_t device, uint16_t groupad
 
 
 // Parse the "Send" attribute and send the command
-void ZbSendRead(JsonParserToken val_attr, uint16_t device, uint16_t groupaddr, uint16_t cluster, uint8_t endpoint, uint16_t manuf, uint8_t operation) {
+void ZbSendRead(JsonParserToken val_attr, ZigbeeZCLSendMessage & packet) {
   // ZbSend {"Device":"0xF289","Cluster":0,"Endpoint":3,"Read":5}
   // ZbSend {"Device":"0xF289","Cluster":"0x0000","Endpoint":"0x0003","Read":"0x0005"}
   // ZbSend {"Device":"0xF289","Cluster":0,"Endpoint":3,"Read":[5,6,7,4]}
@@ -516,7 +549,7 @@ void ZbSendRead(JsonParserToken val_attr, uint16_t device, uint16_t groupaddr, u
   uint8_t* attrs = nullptr;       // empty string is valid
   size_t   attr_item_len = 2;     // how many bytes per attribute, standard for "Read"
   size_t   attr_item_offset = 0;  // how many bytes do we offset to store attribute
-  if (ZCL_READ_REPORTING_CONFIGURATION == operation) {
+  if (ZCL_READ_REPORTING_CONFIGURATION == packet.cmd) {
     attr_item_len = 3;
     attr_item_offset = 1;
   }
@@ -569,9 +602,9 @@ void ZbSendRead(JsonParserToken val_attr, uint16_t device, uint16_t groupaddr, u
           actual_attr_len += attr_item_len - 2 - attr_item_offset;    // normally 0
           found = true;
           // check cluster
-          if (0xFFFF == cluster) {
-            cluster = local_cluster_id;
-          } else if (cluster != local_cluster_id) {
+          if (0xFFFF == packet.cluster) {
+            packet.cluster = local_cluster_id;
+          } else if (packet.cluster != local_cluster_id) {
             ResponseCmndChar_P(PSTR("No more than one cluster id per command"));
             if (attrs) { free(attrs); }
             return;
@@ -580,14 +613,14 @@ void ZbSendRead(JsonParserToken val_attr, uint16_t device, uint16_t groupaddr, u
         }
       }
       if (!found) {
-        AddLog_P2(LOG_LEVEL_INFO, PSTR("ZIG: Unknown attribute name (ignored): %s"), key);
+        AddLog_P(LOG_LEVEL_INFO, PSTR("ZIG: Unknown attribute name (ignored): %s"), key);
       }
     }
 
     attrs_len = actual_attr_len;
   } else {
     // value is a literal
-    if (0xFFFF != cluster) {
+    if (0xFFFF != packet.cluster) {
       uint16_t val = val_attr.getUInt();
       attrs_len = attr_item_len;
       attrs = (uint8_t*) calloc(attrs_len, 1);
@@ -597,19 +630,11 @@ void ZbSendRead(JsonParserToken val_attr, uint16_t device, uint16_t groupaddr, u
   }
 
   if (attrs_len > 0) {
-    uint8_t seq = zigbee_devices.getNextSeqNumber(device);
-    ZigbeeZCLSend_Raw(ZigbeeZCLSendMessage({
-      device,
-      groupaddr,
-      cluster /*cluster*/,
-      endpoint,
-      operation,
-      manuf,  /* manuf */
-      false /* not cluster specific */,
-      true /* response */,
-      seq,  /* zcl transaction id */
-      attrs, attrs_len
-    }));
+    // all good, send the packet
+    packet.transacId = zigbee_devices.getNextSeqNumber(packet.shortaddr);
+    packet.msg = attrs;
+    packet.len = attrs_len;
+    ZigbeeZCLSend_Raw(packet);
     ResponseCmndDone();
   } else {
     ResponseCmndChar_P(PSTR("Missing parameters"));
@@ -658,7 +683,7 @@ void CmndZbSend(void) {
   // parse "Device" and "Group"
   JsonParserToken val_device = root[PSTR(D_CMND_ZIGBEE_DEVICE)];
   if (val_device) {
-    device = zigbee_devices.parseDeviceParam(val_device.getStr());
+    device = zigbee_devices.parseDeviceFromName(val_device.getStr(), true).shortaddr;
     if (BAD_SHORTADDR == device) { ResponseCmndChar_P(PSTR("Invalid parameter")); return; }
   }
   if (BAD_SHORTADDR == device) {     // if not found, check if we have a group
@@ -683,7 +708,7 @@ void CmndZbSend(void) {
     endpoint = 0xFF;                  // endpoint not used for group addresses, so use a dummy broadcast endpoint
   } else if (0 == endpoint) {         // if it was not already specified, try to guess it
     endpoint = zigbee_devices.findFirstEndpoint(device);
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("ZIG: guessing endpoint %d"), endpoint);
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("ZIG: guessing endpoint %d"), endpoint);
   }
   if (0 == endpoint) {                // after this, if it is still zero, then it's an error
       ResponseCmndChar_P(PSTR("Missing endpoint"));
@@ -707,6 +732,21 @@ void CmndZbSend(void) {
   }
   // from here we have one and only one command
 
+  // collate information in a ready to send packet
+  ZigbeeZCLSendMessage packet({
+    device,
+    groupaddr,
+    cluster /*cluster*/,
+    endpoint,
+    ZCL_READ_ATTRIBUTES,
+    manuf,  /* manuf */
+    false /* not cluster specific */,
+    false /* no response */,
+    false /* discover route */,
+    0,  /* zcl transaction id */
+    nullptr, 0
+  });
+
   if (val_cmd) {
     // "Send":{...commands...}
     // we accept either a string or a JSON object
@@ -714,7 +754,8 @@ void CmndZbSend(void) {
   } else if (val_read) {
     // "Read":{...attributes...}, "Read":attribute or "Read":[...attributes...]
     // we accept eitehr a number, a string, an array of numbers/strings, or a JSON object
-    ZbSendRead(val_read, device, groupaddr, cluster, endpoint, manuf, ZCL_READ_ATTRIBUTES);
+    packet.cmd = ZCL_READ_ATTRIBUTES;
+    ZbSendRead(val_read, packet);
   } else if (val_write) {
     // only KSON object
     if (!val_write.isObject()) {
@@ -722,7 +763,8 @@ void CmndZbSend(void) {
       return;
     }
     // "Write":{...attributes...}
-    ZbSendReportWrite(val_write, device, groupaddr, cluster, endpoint, manuf, ZCL_WRITE_ATTRIBUTES);
+    packet.cmd = ZCL_WRITE_ATTRIBUTES;
+    ZbSendReportWrite(val_write, packet);
   } else if (val_publish) {
     // "Publish":{...attributes...}
     // only KSON object
@@ -730,7 +772,8 @@ void CmndZbSend(void) {
       ResponseCmndChar_P(PSTR("Missing parameters"));
       return;
     }
-    ZbSendReportWrite(val_publish, device, groupaddr, cluster, endpoint, manuf, ZCL_REPORT_ATTRIBUTES);
+    packet.cmd = ZCL_REPORT_ATTRIBUTES;
+    ZbSendReportWrite(val_publish, packet);
   } else if (val_response) {
     // "Report":{...attributes...}
     // only KSON object
@@ -738,11 +781,13 @@ void CmndZbSend(void) {
       ResponseCmndChar_P(PSTR("Missing parameters"));
       return;
     }
-    ZbSendReportWrite(val_response, device, groupaddr, cluster, endpoint, manuf, ZCL_READ_ATTRIBUTES_RESPONSE);
+    packet.cmd = ZCL_READ_ATTRIBUTES_RESPONSE;
+    ZbSendReportWrite(val_response, packet);
   } else if (val_read_config) {
     // "ReadConfg":{...attributes...}, "ReadConfg":attribute or "ReadConfg":[...attributes...]
     // we accept eitehr a number, a string, an array of numbers/strings, or a JSON object
-    ZbSendRead(val_read_config, device, groupaddr, cluster, endpoint, manuf, ZCL_READ_REPORTING_CONFIGURATION);
+    packet.cmd = ZCL_READ_REPORTING_CONFIGURATION;
+    ZbSendRead(val_read_config, packet);
   } else if (val_config) {
     // "Config":{...attributes...}
     // only JSON object
@@ -750,7 +795,8 @@ void CmndZbSend(void) {
       ResponseCmndChar_P(PSTR("Missing parameters"));
       return;
     }
-   ZbSendReportWrite(val_config, device, groupaddr, cluster, endpoint, manuf, ZCL_CONFIGURE_REPORTING);
+    packet.cmd = ZCL_CONFIGURE_REPORTING;
+    ZbSendReportWrite(val_config, packet);
   } else {
     Response_P(PSTR("Missing zigbee 'Send', 'Write', 'Report' or 'Response'"));
     return;
@@ -771,25 +817,24 @@ void ZbBindUnbind(bool unbind) {    // false = bind, true = unbind
   if (!root) { ResponseCmndChar_P(PSTR(D_JSON_INVALID_JSON)); return; }
 
   // params
-  uint16_t srcDevice = BAD_SHORTADDR;      // BAD_SHORTADDR is broadcast, so considered invalid
   uint16_t dstDevice = BAD_SHORTADDR;      // BAD_SHORTADDR is broadcast, so considered invalid
   uint64_t dstLongAddr = 0;
   uint8_t  endpoint = 0x00;         // 0x00 is invalid for the src endpoint
   uint8_t  toendpoint = 0x01;       // default dest endpoint to 0x01
   uint16_t toGroup = 0x0000;        // group address
-  uint16_t cluster  = 0;            // 0xFFFF is invalid
+  uint16_t cluster  = 0;            // cluster 0 is default
   uint32_t group = 0xFFFFFFFF;      // 16 bits values, otherwise 0xFFFFFFFF is unspecified
 
   // Information about source device: "Device", "Endpoint", "Cluster"
   //  - the source endpoint must have a known IEEE address
-  srcDevice = zigbee_devices.parseDeviceParam(root.getStr(PSTR(D_CMND_ZIGBEE_DEVICE), nullptr));
-  if (BAD_SHORTADDR == srcDevice) { ResponseCmndChar_P(PSTR("Unknown source device")); return; }
+  const Z_Device & src_device = zigbee_devices.parseDeviceFromName(root.getStr(PSTR(D_CMND_ZIGBEE_DEVICE), nullptr), true);
+  if (!src_device.valid()) { ResponseCmndChar_P(PSTR("Unknown source device")); return; }
   // check if IEEE address is known
-  uint64_t srcLongAddr = zigbee_devices.getDeviceLongAddr(srcDevice);
+  uint64_t srcLongAddr = src_device.longaddr;
   if (0 == srcLongAddr) { ResponseCmndChar_P(PSTR("Unknown source IEEE address")); return; }
   // look for source endpoint
   endpoint = root.getUInt(PSTR(D_CMND_ZIGBEE_ENDPOINT), endpoint);
-  if (0 == endpoint) { endpoint = zigbee_devices.findFirstEndpoint(srcDevice); }
+  if (0 == endpoint) { endpoint = zigbee_devices.findFirstEndpoint(src_device.shortaddr); }
   // look for source cluster
   JsonParserToken val_cluster = root[PSTR(D_CMND_ZIGBEE_CLUSTER)];
   if (val_cluster) {
@@ -812,26 +857,23 @@ void ZbBindUnbind(bool unbind) {    // false = bind, true = unbind
   // If no target is specified, we default to coordinator 0x0000
   if ((!to_group) && (!dst_device)) {
     dstDevice = 0x0000;
+    dstLongAddr = localIEEEAddr;
+    toendpoint = 1;
   }
 
-  if ((dst_device) || (BAD_SHORTADDR != dstDevice)) {
-    if (BAD_SHORTADDR == dstDevice) {
-      dstDevice = zigbee_devices.parseDeviceParam(dst_device.getStr(nullptr));
-      if (BAD_SHORTADDR == dstDevice) { ResponseCmndChar_P(PSTR("Invalid parameter")); return; }
-    }
-    if (0x0000 == dstDevice) {
-      dstLongAddr = localIEEEAddr;
-    } else {
-      dstLongAddr = zigbee_devices.getDeviceLongAddr(dstDevice);
-    }
-    if (0 == dstLongAddr) { ResponseCmndChar_P(PSTR("Unknown dest IEEE address")); return; }
+  if (dst_device) {
+    const Z_Device & dstDevice = zigbee_devices.parseDeviceFromName(dst_device.getStr(nullptr), true);
+    if (!dstDevice.valid()) { ResponseCmndChar_P(PSTR("Unknown dest device")); return; }
+    dstLongAddr = dstDevice.longaddr;
+  }
 
+  if (!to_group) {
+    if (0 == dstLongAddr) { ResponseCmndChar_P(PSTR("Unknown dest IEEE address")); return; }
     toendpoint = root.getUInt(PSTR("ToEndpoint"), toendpoint);
   }
 
   // make sure we don't have conflicting parameters
-  if (to_group && dstLongAddr) { ResponseCmndChar_P(PSTR("Cannot have both \"ToDevice\" and \"ToGroup\"")); return; }
-  if (!to_group && !dstLongAddr) { ResponseCmndChar_P(PSTR("Missing \"ToDevice\" or \"ToGroup\"")); return; }
+  if (to_group && dst_device) { ResponseCmndChar_P(PSTR("Cannot have both \"ToDevice\" and \"ToGroup\"")); return; }
 
 #ifdef USE_ZIGBEE_ZNP
   SBuffer buf(34);
@@ -841,11 +883,11 @@ void ZbBindUnbind(bool unbind) {    // false = bind, true = unbind
   } else {
     buf.add8(ZDO_BIND_REQ);
   }
-  buf.add16(srcDevice);
+  buf.add16(src_device.shortaddr);
   buf.add64(srcLongAddr);
   buf.add8(endpoint);
   buf.add16(cluster);
-  if (dstLongAddr) {
+  if (!to_group) {
     buf.add8(Z_Addr_IEEEAddress);         // DstAddrMode - 0x03 = ADDRESS_64_BIT
     buf.add64(dstLongAddr);
     buf.add8(toendpoint);
@@ -864,7 +906,7 @@ void ZbBindUnbind(bool unbind) {    // false = bind, true = unbind
   buf.add64(srcLongAddr);
   buf.add8(endpoint);
   buf.add16(cluster);
-  if (dstLongAddr) {
+  if (!to_group) {
     buf.add8(Z_Addr_IEEEAddress);         // DstAddrMode - 0x03 = ADDRESS_64_BIT
     buf.add64(dstLongAddr);
     buf.add8(toendpoint);
@@ -873,7 +915,7 @@ void ZbBindUnbind(bool unbind) {    // false = bind, true = unbind
     buf.add16(toGroup);
   }
 
-  EZ_SendZDO(srcDevice, unbind ? ZDO_UNBIND_REQ : ZDO_BIND_REQ, buf.buf(), buf.len());
+  EZ_SendZDO(src_device.shortaddr, unbind ? ZDO_UNBIND_REQ : ZDO_BIND_REQ, buf.buf(), buf.len());
 #endif // USE_ZIGBEE_EZSP
 
   ResponseCmndDone();
@@ -893,20 +935,16 @@ void CmndZbUnbind(void) {
   ZbBindUnbind(true);
 }
 
-//
-// Command `ZbBindState`
-// `ZbBindState<x>` as index if it does not fit. If default, `1` starts at the beginning
-//
-void CmndZbBindState(void) {
+void CmndZbBindState_or_Map(uint16_t zdo_cmd) {
   if (zigbee.init_phase) { ResponseCmndChar_P(PSTR(D_ZIGBEE_NOT_STARTED)); return; }
-  uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data);
+  uint16_t shortaddr = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true).shortaddr;
   if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
   uint8_t index = XdrvMailbox.index - 1;   // change default 1 to 0
 
 #ifdef USE_ZIGBEE_ZNP
   SBuffer buf(10);
   buf.add8(Z_SREQ | Z_ZDO);             // 25
-  buf.add8(ZDO_MGMT_BIND_REQ);          // 33
+  buf.add8(zdo_cmd);                    // 33
   buf.add16(shortaddr);                 // shortaddr
   buf.add8(index);                      // StartIndex = 0
 
@@ -918,10 +956,36 @@ void CmndZbBindState(void) {
   // ZDO message payload (see Zigbee spec 2.4.3.3.4)
   uint8_t buf[] = { index };           // index = 0
 
-  EZ_SendZDO(shortaddr, ZDO_Mgmt_Bind_req, buf, sizeof(buf));
+  EZ_SendZDO(shortaddr, zdo_cmd, buf, sizeof(buf));
 #endif // USE_ZIGBEE_EZSP
 
   ResponseCmndDone();
+}
+
+//
+// Command `ZbBindState`
+// `ZbBindState<x>` as index if it does not fit. If default, `1` starts at the beginning
+//
+void CmndZbBindState(void) {
+#ifdef USE_ZIGBEE_ZNP
+  CmndZbBindState_or_Map(ZDO_MGMT_BIND_REQ);
+#endif // USE_ZIGBEE_ZNP
+#ifdef USE_ZIGBEE_EZSP
+  CmndZbBindState_or_Map(ZDO_Mgmt_Bind_req);
+#endif // USE_ZIGBEE_EZSP
+}
+
+//
+// Command `ZbMap`
+// `ZbMap<x>` as index if it does not fit. If default, `1` starts at the beginning
+//
+void CmndZbMap(void) {
+#ifdef USE_ZIGBEE_ZNP
+  CmndZbBindState_or_Map(ZDO_MGMT_LQI_REQ);
+#endif // USE_ZIGBEE_ZNP
+#ifdef USE_ZIGBEE_EZSP
+  CmndZbBindState_or_Map(ZDO_Mgmt_Lqi_req);
+#endif // USE_ZIGBEE_EZSP
 }
 
 // Probe a specific device to get its endpoints and supported clusters
@@ -934,7 +998,7 @@ void CmndZbProbe(void) {
 //
 void CmndZbProbeOrPing(boolean probe) {
   if (zigbee.init_phase) { ResponseCmndChar_P(PSTR(D_ZIGBEE_NOT_STARTED)); return; }
-  uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data);
+  uint16_t shortaddr = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true).shortaddr;
   if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
 
   // everything is good, we can send the command
@@ -966,19 +1030,19 @@ void CmndZbName(void) {
 
   // check if parameters contain a comma ','
   char *p;
-  char *str = strtok_r(XdrvMailbox.data, ", ", &p);
+  char *str = strtok_r(XdrvMailbox.data, ",", &p);
 
   // parse first part, <device_id>
-  uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
-  if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+  Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, false);  // it's the only case where we create a new device
+  if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
 
   if (p == nullptr) {
-    const char * friendlyName = zigbee_devices.getFriendlyName(shortaddr);
-    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_NAME "\":\"%s\"}}"), shortaddr, friendlyName ? friendlyName : "");
+    const char * friendlyName = device.friendlyName;
+    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_NAME "\":\"%s\"}}"), device.shortaddr, friendlyName ? friendlyName : "");
   } else {
     if (strlen(p) > 32) { p[32] = 0x00; }     // truncate to 32 chars max
-    zigbee_devices.setFriendlyName(shortaddr, p);
-    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_NAME "\":\"%s\"}}"), shortaddr, p);
+    device.setFriendlyName(p);
+    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_NAME "\":\"%s\"}}"), device.shortaddr, p);
   }
 }
 
@@ -998,18 +1062,18 @@ void CmndZbModelId(void) {
 
   // check if parameters contain a comma ','
   char *p;
-  char *str = strtok_r(XdrvMailbox.data, ", ", &p);
+  char *str = strtok_r(XdrvMailbox.data, ",", &p);
 
   // parse first part, <device_id>
-  uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
-  if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+  Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
+  if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
 
   if (p == nullptr) {
-    const char * modelId = zigbee_devices.getModelId(shortaddr);
-    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_MODELID "\":\"%s\"}}"), shortaddr, modelId ? modelId : "");
+    const char * modelId = device.modelId;
+    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_MODELID "\":\"%s\"}}"), device.shortaddr, modelId ? modelId : "");
   } else {
-    zigbee_devices.setModelId(shortaddr, p);
-    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_MODELID "\":\"%s\"}}"), shortaddr, p);
+    device.setModelId(p);
+    Response_P(PSTR("{\"0x%04X\":{\"" D_JSON_ZIGBEE_MODELID "\":\"%s\"}}"), device.shortaddr, p);
   }
 }
 
@@ -1030,17 +1094,65 @@ void CmndZbLight(void) {
   char *str = strtok_r(XdrvMailbox.data, ", ", &p);
 
   // parse first part, <device_id>
-  uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
-  if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+  Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
+  if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
 
   if (p) {
     int8_t bulbtype = strtol(p, nullptr, 10);
     if (bulbtype > 5)  { bulbtype = 5; }
     if (bulbtype < -1) { bulbtype = -1; }
-    zigbee_devices.setLightProfile(shortaddr, bulbtype);
+    device.setLightChannels(bulbtype);
   }
-  String dump = zigbee_devices.dumpLightState(shortaddr);
+  String dump = zigbee_devices.dumpLightState(device);
   Response_P(PSTR("{\"" D_PRFX_ZB D_CMND_ZIGBEE_LIGHT "\":%s}"), dump.c_str());
+
+  MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, PSTR(D_PRFX_ZB D_CMND_ZIGBEE_LIGHT));
+  ResponseCmndDone();
+}
+//
+// Command `ZbOccupancy`
+// Specify, read or erase the Occupancy detector configuration
+void CmndZbOccupancy(void) {
+  // Syntax is:
+  //  ZbOccupancy <device_id>,<x>            - set the occupancy time-out
+  //  ZbOccupancy <device_id>                - display the configuration
+  //
+  // List of occupancy time-outs:
+  // 0xF = default (90 s)
+  // 0x0 = no time-out
+  // 0x1 = 15 s
+  // 0x2 = 30 s
+  // 0x3 = 45 s
+  // 0x4 = 60 s
+  // 0x5 = 75 s
+  // 0x6 = 90 s -- default
+  // 0x7 = 105 s
+  // 0x8 = 120 s
+  // Where <device_id> can be: short_addr, long_addr, device_index, friendly_name
+
+  if (zigbee.init_phase) { ResponseCmndChar_P(PSTR(D_ZIGBEE_NOT_STARTED)); return; }
+
+  // check if parameters contain a comma ','
+  char *p;
+  char *str = strtok_r(XdrvMailbox.data, ", ", &p);
+
+  // parse first part, <device_id>
+  Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
+  if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+
+  int8_t occupancy_time = -1;
+  if (p) {
+    Z_Data_PIR & pir = (Z_Data_PIR&) device.data.getByType(Z_Data_Type::Z_PIR);
+    occupancy_time = strtol(p, nullptr, 10);
+    pir.setTimeoutSeconds(occupancy_time);
+    zigbee_devices.dirty();
+  } else {
+    const Z_Data_PIR & pir_found = (const Z_Data_PIR&) device.data.find(Z_Data_Type::Z_PIR);
+    if (&pir_found != nullptr) {
+      occupancy_time = pir_found.getTimeoutSeconds();
+    }
+  }
+  Response_P(PSTR("{\"" D_PRFX_ZB D_CMND_ZIGBEE_OCCUPANCY "\":%d}"), occupancy_time);
 
   MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, PSTR(D_PRFX_ZB D_CMND_ZIGBEE_LIGHT));
   ResponseCmndDone();
@@ -1052,11 +1164,11 @@ void CmndZbLight(void) {
 //
 void CmndZbForget(void) {
   if (zigbee.init_phase) { ResponseCmndChar_P(PSTR(D_ZIGBEE_NOT_STARTED)); return; }
-  uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data);
-  if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+  Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true);  // in case of short_addr, it must be already registered
+  if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
 
   // everything is good, we can send the command
-  if (zigbee_devices.removeDevice(shortaddr)) {
+  if (zigbee_devices.removeDevice(device.shortaddr)) {
     ResponseCmndDone();
   } else {
     ResponseCmndChar_P(PSTR("Unknown device"));
@@ -1177,9 +1289,11 @@ void CmndZbPermitJoin(void) {
     // Log pairing mode enabled
     Response_P(PSTR("{\"" D_JSON_ZIGBEE_STATE "\":{\"Status\":21,\"Message\":\"Pairing mode enabled\"}}"));
     MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_TELE, PSTR(D_JSON_ZIGBEE_STATE));
+    zigbee.permit_end_time = millis() + duration * 1000;
+    AddLog_P(LOG_LEVEL_INFO, "zigbee.permit_end_time = %d", zigbee.permit_end_time);
+  } else {
+    zigbee.permit_end_time = millis();
   }
-  // always register timer for disable, might happen at next tick
-  zigbee_devices.setTimer(0x0000 /* coordinator */, 0 /* group addr*/, duration * 1000, 0, 0 /* endpoint */, Z_CAT_PERMIT_JOIN, 0 /* value */, &Z_PermitJoinDisable);
 #endif // USE_ZIGBEE_EZSP
 
   ResponseCmndDone();
@@ -1213,6 +1327,34 @@ void CmndZbEZSPListen(void) {
 
   ResponseCmndDone();
 }
+
+void ZigbeeGlowPermitJoinLight(void) {
+  static const uint16_t cycle_time = 1000;    // cycle up and down in 1000 ms
+  static const uint16_t half_cycle_time = cycle_time / 2;    // cycle up and down in 1000 ms
+  if (zigbee.permit_end_time) {
+    uint16_t led_power = 0;         // turn led off
+    // permit join is ongoing
+    if (TimeReached(zigbee.permit_end_time)) {
+      zigbee.permit_end_time = 0;   // disable timer
+      Z_PermitJoinDisable();
+    } else {
+      uint32_t millis_to_go = millis() - zigbee.permit_end_time;
+      uint32_t sub_second = millis_to_go % cycle_time;
+      if (sub_second <= half_cycle_time) {
+        led_power = changeUIntScale(sub_second, 0, half_cycle_time, 0, 1023);
+      } else {
+        led_power = changeUIntScale(sub_second, half_cycle_time, cycle_time, 1023, 0);
+      }
+      led_power = ledGamma10_10(led_power);
+    }
+
+    // change the led state
+    uint32_t led_pin = Pin(GPIO_LEDLNK);
+    if (led_pin < 99) {
+      analogWrite(led_pin, TasmotaGlobal.ledlnk_inverted ? 1023 - led_power : led_power);
+    }
+  }
+}
 #endif // USE_ZIGBEE_EZSP
 
 //
@@ -1221,12 +1363,17 @@ void CmndZbEZSPListen(void) {
 void CmndZbStatus(void) {
   if (ZigbeeSerial) {
     if (zigbee.init_phase) { ResponseCmndChar_P(PSTR(D_ZIGBEE_NOT_STARTED)); return; }
-    uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data);
+    String dump;
+
+    Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true);
     if (XdrvMailbox.data_len > 0) {
-      if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+      if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+      dump = zigbee_devices.dumpDevice(XdrvMailbox.index, device);
+    } else {
+      if (XdrvMailbox.index >= 2) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
+      dump = zigbee_devices.dumpDevice(XdrvMailbox.index, *(Z_Device*)nullptr);
     }
 
-    String dump = zigbee_devices.dump(XdrvMailbox.index, shortaddr);
     Response_P(PSTR("{\"%s%d\":%s}"), XdrvMailbox.command, XdrvMailbox.index, dump.c_str());
   }
 }
@@ -1240,17 +1387,12 @@ bool parseDeviceInnerData(class Z_Device & device, JsonParserObject root) {
     // Parse key in format "L02":....
     const char * data_type_str = data_elt.getStr();
     Z_Data_Type data_type;
+    uint8_t endpoint;
+    uint8_t config = 0xFF;    // unspecified
 
-    switch (data_type_str[0]) {
-    case 'P': data_type = Z_Data_Type::Z_Plug; break;
-    case 'L': data_type = Z_Data_Type::Z_Light; break;
-    case 'O': data_type = Z_Data_Type::Z_OnOff; break;
-    case 'T': data_type = Z_Data_Type::Z_Thermo; break;
-    case 'A': data_type = Z_Data_Type::Z_Alarm; break;
-    case '_': data_type = Z_Data_Type::Z_Device; break;
-    default: data_type = Z_Data_Type::Z_Unknown; break;
-    }
-    // The format should be a valid Code Lette followed by '-'
+    // parse key in the form "L01.5"
+    if (!Z_Data::ConfigToZData(data_type_str, &data_type, &endpoint, &config)) { data_type = Z_Data_Type::Z_Unknown; }
+
     if (data_type == Z_Data_Type::Z_Unknown) {
       Response_P(PSTR("{\"%s\":\"%s \"%s\"\"}"), XdrvMailbox.command, PSTR("Invalid Parameters"), data_type_str);
       return false;
@@ -1259,79 +1401,82 @@ bool parseDeviceInnerData(class Z_Device & device, JsonParserObject root) {
     JsonParserObject data_values = data_elt.getValue().getObject();
     if (!data_values) { return false; }
 
-    // Decode the endpoint number
-    uint8_t endpoint = strtoul(&data_type_str[1], nullptr, 16);   // hex base 16
     JsonParserToken val;
+    if (data_type == Z_Data_Type::Z_Device) {
+      if (val = data_values[PSTR(D_CMND_ZIGBEE_LINKQUALITY)]) { device.lqi = val.getUInt(); }
+      if (val = data_values[PSTR("BatteryPercentage")])       { device.batterypercent = val.getUInt(); }
+      if (val = data_values[PSTR("LastSeen")])                { device.last_seen = val.getUInt(); }
+    } else {
+      // Import generic attributes first
+      device.addEndpoint(endpoint);
+      Z_Data & data = device.data.getByType(data_type, endpoint);
 
-    // Import generic attributes first
-    Z_Data & data = device.data.getByType(data_type, endpoint);
+      // scan through attributes
+      if (&data != nullptr) {
+        if (config != 0xFF) {
+          data.setConfig(config);
+        }
 
-    // scan through attributes
-    for (auto attr : data_values) {
-      JsonParserToken attr_value = attr.getValue();
-      uint8_t     conv_zigbee_type;
-      Z_Data_Type conv_data_type;
-      uint8_t     conv_map_offset;
-      if (zigbeeFindAttributeByName(attr.getStr(), nullptr, nullptr, nullptr, &conv_zigbee_type, &conv_data_type, &conv_map_offset) != nullptr) {
-        // found an attribute matching the name, does is fit the type?
-        if (conv_data_type == data_type) {
-          // we got a match. Bear in mind that a zero value is not a valid 'data_type'
+        for (auto attr : data_values) {
+          JsonParserToken attr_value = attr.getValue();
+          uint8_t     conv_zigbee_type;
+          Z_Data_Type conv_data_type;
+          uint8_t     conv_map_offset;
+          if (zigbeeFindAttributeByName(attr.getStr(), nullptr, nullptr, nullptr, &conv_zigbee_type, &conv_data_type, &conv_map_offset) != nullptr) {
+            // found an attribute matching the name, does is fit the type?
+            if (conv_data_type == data_type) {
+              // we got a match. Bear in mind that a zero value is not a valid 'data_type'
 
-          uint8_t *attr_address = ((uint8_t*)&data) + sizeof(Z_Data) + conv_map_offset;
-          uint32_t uval32 = attr_value.getUInt();     // call converter to uint only once
-          int32_t  ival32 = attr_value.getInt();     // call converter to int only once
-          switch (conv_zigbee_type) {
-            case Zenum8:
-            case Zuint8:  *(uint8_t*)attr_address  = uval32;          break;
-            case Zenum16:
-            case Zuint16: *(uint16_t*)attr_address = uval32;          break;
-            case Zuint32: *(uint32_t*)attr_address = uval32;          break;
-            case Zint8:   *(int8_t*)attr_address   = ival32;          break;
-            case Zint16:  *(int16_t*)attr_address  = ival32;          break;
-            case Zint32:  *(int32_t*)attr_address  = ival32;          break;
+              uint8_t *attr_address = ((uint8_t*)&data) + sizeof(Z_Data) + conv_map_offset;
+              uint32_t uval32 = attr_value.getUInt();     // call converter to uint only once
+              int32_t  ival32 = attr_value.getInt();     // call converter to int only once
+              switch (conv_zigbee_type) {
+                case Zenum8:
+                case Zuint8:  *(uint8_t*)attr_address  = uval32;          break;
+                case Zenum16:
+                case Zuint16: *(uint16_t*)attr_address = uval32;          break;
+                case Zuint32: *(uint32_t*)attr_address = uval32;          break;
+                case Zint8:   *(int8_t*)attr_address   = ival32;          break;
+                case Zint16:  *(int16_t*)attr_address  = ival32;          break;
+                case Zint32:  *(int32_t*)attr_address  = ival32;          break;
+              }
+            } else if (conv_data_type != Z_Data_Type::Z_Unknown) {
+              AddLog_P(LOG_LEVEL_DEBUG, PSTR(D_LOG_ZIGBEE "attribute %s is wrong type %d (expected %d)"), attr.getStr(), (uint8_t)data_type, (uint8_t)conv_data_type);
+            }
           }
-        } else if (conv_data_type != Z_Data_Type::Z_Unknown) {
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR(D_LOG_ZIGBEE "attribute %s is wrong type %d (expected %d)"), attr.getStr(), (uint8_t)data_type, (uint8_t)conv_data_type);
         }
       }
-    }
 
-    // Import specific attributes that are not handled with the generic method
-    switch (data_type) {
-    // case Z_Data_Type::Z_Plug:
-    //   {
-    //     Z_Data_Plug & plug = (Z_Data_Plug&) data;
-    //   }
-    //   break;
-    // case Z_Data_Type::Z_Light:
-    //   {
-    //     Z_Data_Light & light = (Z_Data_Light&) data;
-    //   }
-    //   break;
-    case Z_Data_Type::Z_OnOff:
-      {
-        Z_Data_OnOff & onoff = (Z_Data_OnOff&) data;
+      // Import specific attributes that are not handled with the generic method
+      switch (data_type) {
+      // case Z_Data_Type::Z_Plug:
+      //   {
+      //     Z_Data_Plug & plug = (Z_Data_Plug&) data;
+      //   }
+      //   break;
+      // case Z_Data_Type::Z_Light:
+      //   {
+      //     Z_Data_Light & light = (Z_Data_Light&) data;
+      //   }
+      //   break;
+      case Z_Data_Type::Z_OnOff:
+        {
+          Z_Data_OnOff & onoff = (Z_Data_OnOff&) data;
 
-        if (val = data_values[PSTR("Power")])      { onoff.setPower(val.getUInt() ? true : false); }
+          if (val = data_values[PSTR("Power")])      { onoff.setPower(val.getUInt() ? true : false); }
+        }
+        break;
+      // case Z_Data_Type::Z_Thermo:
+      //   {
+      //     Z_Data_Thermo & thermo = (Z_Data_Thermo&) data;
+      //   }
+      //   break;
+      // case Z_Data_Type::Z_Alarm:
+      //   {
+      //     Z_Data_Alarm & alarm = (Z_Data_Alarm&) data;
+      //   }
+      //   break;
       }
-      break;
-    // case Z_Data_Type::Z_Thermo:
-    //   {
-    //     Z_Data_Thermo & thermo = (Z_Data_Thermo&) data;
-    //   }
-    //   break;
-    // case Z_Data_Type::Z_Alarm:
-    //   {
-    //     Z_Data_Alarm & alarm = (Z_Data_Alarm&) data;
-    //   }
-    //   break;
-    case Z_Data_Type::Z_Device:
-      {
-        if (val = data_values[PSTR(D_CMND_ZIGBEE_LINKQUALITY)]) { device.lqi = val.getUInt(); }
-        if (val = data_values[PSTR("BatteryPercentage")])       { device.batterypercent = val.getUInt(); }
-        if (val = data_values[PSTR("LastSeen")])                { device.last_seen = val.getUInt(); }
-      }
-      break;
     }
   }
   return true;
@@ -1356,9 +1501,8 @@ void CmndZbData(void) {
     }
 
     for (auto device_name : root) {
-      uint16_t shortaddr = zigbee_devices.parseDeviceParam(device_name.getStr());
-      if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
-      Z_Device & device = zigbee_devices.getShortAddr(shortaddr);
+      Z_Device & device = zigbee_devices.parseDeviceFromName(device_name.getStr(), true);
+      if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
       JsonParserObject inner_data = device_name.getValue().getObject();
       if (inner_data) {
         if (!parseDeviceInnerData(device, inner_data)) {
@@ -1366,72 +1510,62 @@ void CmndZbData(void) {
         }
       }
     }
+    zigbee_devices.dirty();     // save to flash
     ResponseCmndDone();
   } else {
     // non-JSON, export current data
     // ZbData 0x1234
     // ZbData Device_Name
-    uint16_t shortaddr = zigbee_devices.parseDeviceParam(XdrvMailbox.data);
-    if (BAD_SHORTADDR == shortaddr) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
-    const Z_Device & device = zigbee_devices.findShortAddr(shortaddr);
+    Z_Device & device = zigbee_devices.parseDeviceFromName(XdrvMailbox.data, true);
+    if (!device.valid()) { ResponseCmndChar_P(PSTR("Unknown device")); return; }
 
     Z_attribute_list attr_data;
 
     {   // scope to force object deallocation
       Z_attribute_list device_attr;
       device.toAttributes(device_attr);
-      attr_data.addAttribute(F("_00")).setStrRaw(device_attr.toString(true).c_str());
+      attr_data.addAttribute(F("_")).setStrRaw(device_attr.toString(true).c_str());
     }
 
     // Iterate on data objects
     for (auto & data_elt : device.data) {
       Z_attribute_list inner_attr;
-      char key[4];
-      snprintf_P(key, sizeof(key), "?%02X", data_elt.getEndpoint());
-      // The key is in the form "L-01", where 'L' is the type and '01' the endpoint in hex format
-      // 'L' = Light
-      // 'P' = Power
-      //
+      char key[8];
+      if (data_elt.validConfig()) {
+        snprintf_P(key, sizeof(key), "?%02X.%1X", data_elt.getEndpoint(), data_elt.getConfig());
+      } else {
+        snprintf_P(key, sizeof(key), "?%02X", data_elt.getEndpoint());
+      }
+
       Z_Data_Type data_type = data_elt.getType();
+      key[0] = Z_Data::DataTypeToChar(data_type);
       switch (data_type) {
         case Z_Data_Type::Z_Plug:
-          {
-            key[0] = 'P';
-            ((Z_Data_Plug&)data_elt).toAttributes(inner_attr, data_type);
-          }
+          ((Z_Data_Plug&)data_elt).toAttributes(inner_attr, data_type);
           break;
         case Z_Data_Type::Z_Light:
-          {
-            key[0] = 'L';
-            ((Z_Data_Light&)data_elt).toAttributes(inner_attr, data_type);
-          }
+          ((Z_Data_Light&)data_elt).toAttributes(inner_attr, data_type);
           break;
         case Z_Data_Type::Z_OnOff:
-          {
-            key[0] = 'O';
-            ((Z_Data_OnOff&)data_elt).toAttributes(inner_attr, data_type);
-          }
+          ((Z_Data_OnOff&)data_elt).toAttributes(inner_attr, data_type);
           break;
         case Z_Data_Type::Z_Thermo:
-          {
-            key[0] = 'T';
-            ((Z_Data_Thermo&)data_elt).toAttributes(inner_attr, data_type);
-          }
+          ((Z_Data_Thermo&)data_elt).toAttributes(inner_attr, data_type);
           break;
         case Z_Data_Type::Z_Alarm:
-          {
-            key[0] = 'A';
-            ((Z_Data_Alarm&)data_elt).toAttributes(inner_attr, data_type);
-          }
+          ((Z_Data_Alarm&)data_elt).toAttributes(inner_attr, data_type);
+          break;
+        case Z_Data_Type::Z_PIR:
+          ((Z_Data_PIR&)data_elt).toAttributes(inner_attr, data_type);
           break;
       }
-      if (key[0] != '?') {
+      if ((key[0] != '\0') && (key[0] != '?')) {
         attr_data.addAttribute(key).setStrRaw(inner_attr.toString(true).c_str());
       }
     }
 
     char hex[8];
-    snprintf_P(hex, sizeof(hex), PSTR("0x%04X"), shortaddr);
+    snprintf_P(hex, sizeof(hex), PSTR("0x%04X"), device.shortaddr);
     Response_P(PSTR("{\"%s\":{\"%s\":%s}}"), XdrvMailbox.command, hex, attr_data.toString(true).c_str());
   }
 }
@@ -1468,7 +1602,7 @@ void CmndZbConfig(void) {
     if (zb_channel > 26) { zb_channel = 26; }
     // if network key is zero, we generate a truly random key with a hardware generator from ESP
     if ((0 == zb_precfgkey_l) && (0 == zb_precfgkey_h)) {
-      AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "generating random Zigbee network key"));
+      AddLog_P(LOG_LEVEL_INFO, PSTR(D_LOG_ZIGBEE "generating random Zigbee network key"));
       zb_precfgkey_l = (uint64_t)HwRandom() << 32 | HwRandom();
       zb_precfgkey_h = (uint64_t)HwRandom() << 32 | HwRandom();
     }
@@ -1486,7 +1620,7 @@ void CmndZbConfig(void) {
       Settings.zb_precfgkey_l  = zb_precfgkey_l;
       Settings.zb_precfgkey_h  = zb_precfgkey_h;
       Settings.zb_txradio_dbm  = zb_txradio_dbm;
-      restart_flag = 2;    // save and reboot
+      TasmotaGlobal.restart_flag = 2;    // save and reboot
     }
   }
 
@@ -1632,10 +1766,13 @@ void ZigbeeShow(bool json)
 
       WSContentSend_PD(PSTR(
         "<tr class='ztd htr'>"
-          "<td><b>%s</b></td>" // name
+          "<td><b title='0x%04X %s - %s'>%s</b></td>" // name
           "<td>%s</td>" // sbatt (Battery Indicator)
           "<td><div title='" D_LQI " %s' class='ssi'>" // slqi
-      ), name, sbatt, slqi);
+      ), shortaddr,
+      device.modelId ? device.modelId : "",
+      device.manufacturerId ? device.manufacturerId : "",
+      name, sbatt, slqi);
 
       if(device.validLqi()) {
           for(uint32_t j = 0; j < 4; ++j) {
@@ -1658,28 +1795,36 @@ void ZigbeeShow(bool json)
       const Z_Data_Thermo & thermo = device.data.find<Z_Data_Thermo>();
 
       if (&thermo != nullptr) {
-        WSContentSend_P(PSTR("<tr class='htr'><td colspan=\"4\">&#9478;"));
-        if (thermo.validTemperature()) {
-          char buf[12];
-          dtostrf(thermo.getTemperature() / 100.0f, 3, 1, buf);
-          WSContentSend_PD(PSTR(" &#x2600;&#xFE0F; %s°C"), buf);
-        }
-        if (thermo.validTempTarget()) {
-          char buf[12];
-          dtostrf(thermo.getTempTarget() / 100.0f, 3, 1, buf);
-          WSContentSend_PD(PSTR(" &#127919; %s°C"), buf);
-        }
-        if (thermo.validThSetpoint()) {
-          WSContentSend_PD(PSTR(" &#9881;&#65039; %d%%"), thermo.getThSetpoint());
-        }
-        if (thermo.validHumidity()) {
-          WSContentSend_P(PSTR(" &#x1F4A7; %d%%"), (uint16_t)(thermo.getHumidity() / 100.0f + 0.5f));
-        }
-        if (thermo.validPressure()) {
-          WSContentSend_P(PSTR(" &#x26C5; %d hPa"), thermo.getPressure());
-        }
+        bool validTemp = thermo.validTemperature();
+        bool validTempTarget = thermo.validTempTarget();
+        bool validThSetpoint = thermo.validThSetpoint();
+        bool validHumidity = thermo.validHumidity();
+        bool validPressure = thermo.validPressure();
 
-        WSContentSend_P(PSTR("{e}"));
+        if (validTemp || validTempTarget || validThSetpoint || validHumidity || validPressure) {
+          WSContentSend_P(PSTR("<tr class='htr'><td colspan=\"4\">&#9478;"));
+          if (validTemp) {
+            char buf[12];
+            dtostrf(thermo.getTemperature() / 100.0f, 3, 1, buf);
+            WSContentSend_PD(PSTR(" &#x2600;&#xFE0F; %s°C"), buf);
+          }
+          if (validTempTarget) {
+            char buf[12];
+            dtostrf(thermo.getTempTarget() / 100.0f, 3, 1, buf);
+            WSContentSend_PD(PSTR(" &#127919; %s°C"), buf);
+          }
+          if (validThSetpoint) {
+            WSContentSend_PD(PSTR(" &#9881;&#65039; %d%%"), thermo.getThSetpoint());
+          }
+          if (validHumidity) {
+            WSContentSend_P(PSTR(" &#x1F4A7; %d%%"), (uint16_t)(thermo.getHumidity() / 100.0f + 0.5f));
+          }
+          if (validPressure) {
+            WSContentSend_P(PSTR(" &#x26C5; %d hPa"), thermo.getPressure());
+          }
+
+          WSContentSend_P(PSTR("{e}"));
+        }
       }
 
       // Light, switches and plugs
@@ -1714,12 +1859,16 @@ void ZigbeeShow(bool json)
           }
         }
         if (&plug != nullptr) {
-          WSContentSend_P(PSTR(" &#9889; "));
-          if (plug.validMainsVoltage()) {
-            WSContentSend_P(PSTR(" %dV"), plug.getMainsVoltage());
-          }
-          if (plug.validMainsPower()) {
-            WSContentSend_P(PSTR(" %dW"), plug.getMainsPower());
+          bool validMainsVoltage = plug.validMainsVoltage();
+          bool validMainsPower = plug.validMainsPower();
+          if (validMainsVoltage || validMainsPower) {
+            WSContentSend_P(PSTR(" &#9889; "));
+            if (validMainsVoltage) {
+              WSContentSend_P(PSTR(" %dV"), plug.getMainsVoltage());
+            }
+            if (validMainsPower) {
+              WSContentSend_P(PSTR(" %dW"), plug.getMainsPower());
+            }
           }
         }
         WSContentSend_P(PSTR("{e}"));
@@ -1755,6 +1904,9 @@ bool Xdrv23(uint8_t function)
         if (ZigbeeSerial) {
           ZigbeeInputLoop();
           ZigbeeOutputLoop();   // send any outstanding data
+#ifdef USE_ZIGBEE_EZSP
+          ZigbeeGlowPermitJoinLight();
+#endif // USE_ZIGBEE_EZSP
         }
         if (zigbee.state_machine) {
           ZigbeeStateMachine_Run();
@@ -1767,7 +1919,7 @@ bool Xdrv23(uint8_t function)
 #ifdef USE_ZIGBEE_EZSP
       // GUI xmodem
       case FUNC_WEB_ADD_HANDLER:
-        Webserver->on("/" WEB_HANDLE_ZIGBEE_XFER, HandleZigbeeXfer);
+        WebServer_on(PSTR("/" WEB_HANDLE_ZIGBEE_XFER), HandleZigbeeXfer);
         break;
 #endif  // USE_ZIGBEE_EZSP
 #endif  // USE_WEBSERVER
