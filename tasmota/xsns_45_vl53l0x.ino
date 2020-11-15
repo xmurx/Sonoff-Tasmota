@@ -178,7 +178,7 @@ bool Xsns45(byte function)
   {
     _restartCount_++;
     Vl53l0Detect(true);
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("Vl53l0: number of restarts %d"), _restartCount_);
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("Vl53l0: number of restarts %d"), _restartCount_);
   }
   return result;
 }
