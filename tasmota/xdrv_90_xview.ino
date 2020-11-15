@@ -65,13 +65,13 @@ bool Xdrv90(uint8_t function)
       const char* token = SettingsText(SET_TELEGRAM_TOKEN);
       if(strlen(token) == 0)
       {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("xview: setting telegram token invalid... set new token"));
+        AddLog_P(LOG_LEVEL_DEBUG, PSTR("xview: setting telegram token invalid... set new token"));
         const char* newToken = "1051397850:AAGZUAx4Dby6QdZriTyLwU73fo05dE0xdhQ";
         SettingsUpdateText(SET_TELEGRAM_TOKEN, newToken);
       }
       else
       {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("xview: setting telegram token valid token: %s"), token);
+        AddLog_P(LOG_LEVEL_DEBUG, PSTR("xview: setting telegram token valid token: %s"), token);
       }
       break;
     }

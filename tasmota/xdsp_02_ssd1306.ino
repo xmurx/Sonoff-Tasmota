@@ -60,7 +60,7 @@ void SSD1306InitDriver(void)
     }
   }
 
-  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("-- Init Display model:%d"), Settings.display_model );
+  AddLog_P(LOG_LEVEL_DEBUG, PSTR("-- Init Display model:%d"), Settings.display_model );
 
   if (XDSP_02 == Settings.display_model) {
     I2cSetActiveFound(Settings.display_address[0], "SSD1306");
@@ -88,8 +88,8 @@ void SSD1306InitDriver(void)
     oled1306->begin(SSD1306_SWITCHCAPVCC, Settings.display_address[0], reset_pin >= 0);
     renderer = oled1306;
 
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("-- Init Display mode:%d width: %d, height:%d"), DISPLAY_INIT_MODE, Settings.display_width, Settings.display_height);
-    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("-- Init Display address:%x"), Settings.display_address[0]);
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("-- Init Display mode:%d width: %d, height:%d"), DISPLAY_INIT_MODE, Settings.display_width, Settings.display_height);
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("-- Init Display address:%x"), Settings.display_address[0]);
     renderer->DisplayInit(DISPLAY_INIT_MODE, Settings.display_size, Settings.display_rotate, Settings.display_font);
     renderer->setTextColor(1,0);
 

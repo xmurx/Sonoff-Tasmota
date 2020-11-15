@@ -18,7 +18,7 @@ namespace xControl
   {
     va_list arg;
     va_start(arg, formatP);
-    vsnprintf_P(log_data, sizeof(log_data), formatP, arg);
+    vsnprintf_P(TasmotaGlobal.log_data, sizeof(TasmotaGlobal.log_data), formatP, arg);
     va_end(arg);
 
     uint32_t tasmotaLogLevel = LOG_LEVEL_NONE;
@@ -92,7 +92,7 @@ void MQTTResponse::Append( const char* format, Args... args )
  */
 const char* MQTTResponse::Get()
 {
-  return mqtt_data;
+  return TasmotaGlobal.mqtt_data;
 }
 
 /**
@@ -133,7 +133,7 @@ size_t MQTTResponse::Size()
  */
 void MQTTResponse::Replace(uint32_t position, char character)
 {
-  mqtt_data[position] = character;
+  TasmotaGlobal.mqtt_data[position] = character;
 }
 
 /**
@@ -151,7 +151,7 @@ void MQTTResponse::AppendTime()
  */
 void MQTTResponse::Clear()
 {
-  memset(mqtt_data, 0, sizeof(mqtt_data));
+  memset(TasmotaGlobal.mqtt_data, 0, sizeof(TasmotaGlobal.mqtt_data));
 }
 
 /*********************************************************************************************\
