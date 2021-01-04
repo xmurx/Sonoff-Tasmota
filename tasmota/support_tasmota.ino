@@ -1682,6 +1682,8 @@ void GpioInit(void)
 
 #ifdef USE_I2C
   TasmotaGlobal.i2c_enabled = (PinUsed(GPIO_I2C_SCL) && PinUsed(GPIO_I2C_SDA));
+  AddLog_P(LOG_LEVEL_DEBUG, PSTR("INI: I2C enabled: %d"), TasmotaGlobal.i2c_enabled );
+  AddLog_P(LOG_LEVEL_DEBUG, PSTR("INI: I2C sda: %d scl: %d"), Pin(GPIO_I2C_SDA), Pin(GPIO_I2C_SCL) );
   if (TasmotaGlobal.i2c_enabled) {
     Wire.begin(Pin(GPIO_I2C_SDA), Pin(GPIO_I2C_SCL));
   }
