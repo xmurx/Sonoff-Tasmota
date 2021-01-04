@@ -30,3 +30,5 @@ platformio_tasmota_cenv.ini
 *.code-workspace
 lib/xControl-0.0.1/cov_xml.xml
 /putty.log
+SampleAllGood.logicdata
+SampleAllWrong.logicdata
