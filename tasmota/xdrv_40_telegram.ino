@@ -115,10 +115,13 @@ String TelegramConnectToTelegram(String command) {
   uint32_t tls_connect_time = millis();
   if (telegramClient->connect("api.telegram.org", 443)) {
 
-//    AddLog_P(LOG_LEVEL_DEBUG, PSTR("TGM: Connected in %d ms, max ThunkStack used %d"), millis() - tls_connect_time, telegramClient->getMaxThunkStackUse());
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("TGM: Connected in %d ms, max ThunkStack used %d"), millis() - tls_connect_time, telegramClient->getMaxThunkStackUse());
 
+    uint32_t transferCommand = millis();
     telegramClient->println("GET /"+command);
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("TGM: tranfer command %d ms"), millis()-transferCommand);
 
+    uint32_t reponseReadTime = millis();
     char c;
     int ch_count=0;
     uint32_t now = millis();
@@ -136,8 +139,8 @@ String TelegramConnectToTelegram(String command) {
         break;
       }
     }
-
     telegramClient->stop();
+    AddLog_P(LOG_LEVEL_DEBUG, PSTR("TGM: response command %d ms"), millis()-reponseReadTime);    
   }
 
   return response;
@@ -248,9 +251,9 @@ void TelegramGetUpdates(uint32_t offset) {
   }
 }
 
-bool TelegramSendMessage(uint32_t chat_id, String text) {
+bool TelegramSendMessage(int32_t chat_id, String text) {
   AddLog_P(LOG_LEVEL_DEBUG_MORE, PSTR("TGM: sendMessage"));
-
+  uint32_t start = millis();
   if (!TelegramInit()) { return false; }
 
   bool sent = false;
@@ -267,6 +270,8 @@ bool TelegramSendMessage(uint32_t chat_id, String text) {
     }
   }
 
+  uint32_t timePassed = TimePassedSince(start);
+  AddLog_P(LOG_LEVEL_DEBUG_MORE, PSTR("TGM: sendMessage time passed: %d "), timePassed);
   return sent;
 }
 

@@ -3,13 +3,11 @@
 #include "renderer.h"
 #include "WString.h"
 
-#if 0
-#include "AsyncTelegram.h"
-static AsyncTelegram _bot_;
-const char* token = "1051397850:AAGZUAx4Dby6QdZriTyLwU73fo05dE0xdhQ";
-#endif
-
 unsigned long millis();
+
+
+extern void ExecuteCommand(const char *cmnd, uint32_t source);
+
 namespace xControl
 {
   //------------------------------------------------------
@@ -68,23 +66,13 @@ namespace xControl
       _stateControl->SetState(State::ShowSplash);
       Process();
     }
-#if 0
-    _bot_.setUpdateTime(2000);
-    _bot_.setTelegramToken(token);
-#endif    
+
 
   }
 
   void SSD1306View::Show( const ViewData& viewData)
   {
     _data = viewData;
-#if 0    
-    Logging::Debug("\nTest Telegram connection...");
-    bool ret = _bot_.begin();
-    ret ? Logging::Debug("OK") : Logging::Debug("NOK");
-    Logging::Debug("Bot name: @%s", _bot_.userName.c_str());	
-    Logging::Debug("Wifi.status() - status: %d",WiFi.status());
-#endif    
     Process();        
   }
 
@@ -108,6 +96,7 @@ namespace xControl
             _renderer->Updateframe();
             _stateControl->StartDelay(2000);
 
+            ::ExecuteCommand("TmState 1", 0); //enable telegram sending
           }
 
           if(_stateControl->DelayExpired())
@@ -120,11 +109,20 @@ namespace xControl
           if(_stateControl->OnEnter())
             _stateControl->StartDelay(10000);
 
-          _level.Set(_distanceConverter.ToPercent(_data.Distance()));
+          uint32_t levelInPercent = _distanceConverter.ToPercent(_data.Distance());
+          _level.Set(levelInPercent);
           _level.Show();
 
           if(_stateControl->DelayExpired())
+          {
+            if (levelInPercent < 20)
+            {
+              String cmd = "TmSend Remaining tank level is only: " + String(levelInPercent) + String("%.");
+              Logging::Debug("Telegram command: %s", cmd.c_str());
+              ::ExecuteCommand(cmd.c_str(), 0);
+            }
             _stateControl->SetState(State::ShowTemp);
+          } 
 
           break;
         }
