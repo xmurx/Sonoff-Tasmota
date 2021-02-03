@@ -21,7 +21,7 @@ In addition to the [release webpage](https://github.com/arendst/Tasmota/releases
 
 ## Development
 
-[![Dev Version](https://img.shields.io/badge/development%20version-v9.0.x.x-blue.svg)](https://github.com/arendst/Tasmota)
+[![Dev Version](https://img.shields.io/badge/development%20version-v9.2.x.x-blue.svg)](https://github.com/arendst/Tasmota)
 [![Download Dev](https://img.shields.io/badge/download-development-yellow.svg)](http://ota.tasmota.com/tasmota/)
 [![Tasmota CI](https://github.com/arendst/Tasmota/workflows/Tasmota%20CI/badge.svg)](https://github.com/arendst/Tasmota/actions?query=workflow%3A%22Tasmota+CI%22)
 [![Tasmota ESP32 CI](https://github.com/arendst/Tasmota/workflows/Tasmota%20ESP32%20CI/badge.svg)](https://github.com/arendst/Tasmota/actions?query=workflow%3A%22Tasmota+ESP32+CI%22)
@@ -68,17 +68,16 @@ See [wiki migration path](https://tasmota.github.io/docs/Upgrading#migration-pat
 1. Migrate to **Sonoff-Tasmota 3.9.x**
 2. Migrate to **Sonoff-Tasmota 4.x**
 3. Migrate to **Sonoff-Tasmota 5.14**
-4. Migrate to **Sonoff-Tasmota 6.x**
-5. Migrate to **Tasmota 7.x**
+4. Migrate to **Sonoff-Tasmota 6.7.1** (http://ota.tasmota.com/tasmota/release-6.7.1/)
+5. Migrate to **Tasmota 7.2.0** (http://ota.tasmota.com/tasmota/release-7.2.0/)
 
 --- Major change in parameter storage layout ---
 
-6. Migrate to **Tasmota 8.1**
-7. Migrate to **Tasmota 8.x**
+6. Migrate to **Tasmota 8.5.1** (http://ota.tasmota.com/tasmota/release-8.5.1/)
 
 --- Major change in internal GPIO function representation ---
 
-8. Migrate to **Tasmota 9.x**
+7. Migrate to **Tasmota 9.1** (http://ota.tasmota.com/tasmota/release-9.1.0/)
 
 While fallback or downgrading is common practice it was never supported due to Settings additions or changes in newer releases. Starting with version **v9.0.0.1** the internal GPIO function representation has changed in such a way that fallback is only possible to the latest GPIO configuration before installing **v9.0.0.1**.
 
@@ -98,24 +97,18 @@ If you're looking for support on **Tasmota** there are some options available:
 
 ### Support's Community
 
-* [Tasmota Forum](https://groups.google.com/d/forum/sonoffusers): For usage and discussions.
-* [Tasmota Support Chat](https://discord.gg/Ks2Kzd4): For support, troubleshooting and general questions. You have better chances to get fast answers from members of the Tasmota Community.
+* [Tasmota Discussions](https://github.com/arendst/Tasmota/discussions): For Tasmota usage questions, Feature Requests and Projects.
+* [Tasmota Users Chat](https://discord.gg/Ks2Kzd4): For support, troubleshooting and general questions. You have better chances to get fast answers from members of the Tasmota Community.
 * [Search in Issues](https://github.com/arendst/Tasmota/issues): You might find an answer to your question by searching current or closed issues.
-
-### Developers' Community
-
-* [Bug Report](https://github.com/arendst/Tasmota/issues/new?template=Bug_report.md): For reporting Bugs of Tasmota Software.
-* [Feature Request](https://github.com/arendst/Tasmota/issues/new?template=Feature_request.md): For requesting features/functions to Tasmota Software.
-* [Troubleshooting](https://github.com/arendst/Tasmota/issues/new?template=Custom.md): As a last resort, you can open new *Troubleshooting* issue on GitHub if the solution could not be found using the other channels. Just remember: the more info you provide the more chances you'll have to get an accurate answer.
-* [Issue a question](https://github.com/arendst/Tasmota/issues/new/choose): As a last resort, you can open a new *Question* issue on GitHub if the answer could not be found using the other channels. Just remember: the more info you provide the more chances you'll have to get an accurate answer.
+* [Software Problem Report](https://github.com/arendst/Tasmota/issues/new?template=Bug_report.md): For reporting problems of Tasmota Software.
 
 ## Contribute
 
 You can contribute to Tasmota by
-- providing Pull Requests (Features, Proof of Concepts, Language files or Fixes)
-- testing new released features and report issues
-- donating to acquire hardware for testing and implementing or out of gratitude
-- contributing missing [documentation](https://tasmota.github.io/docs) for features and devices
+- Providing Pull Requests (Features, Proof of Concepts, Language files or Fixes)
+- Testing new released features and report issues
+- Donating to acquire hardware for testing and implementing or out of gratitude
+- Contributing missing [documentation](https://tasmota.github.io/docs) for features and devices
 
 [![donate](https://img.shields.io/badge/donate-PayPal-blue.svg)](https://paypal.me/tasmota)
 

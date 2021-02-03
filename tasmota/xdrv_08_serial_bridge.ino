@@ -1,7 +1,7 @@
 /*
   xdrv_08_serial_bridge.ino - serial bridge support for Tasmota
 
-  Copyright (C) 2020  Theo Arends and Dániel Zoltán Tolnai
+  Copyright (C) 2021  Theo Arends and Dániel Zoltán Tolnai
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -109,7 +109,7 @@ void SerialBridgeInit(void)
     if (SerialBridgeSerial->begin(Settings.sbaudrate * 300)) {  // Baud rate is stored div 300 so it fits into 16 bits
       if (SerialBridgeSerial->hardwareSerial()) {
         ClaimSerial();
-        serial_bridge_buffer = serial_in_buffer;  // Use idle serial buffer to save RAM
+        serial_bridge_buffer = TasmotaGlobal.serial_in_buffer;  // Use idle serial buffer to save RAM
       } else {
         serial_bridge_buffer = (char*)(malloc(SERIAL_BRIDGE_BUFFER_SIZE));
       }

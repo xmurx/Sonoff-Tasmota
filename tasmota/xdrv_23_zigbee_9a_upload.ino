@@ -1,7 +1,7 @@
 /*
   xdrv_23_zigbee_9a_upload.ino - zigbee: serial xmodem upload to MCU
 
-  Copyright (C) 2020  Theo Arends and Stephan Hadinger
+  Copyright (C) 2021  Theo Arends and Stephan Hadinger
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,7 +46,6 @@ const uint8_t PIN_ZIGBEE_BOOTLOADER = 5;
 
 struct ZBUPLOAD {
   uint32_t ota_size = 0;
-  uint32_t sector_cursor = 0;
   uint32_t sector_counter = 0;
   uint32_t byte_counter = 0;
   char *buffer;
@@ -56,12 +55,8 @@ struct ZBUPLOAD {
 } ZbUpload;
 
 /*********************************************************************************************\
- * Flash
+ * Flash from ESP8266 to EZSP
 \*********************************************************************************************/
-
-uint32_t ZigbeeUploadFlashStart(void) {
-  return (ESP.getSketchSize() / SPI_FLASH_SEC_SIZE) + 2;
-}
 
 uint32_t ZigbeeUploadAvailable(void) {
   int available = ZbUpload.ota_size - ZbUpload.byte_counter;
@@ -74,7 +69,6 @@ char ZigbeeUploadFlashRead(void) {
     if (!(ZbUpload.buffer = (char *)malloc(SPI_FLASH_SEC_SIZE))) {
       return (-1);  // Not enough (memory) space
     }
-    ZbUpload.sector_counter = ZigbeeUploadFlashStart();
   }
 
   uint32_t index = ZbUpload.byte_counter % SPI_FLASH_SEC_SIZE;
@@ -87,6 +81,13 @@ char ZigbeeUploadFlashRead(void) {
   ZbUpload.byte_counter++;
 
   if (ZbUpload.byte_counter > ZbUpload.ota_size) {
+
+//    static bool padding = true;
+//    if (padding) {
+//      AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Start padding from %d"), ZbUpload.byte_counter);
+//      padding = false;
+//    }
+
     // When the source device reaches the last XModem data block, it should be padded to 128 bytes
     // of data using SUB (ASCII 0x1A) characters.
     data = XM_SUB;
@@ -113,8 +114,8 @@ struct XMODEM {
   uint32_t delay = 0;
   uint32_t flush_delay = 0xFFFFFFFF;
   uint32_t filepos = 0;
+  uint32_t packet_no = 1;
   int crcBuf = 0;
-  uint8_t packetNo = 1;
   uint8_t checksumBuf = 0;
   bool oldChecksum;
 } XModem;
@@ -148,6 +149,11 @@ char XModemWaitACK(void)
       if (i > 200) { return -1; }
     }
     in_char = ZigbeeSerial->read();
+
+//    if (in_char != XM_ACK) {
+//      AddLog(LOG_LEVEL_DEBUG_MORE, PSTR("XMD: Rcvd3 0x%02X"), in_char);
+//    }
+
     if (XM_CAN == in_char) { return XM_CAN; }
   } while ((in_char != XM_NAK) && (in_char != XM_ACK) && (in_char != 'C'));
   return in_char;
@@ -168,10 +174,12 @@ bool XModemSendPacket(uint32_t packet_no) {
     XModem.checksumBuf = 0x00;
     XModem.crcBuf = 0x00;
 
+    uint8_t packet_num = packet_no;
+
     // Try to send packet, so header first
     ZigbeeSerial->write(XM_SOH);
-    ZigbeeSerial->write(packet_no);
-    ZigbeeSerial->write(~packet_no);
+    ZigbeeSerial->write(packet_num);
+    ZigbeeSerial->write(~packet_num);
     for (uint32_t i = 0; i < XMODEM_PACKET_SIZE; i++) {
       in_char = ZigbeeUploadFlashRead();
       XModemOutputByte(in_char);
@@ -226,6 +234,13 @@ bool ZigbeeUploadBootloaderPrompt(void) {
     yield();
     char bootloader_byte = ZigbeeSerial->read();
 
+    // [cr][lf]
+    // Gecko Bootloader v1.A.3 or Gecko Bootloader v1.9.1.04[cr][lf]
+    // 1. upload gbl[cr][lf]
+    // 2. run[cr][lf]
+    // 3. ebl info[cr][lf]
+    // BL >
+
     if (((uint8_t)bootloader_byte >=0) && (buf_len < sizeof(serial_buffer) -2)) {
       serial_buffer[buf_len++] = bootloader_byte;
     }
@@ -249,9 +264,7 @@ bool ZigbeeUploadBootloaderPrompt(void) {
   }
 
   if (buf_len) {
-    char hex_char[256];
-    ToHex_P(serial_buffer, buf_len, hex_char, 256);
-    AddLog_P2(LOG_LEVEL_DEBUG_MORE, PSTR("XMD: Rcvd %s"), hex_char);
+    AddLog(LOG_LEVEL_DEBUG_MORE, PSTR("XMD: Rcvd %*_H"), buf_len, serial_buffer);
   }
 
   return ((4 == ZbUpload.byte_counter) && (millis() > XModem.flush_delay));
@@ -264,7 +277,7 @@ bool ZigbeeUploadXmodem(void) {
     }
 #ifdef ZIGBEE_BOOTLOADER_SOFTWARE_RESET_FIRST
     case ZBU_INIT: {                     // *** Init ESF32 bootloader
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Init bootloader"));
+      AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Init bootloader"));
       ZbUpload.ota_step = ZBU_SOFTWARE_RESET;
       return false;  // Keep Zigbee serial active
     }
@@ -279,7 +292,7 @@ bool ZigbeeUploadXmodem(void) {
     }
     case ZBU_SOFTWARE_SEND: {
       if (millis() > XModem.timeout) {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader software reset send timeout"));
+        AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader software reset send timeout"));
         ZbUpload.ota_step = ZBU_HARDWARE_RESET;
         return true;
       }
@@ -304,17 +317,17 @@ bool ZigbeeUploadXmodem(void) {
     case ZBU_PROMPT: {                   // *** Wait for prompt and select option upload ebl
       if (millis() > XModem.timeout) {
         if (ZBU_SOFTWARE_RESET == ZbUpload.bootloader) {
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader software reset timeout"));
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader software reset timeout"));
           ZbUpload.ota_step = ZBU_HARDWARE_RESET;
         } else {
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader hardware reset timeout"));
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader hardware reset timeout"));
           ZbUpload.ota_step = ZBU_ERROR;
         }
         return true;
       }
 #else  // No ZIGBEE_BOOTLOADER_SOFTWARE_RESET_FIRST
     case ZBU_INIT: {                     // *** Init ESF32 bootloader
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Init bootloader"));
+      AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Init bootloader"));
       ZigbeeUploadSetBootloader(0);      // Reboot MCU EFR32 which returns below text
       XModem.timeout = millis() + (30 * 1000);  // Allow 30 seconds to receive EBL prompt
       XModem.delay = millis() + (2 * XMODEM_FLUSH_DELAY);
@@ -324,7 +337,7 @@ bool ZigbeeUploadXmodem(void) {
     }
     case ZBU_PROMPT: {                   // *** Wait for prompt and select option upload ebl
       if (millis() > XModem.timeout) {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader timeout"));
+        AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader timeout"));
         ZbUpload.ota_step = ZBU_ERROR;
         return true;
       }
@@ -338,17 +351,18 @@ bool ZigbeeUploadXmodem(void) {
         }
       } else {
         // After the bootloader receives a carriage return from the target device, it displays a menu
-        // Gecko Bootloader v1.A.3
-        // 1. upload gbl
-        // 2. run
-        // 3. ebl info
+        // [cr][lf]
+        // Gecko Bootloader v1.A.3 or Gecko Bootloader v1.9.1.04[cr][lf]
+        // 1. upload gbl[cr][lf]
+        // 2. run[cr][lf]
+        // 3. ebl info[cr][lf]
         // BL >
         if (ZigbeeUploadBootloaderPrompt()) {
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Init sync"));
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Init sync"));
           ZigbeeSerial->flush();
           ZigbeeSerial->write('1');      // upload ebl
-          if (ssleep > 0) {
-            ssleep = 1;                  // Speed up loop used for xmodem upload
+          if (TasmotaGlobal.sleep > 0) {
+            TasmotaGlobal.sleep = 1;     // Speed up loop used for xmodem upload
           }
           XModem.timeout = millis() + (XMODEM_SYNC_TIMEOUT * 1000);
           ZbUpload.ota_step = ZBU_SYNC;
@@ -358,32 +372,41 @@ bool ZigbeeUploadXmodem(void) {
     }
     case ZBU_SYNC: {                     // *** Handle file upload using XModem - sync
       if (millis() > XModem.timeout) {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: SYNC timeout"));
+        AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: SYNC timeout"));
         ZbUpload.ota_step = ZBU_ERROR;
         return true;
       }
       // Wait for either C or NACK as a sync packet. Determines protocol details, checksum algorithm.
       if (ZigbeeSerial->available()) {
+        // [cr][lf]
+        // begin upload[cr][lf]
+        // C
         char xmodem_sync = ZigbeeSerial->read();
+
+//        AddLog(LOG_LEVEL_DEBUG_MORE, PSTR("XMD: Rcvd2 0x%02X"), xmodem_sync);
+
         if (('C' == xmodem_sync) || (XM_NAK == xmodem_sync)) {
           // Determine which checksum algorithm to use
           XModem.oldChecksum = (xmodem_sync == XM_NAK);
-          XModem.packetNo = 1;
+          XModem.packet_no = 1;
           ZbUpload.byte_counter = 0;
           ZbUpload.ota_step = ZBU_UPLOAD;
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Init packet send"));
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Init packet send"));
         }
       }
       break;
     }
     case ZBU_UPLOAD: {                   // *** Handle file upload using XModem - upload
       if (ZigbeeUploadAvailable()) {
-        if (!XModemSendPacket(XModem.packetNo)) {
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Packet send failed"));
+        if (ZbUpload.byte_counter && !(ZbUpload.byte_counter % 10240)) {  // Show progress every 10kB
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Progress %d kB"), ZbUpload.byte_counter / 1024);
+        }
+        if (!XModemSendPacket(XModem.packet_no)) {
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Packet %d send failed"), XModem.packet_no);
           ZbUpload.ota_step = ZBU_ERROR;
           return true;
         }
-        XModem.packetNo++;
+        XModem.packet_no++;
       } else {
         // Once the last block is ACKed by the target, the transfer should be finalized by an
         // EOT (ASCII 0x04) packet from the source. Once this packet is confirmed via XModem ACK
@@ -391,6 +414,7 @@ bool ZigbeeUploadXmodem(void) {
         ZigbeeSerial->write(XM_EOT);
         XModem.timeout = millis() + (30 * 1000);  // Allow 30 seconds to receive EOT ACK
         ZbUpload.ota_step = ZBU_EOT;
+        AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Transferred %d bytes"), ZbUpload.ota_size);
       }
       break;
     }
@@ -401,14 +425,19 @@ bool ZigbeeUploadXmodem(void) {
       // its XModem state machine waits a sufficient amount of time to allow this checksum process
       // to occur without timing out on the response just before the EOT is sent.
       if (millis() > XModem.timeout) {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: EOT ACK timeout"));
+        AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: EOT ACK timeout"));
         ZbUpload.ota_step = ZBU_ERROR;
         return true;
       }
       if (ZigbeeSerial->available()) {
         char xmodem_ack = XModemWaitACK();
-        if (XM_ACK == xmodem_ack) {
-          AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: " D_SUCCESSFUL));
+        if (XM_CAN == xmodem_ack) {
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Transfer invalid"));
+          ZbUpload.ota_step = ZBU_ERROR;
+          return true;
+        }
+        else if (XM_ACK == xmodem_ack) {
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: " D_SUCCESSFUL));
           XModem.timeout = millis() + (30 * 1000);  // Allow 30 seconds to receive EBL prompt
           ZbUpload.byte_counter = 0;
           ZbUpload.ota_step = ZBU_COMPLETE;
@@ -418,34 +447,39 @@ bool ZigbeeUploadXmodem(void) {
     }
     case ZBU_COMPLETE: {                 // *** Wait for Serial upload complete EBL prompt
       if (millis() > XModem.timeout) {
-        AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader timeout"));
+        AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: Bootloader timeout"));
         ZbUpload.ota_step = ZBU_ERROR;
         return true;
       } else {
         // After an image successfully uploads, the XModem transaction completes and the bootloader displays
         // ‘Serial upload complete’ before redisplaying the menu
-        // Serial upload complete
-        // Gecko Bootloader v1.A.3
-        // 1. upload gbl
-        // 2. run
-        // 3. ebl info
+        //
+        // [cr][lf]
+        // Serial upload complete[cr][lf]
+        // [cr][lf]
+        // Gecko Bootloader v1.A.3 or Gecko Bootloader v1.9.1.04[cr][lf]
+        // 1. upload gbl[cr][lf]
+        // 2. run[cr][lf]
+        // 3. ebl info[cr][lf]
         // BL >
         if (ZigbeeUploadBootloaderPrompt()) {
           ZbUpload.state = ZBU_COMPLETE;
           ZbUpload.ota_step = ZBU_DONE;
+          AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: " D_RESTARTING));
         }
       }
       break;
     }
     case ZBU_ERROR:
       ZbUpload.state = ZBU_ERROR;
+      AddLog(LOG_LEVEL_DEBUG, PSTR("XMD: " D_FAILED));
     case ZBU_DONE: {                     // *** Clean up and restart to disable bootloader and use new firmware
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("XMD: " D_RESTARTING));
       ZigbeeUploadSetBootloader(1);      // Disable bootloader and reset MCU - should happen at restart
-      if (1 == ssleep) {
-        ssleep = Settings.sleep;         // Restore loop sleep
+      if (1 == TasmotaGlobal.sleep) {
+        TasmotaGlobal.sleep = Settings.sleep;         // Restore loop sleep
       }
-//      restart_flag = 2;                  // Restart to disable bootloader and use new firmware
+//      TasmotaGlobal.restart_flag = 2;    // Restart to disable bootloader and use new firmware
+      if (ZbUpload.buffer) { free(ZbUpload.buffer); }
       ZbUpload.ota_step = ZBU_FINISH;    // Never return to zero without a restart to get a sane Zigbee environment
       break;
     }
@@ -461,50 +495,22 @@ bool ZigbeeUploadXmodem(void) {
  * Step 1 - Upload MCU firmware in ESP8266 flash free space (current size is about 200k)
 \*********************************************************************************************/
 
-bool ZigbeeUploadOtaReady(void) {
-  return (ZBU_INIT == ZbUpload.ota_step);
-}
+#ifdef USE_WEBSERVER
 
-bool ZigbeeUploadFinish(void) {
-  return (ZBU_FINISH == ZbUpload.ota_step);
-}
-
-uint8_t ZigbeeUploadInit(void) {
+uint8_t ZigbeeUploadStep1Init(void) {
   if (!PinUsed(GPIO_ZIGBEE_RST) && (ZigbeeSerial == nullptr)) { return 1; }  // Wrong pin configuration - No file selected
 
-  ZbUpload.sector_counter = ZigbeeUploadFlashStart();
-  ZbUpload.sector_cursor = 0;
-  ZbUpload.ota_size = 0;
   ZbUpload.ota_step = ZBU_IDLE;
   ZbUpload.state = ZBU_IDLE;
   return 0;
 }
 
-bool ZigbeeUploadWriteBuffer(uint8_t *buf, size_t size) {
-  // Read complete file into ESP8266 flash
-  // Current files are about 200k
-  if (0 == ZbUpload.sector_cursor) {  // Starting a new sector write so we need to erase it first
-    ESP.flashEraseSector(ZbUpload.sector_counter);
-  }
-  ZbUpload.sector_cursor++;
-  ESP.flashWrite((ZbUpload.sector_counter * SPI_FLASH_SEC_SIZE) + ((ZbUpload.sector_cursor-1) * 2048), (uint32_t*)buf, size);
-  ZbUpload.ota_size += size;
-  if (2 == ZbUpload.sector_cursor) {  // The web upload sends 2048 bytes at a time so keep track of the cursor position to reset it for the next flash sector erase
-    ZbUpload.sector_cursor = 0;
-    ZbUpload.sector_counter++;
-    if (ZbUpload.sector_counter > (SPIFFS_END -2)) {
-      return false;  // File too large - Not enough free space
-    }
-  }
-  return true;
-}
-
-void ZigbeeUploadDone(void) {
+void ZigbeeUploadStep1Done(uint32_t data, size_t size) {
+  ZbUpload.sector_counter = data;
+  ZbUpload.ota_size = size;
   ZbUpload.ota_step = ZBU_INIT;
-  ZbUpload.state = ZBU_UPLOAD;
+  ZbUpload.state = ZBU_UPLOAD;      // Signal upload done and ready for delayed upload to MCU EFR32
 }
-
-#ifdef USE_WEBSERVER
 
 #define WEB_HANDLE_ZIGBEE_XFER "zx"
 
@@ -530,18 +536,18 @@ void HandleZigbeeXfer(void) {
   if (!HttpCheckPriviledgedAccess()) { return; }
 
   if (Webserver->hasArg("z")) {     // Status refresh requested
-    WSContentBegin(200, CT_PLAIN);
-    WSContentSend_P(PSTR("%d"), ZbUpload.state);
-    WSContentEnd();
     if (ZBU_ERROR == ZbUpload.state) {
       Web.upload_error = 7;         // Upload aborted (xmodem transfer failed)
     }
+    WSContentBegin(200, CT_PLAIN);
+    WSContentSend_P(PSTR("%d"), ZbUpload.state);
+    WSContentEnd();
     return;
   }
 
-  AddLog_P(LOG_LEVEL_DEBUG, S_LOG_HTTP, PSTR(D_UPLOAD_TRANSFER));
+  AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_HTTP D_UPLOAD_TRANSFER));
 
-  WSContentStart_P(S_INFORMATION);
+  WSContentStart_P(PSTR(D_INFORMATION));
   WSContentSend_P(HTTP_SCRIPT_XFER_STATE);
   WSContentSendStyle();
   WSContentSend_P(PSTR("<div style='text-align:center;'><b>" D_UPLOAD_TRANSFER " ...</b></div>"));

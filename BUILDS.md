@@ -3,6 +3,7 @@
 | Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | Remarks
 |-----------------------|---------|-------|--------|-----|---------|----|---------|--------
 | MY_LANGUAGE en_GB     | x | x | x | x | x | x | x |
+| USE_UFILESYS          | - | - | - | - | - | - | - |
 | USE_ARDUINO_OTA       | - | - | - | - | - | - | - |
 | USE_DOMOTICZ          | - | - | x | x | x | x | - |
 | USE_HOME_ASSISTANT    | - | - | x | x | x | x | - |
@@ -28,7 +29,8 @@
 | USE_EXPRESSION        | - | - | - | - | - | - | - |
 | SUPPORT_IF_STATEMENT  | - | - | - | - | - | - | - |
 | USE_HOTPLUG           | - | - | - | - | - | - | - |
-| USE_PROMETHEUS        | - | - | - | - | - | - | - | Enables the `/metrics` endpoint
+| USE_PROMETHEUS        | - | - | - | - | - | - | - |
+| USE_PING              | - | - | - | - | - | - | - |
 |                       |   |   |   |   |   |   |   |
 | Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | Remarks
 | ROTARY_V1             | - | - | x | - | x | - | - |
@@ -48,6 +50,7 @@
 | USE_PWM_DIMMER        | - | - | x | x | - | - | - |
 | USE_KEELOQ            | - | - | - | - | - | - | - |
 | USE_SONOFF_D1         | - | - | x | x | - | - | - |
+| USE_SHELLY_DIMMER     | - | - | x | - | - | - | - |
 |                       |   |   |   |   |   |   |   |
 | Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | Remarks
 | USE_LIGHT             | - | x | x | x | x | x | x |
@@ -119,6 +122,8 @@
 | USE_CHIRP             | - | - | - | - | - | - | - |
 | USE_PAJ7620           | - | - | - | - | - | - | - |
 | USE_PCF8574           | - | - | - | - | - | - | - |
+|                       |   |   |   |   |   |   |   |
+| Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | Remarks
 | USE_HIH6              | - | - | - | - | x | - | - |
 | USE_DHT12             | - | - | - | - | x | - | - |
 | USE_DS1624            | - | - | - | - | x | - | - |
@@ -131,12 +136,24 @@
 | USE_VEML7700          | - | - | - | - | - | - | - |
 | USE_MCP9808           | - | - | - | - | - | - | - |
 | USE_HP303B            | - | - | - | - | - | - | - |
-| USE_EZOPH             | - | - | - | - | - | - | - |
+| USE_EZOCO2            | - | - | - | - | - | - | - |
+| USE_EZODO             | - | - | - | - | - | - | - |
+| USE_EZOEC             | - | - | - | - | - | - | - |
+| USE_EZOFLO            | - | - | - | - | - | - | - |
+| USE_EZOHUM            | - | - | - | - | - | - | - |
+| USE_EZOO2             | - | - | - | - | - | - | - |
 | USE_EZOORP            | - | - | - | - | - | - | - |
+| USE_EZOPH             | - | - | - | - | - | - | - |
+| USE_EZOPMP            | - | - | - | - | - | - | - |
+| USE_EZOPRS            | - | - | - | - | - | - | - |
+| USE_EZORGB            | - | - | - | - | - | - | - |
 | USE_EZORTD            | - | - | - | - | - | - | - |
+| USE_SEESAW_SOIL       | - | - | - | - | - | - | - |
+| USE_TOF10120          | - | - | - | - | - | - | - |
 |                       |   |   |   |   |   |   |   |
 | Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | Remarks
 | USE_SPI               | - | - | - | - | - | - | x |
+| USE_RC522             | - | - | - | - | - | - | - |
 | USE_MHZ19             | - | - | - | - | x | - | - |
 | USE_SENSEAIR          | - | - | - | - | x | - | - |
 | USE_PMS5003           | - | - | - | - | x | - | - |
@@ -154,6 +171,7 @@
 | USE_TASMOTA_CLIENT    | - | - | - | - | - | - | - |
 | USE_OPENTHERM         | - | - | - | - | - | - | - |
 | USE_MIEL_HVAC         | - | - | - | - | - | - | - |
+| USE_AS608             | - | - | - | - | - | - | - |
 | USE_TCP_BRIDGE        | - | - | - | - | - | - | - | zbbridge
 |                       |   |   |   |   |   |   |   |
 | USE_NRF24             | - | - | - | - | - | - | - |
@@ -176,6 +194,7 @@
 | USE_RF_SENSOR         | - | - | - | - | x | - | - | AlectoV2 only
 | USE_HRE               | - | - | - | - | x | - | - |
 | USE_A4988_STEPPER     | - | - | - | - | - | - | - |
+| USE_NEOPOOL           | - | - | - | - | - | - | - |
 |                       |   |   |   |   |   |   |   |
 | Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | Remarks
 | USE_DISPLAY           | - | - | - | - | - | - | x |
@@ -186,16 +205,23 @@
 | USE_DISPLAY_ILI9341   | - | - | - | - | - | - | x |
 | USE_DISPLAY_EPAPER_29 | - | - | - | - | - | - | x |
 | USE_DISPLAY_EPAPER_42 | - | - | - | - | - | - | x |
-| USE_DISPLAY_ILI9488   | - | - | - | - | - | - | - |
-| USE_DISPLAY_SSD1351   | - | - | - | - | - | - | - |
-| USE_DISPLAY_RA8876    | - | - | - | - | - | - | - |
+| USE_DISPLAY_ILI9488   | - | - | - | - | - | - | x |
+| USE_DISPLAY_SSD1351   | - | - | - | - | - | - | x |
+| USE_DISPLAY_RA8876    | - | - | - | - | - | - | x |
+| USE_DISPLAY_ST7789    | - | - | - | - | - | - | x |
+|                       |   |   |   |   |   |   |   |
+| USE_FT5206            | - | - | - | - | - | - | - |
+| USE_FTC532            | - | - | - | - | - | - | - |
+| USE_BS814A2           | - | - | - | - | - | - | - |
 
 ## Additional Features and Sensors on ESP32
 
-| Feature or Sensor     | minimal | lite | tasmota | knx | sensors | ir | display | webcam | Remarks
-|-----------------------|---------|-------|--------|-----|---------|----|---------|--------|--------
-| USE_MI_ESP32          | - | - | - | - | - | - | - | - |
-| USE_WEBCAM            | - | - | - | - | - | - | - | x |
-| USE_ETHERNET          | - | - | - | - | - | - | - | - |
-| USE_I2S_AUDIO         | - | - | - | - | - | - | - | - |
-| USE_TTGO_WATCH        | - | - | - | - | - | - | - | - |
+| Feature or Sensor     | lite | tasmota | knx | sensors | ir | display | webcam | Remarks
+|-----------------------|-------|--------|-----|---------|----|---------|--------|--------
+| USE_UFILESYS          | x | x | x | x | x | x | x |
+| USE_MI_ESP32          | - | x | - | x | - | - | - | See SetOption115
+| USE_IBEACON_ESP32     | - | - | - | - | - | - | - |
+| USE_WEBCAM            | - | - | - | - | - | - | x |
+| USE_ETHERNET          | - | - | - | - | - | - | - |
+| USE_I2S_AUDIO         | - | - | - | - | - | - | - |
+| USE_TTGO_WATCH        | - | - | - | - | - | - | - |

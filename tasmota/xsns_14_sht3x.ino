@@ -1,7 +1,7 @@
 /*
   xsns_14_sht3x.ino - SHT3X temperature and humidity sensor support for Tasmota
 
-  Copyright (C) 2020  Theo Arends
+  Copyright (C) 2021  Theo Arends
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ void Sht3xShow(bool json)
     if (Sht3xRead(t, h, sht3x_sensors[i].address)) {
       char types[11];
       snprintf_P(types, sizeof(types), PSTR("%s%c0x%02X"), sht3x_sensors[i].types, IndexSeparator(), sht3x_sensors[i].address);  // "SHT3X-0xXX"
-      TempHumDewShow(json, ((0 == tele_period) && (0 == i)), types, t, h);
+      TempHumDewShow(json, ((0 == TasmotaGlobal.tele_period) && (0 == i)), types, t, h);
     }
   }
 }

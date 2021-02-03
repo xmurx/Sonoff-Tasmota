@@ -1,7 +1,7 @@
 /*
   xsns_58_dht12.ino - DHT12 I2C temperature and humidity sensor support for Tasmota
 
-  Copyright (C) 2020  Stefan Oskamp and Theo Arends
+  Copyright (C) 2021  Stefan Oskamp and Theo Arends
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ bool Dht12Read(void)
   uint8_t checksum      = Wire.read();
 
   Dht12.humidity    = ConvertHumidity( (float) humidity + (float) humidityTenth/(float) 10.0 );
-  Dht12.temperature = ConvertTemp( (float) temp + (float) tempTenth/(float) 10.0 );
+  Dht12.temperature = ConvertTemp( ((float)temp + (float)(tempTenth & 0x7F) / (float) 10.0) * (tempTenth & 0x80) ? -1.0 : 1.0 );
 
   if (isnan(Dht12.temperature) || isnan(Dht12.humidity)) { return false; }
 
@@ -79,7 +79,7 @@ void Dht12Detect(void)
 
 void Dht12EverySecond(void)
 {
-  if (uptime &1) {
+  if (TasmotaGlobal.uptime &1) {
     // DHT12: 55mS
     if (!Dht12Read()) {
       AddLogMissed(Dht12.name, Dht12.valid);
@@ -90,7 +90,7 @@ void Dht12EverySecond(void)
 void Dht12Show(bool json)
 {
   if (Dht12.valid) {
-    TempHumDewShow(json, (0 == tele_period), Dht12.name, Dht12.temperature, Dht12.humidity);
+    TempHumDewShow(json, (0 == TasmotaGlobal.tele_period), Dht12.name, Dht12.temperature, Dht12.humidity);
   }
 }
 

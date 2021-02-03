@@ -1,7 +1,7 @@
 /*
   support_float.ino - Small floating point support for Tasmota
 
-  Copyright (C) 2020  Theo Arends and Stephan Hadinger
+  Copyright (C) 2021  Theo Arends and Stephan Hadinger
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ double TaylorLog(double x)
   dtostrfd(log1, 8, log1s);
   char log2s[33];
   dtostrfd(totalValue, 8, log2s);
-  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("input %s, log %s, taylor %s"), logxs, log1s, log2s);
+  AddLog(LOG_LEVEL_DEBUG, PSTR("input %s, log %s, taylor %s"), logxs, log1s, log2s);
 */
   return totalValue;
 }
@@ -379,7 +379,7 @@ float sqrt1(const float x)
 //
 // PRE-CONDITIONS (if not satisfied, you may 'halt and catch fire')
 //    from_min < from_max  (not checked)
-//    from_min <= num <= from-max  (chacked)
+//    from_min <= num <= from_max  (checked)
 // POST-CONDITIONS
 //    to_min <= result <= to_max
 //
@@ -387,11 +387,7 @@ uint16_t changeUIntScale(uint16_t inum, uint16_t ifrom_min, uint16_t ifrom_max,
                                        uint16_t ito_min, uint16_t ito_max) {
   // guard-rails
   if (ifrom_min >= ifrom_max) {
-    if (ito_min > ito_max) {
-      return ito_max;
-    } else {
-      return ito_min;  // invalid input, return arbitrary value
-    }
+    return (ito_min > ito_max ? ito_max : ito_min);  // invalid input, return arbitrary value
   }
   // convert to uint31, it's more verbose but code is more compact
   uint32_t num = inum;

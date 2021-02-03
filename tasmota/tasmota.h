@@ -1,7 +1,7 @@
 /*
   tasmota.h - Master header file for Tasmota
 
-  Copyright (C) 2020  Theo Arends
+  Copyright (C) 2021  Theo Arends
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -84,9 +84,10 @@ const uint8_t MAX_GROUP_TOPICS = 4;         // Max number of Group Topics
 const uint8_t MAX_DEV_GROUP_NAMES = 4;      // Max number of Device Group names
 #ifdef ESP8266
 const uint8_t MAX_ADCS = 1;                 // Max number of ESP8266 ADC pins
-#else
+#endif  // ESP8266
+#ifdef ESP32
 const uint8_t MAX_ADCS = 8;                 // Max number of ESP32 ADC pins (ADC2 pins are unusable with Wifi enabled)
-#endif
+#endif  // ESP32
 
 const uint8_t MAX_HUE_DEVICES = 15;         // Max number of Philips Hue device per emulation
 const uint8_t MAX_ROTARIES = 2;             // Max number of Rotary Encoders
@@ -134,7 +135,8 @@ const uint16_t INPUT_BUFFER_SIZE = 520;     // Max number of characters in seria
 const uint16_t FLOATSZ = 16;                // Max number of characters in float result from dtostrfd (max 32)
 const uint16_t CMDSZ = 24;                  // Max number of characters in command
 const uint16_t TOPSZ = 151;                 // Max number of characters in topic string
-const uint16_t LOGSZ = 700;                 // Max number of characters in log
+const uint16_t LOGSZ = 128;                 // Max number of characters in AddLog_P log
+const uint16_t MAX_LOGSZ = 700;             // Max number of characters in log
 const uint16_t MIN_MESSZ = 1040;            // Min number of characters in MQTT message (1200 - TOPSZ - 9 header bytes)
 
 const uint8_t SENSOR_MAX_MISS = 5;          // Max number of missed sensor reads before deciding it's offline
@@ -182,6 +184,7 @@ const uint32_t LOOP_SLEEP_DELAY = 50;       // Lowest number of milliseconds to 
 #define NEO_HW_SK6812          2            // NeoPixelBus hardware SK6812
 #define NEO_HW_LC8812          2            // NeoPixelBus hardware LC8812
 #define NEO_HW_APA106          3            // NeoPixelBus hardware APA106
+#define NEO_HW_P9813           4            // NeoPixelBus hardware P9813
 
 #define MQTT_PUBSUBCLIENT      1            // Mqtt PubSubClient library
 #define MQTT_TASMOTAMQTT       2            // Mqtt TasmotaMqtt library based on esp-mqtt-arduino - soon obsolete
@@ -251,7 +254,7 @@ enum Shortcuts { SC_CLEAR, SC_DEFAULT, SC_USER };
 
 enum SettingsParamIndex { P_HOLD_TIME, P_MAX_POWER_RETRY, P_BACKLOG_DELAY, P_MDNS_DELAYED_START, P_BOOT_LOOP_OFFSET, P_RGB_REMAP, P_IR_UNKNOW_THRESHOLD,  // SetOption32 .. SetOption38
                           P_CSE7766_INVALID_POWER, P_HOLD_IGNORE, P_ARP_GRATUITOUS, P_OVER_TEMP,  // SetOption39 .. SetOption42
-                          P_ex_DIMMER_MAX, P_ex_TUYA_VOLTAGE_ID, P_ex_TUYA_CURRENT_ID, P_ex_TUYA_POWER_ID,  // SetOption43 .. SetOption46
+                          P_ROTARY_MAX_STEP, P_ex_TUYA_VOLTAGE_ID, P_ex_TUYA_CURRENT_ID, P_ex_TUYA_POWER_ID,  // SetOption43 .. SetOption46
                           P_ex_ENERGY_TARIFF1, P_ex_ENERGY_TARIFF2,  // SetOption47 .. SetOption48
                           P_MAX_PARAM8 };  // Max is PARAM8_SIZE (18) - SetOption32 until SetOption49
 
@@ -267,13 +270,14 @@ enum LightTypes    { LT_BASIC, LT_PWM1,    LT_PWM2,      LT_PWM3,   LT_PWM4,  LT
 
 enum XsnsFunctions {FUNC_SETTINGS_OVERRIDE, FUNC_PIN_STATE, FUNC_MODULE_INIT, FUNC_PRE_INIT, FUNC_INIT,
                     FUNC_LOOP, FUNC_EVERY_50_MSECOND, FUNC_EVERY_100_MSECOND, FUNC_EVERY_200_MSECOND, FUNC_EVERY_250_MSECOND, FUNC_EVERY_SECOND,
-                    FUNC_SAVE_AT_MIDNIGHT, FUNC_SAVE_BEFORE_RESTART,
+                    FUNC_SAVE_SETTINGS, FUNC_SAVE_AT_MIDNIGHT, FUNC_SAVE_BEFORE_RESTART,
                     FUNC_AFTER_TELEPERIOD, FUNC_JSON_APPEND, FUNC_WEB_SENSOR, FUNC_COMMAND, FUNC_COMMAND_SENSOR, FUNC_COMMAND_DRIVER,
                     FUNC_MQTT_SUBSCRIBE, FUNC_MQTT_INIT, FUNC_MQTT_DATA,
                     FUNC_SET_POWER, FUNC_SET_DEVICE_POWER, FUNC_SHOW_SENSOR, FUNC_ANY_KEY,
                     FUNC_ENERGY_EVERY_SECOND, FUNC_ENERGY_RESET,
                     FUNC_RULES_PROCESS, FUNC_SERIAL, FUNC_FREE_MEM, FUNC_BUTTON_PRESSED,
-                    FUNC_WEB_ADD_BUTTON, FUNC_WEB_ADD_MAIN_BUTTON, FUNC_WEB_ADD_HANDLER, FUNC_SET_CHANNELS, FUNC_SET_SCHEME, FUNC_HOTPLUG_SCAN,
+                    FUNC_WEB_ADD_BUTTON, FUNC_WEB_ADD_MANAGEMENT_BUTTON, FUNC_WEB_ADD_MAIN_BUTTON,
+                    FUNC_WEB_ADD_HANDLER, FUNC_SET_CHANNELS, FUNC_SET_SCHEME, FUNC_HOTPLUG_SCAN,
                     FUNC_DEVICE_GROUP_ITEM };
 
 enum AddressConfigSteps { ADDR_IDLE, ADDR_RECEIVE, ADDR_SEND };
@@ -303,10 +307,15 @@ enum SettingsTextIndex { SET_OTAURL,
                          SET_TELEGRAM_TOKEN, SET_TELEGRAM_CHATID,
 #ifdef ESP8266
                          SET_ADC_PARAM1,
-#else  // ESP32
+#endif  // ESP8266
+#ifdef ESP32
                          SET_ADC_PARAM1, SET_ADC_PARAM2, SET_ADC_PARAM3, SET_ADC_PARAM4, SET_ADC_PARAM5, SET_ADC_PARAM6, SET_ADC_PARAM7, SET_ADC_PARAM8,  // MAX_ADCS
-#endif
+#endif  // ESP32
+                         SET_SWITCH_TXT1, SET_SWITCH_TXT2, SET_SWITCH_TXT3, SET_SWITCH_TXT4, SET_SWITCH_TXT5, SET_SWITCH_TXT6, SET_SWITCH_TXT7, SET_SWITCH_TXT8,  // MAX_SWITCHES
+                         SET_SHD_PARAM,
                          SET_MAX };
+
+enum SpiInterfaces { SPI_NONE, SPI_MOSI, SPI_MISO, SPI_MOSI_MISO };
 
 enum DevGroupMessageType { DGR_MSGTYP_FULL_STATUS, DGR_MSGTYP_PARTIAL_UPDATE, DGR_MSGTYP_UPDATE, DGR_MSGTYP_UPDATE_MORE_TO_COME, DGR_MSGTYP_UPDATE_DIRECT, DGR_MSGTYPE_UPDATE_COMMAND, DGR_MSGTYPFLAG_WITH_LOCAL = 128 };
 
@@ -333,10 +342,10 @@ enum DevGroupShareItem { DGR_SHARE_POWER = 1, DGR_SHARE_LIGHT_BRI = 2, DGR_SHARE
 
 enum CommandSource { SRC_IGNORE, SRC_MQTT, SRC_RESTART, SRC_BUTTON, SRC_SWITCH, SRC_BACKLOG, SRC_SERIAL, SRC_WEBGUI, SRC_WEBCOMMAND, SRC_WEBCONSOLE, SRC_PULSETIMER,
                      SRC_TIMER, SRC_RULE, SRC_MAXPOWER, SRC_MAXENERGY, SRC_OVERTEMP, SRC_LIGHT, SRC_KNX, SRC_DISPLAY, SRC_WEMO, SRC_HUE, SRC_RETRY, SRC_REMOTE, SRC_SHUTTER,
-                     SRC_THERMOSTAT, SRC_CHAT, SRC_MAX };
+                     SRC_THERMOSTAT, SRC_CHAT, SRC_TCL, SRC_MAX };
 const char kCommandSource[] PROGMEM = "I|MQTT|Restart|Button|Switch|Backlog|Serial|WebGui|WebCommand|WebConsole|PulseTimer|"
                                       "Timer|Rule|MaxPower|MaxEnergy|Overtemp|Light|Knx|Display|Wemo|Hue|Retry|Remote|Shutter|"
-                                      "Thermostat|Chat";
+                                      "Thermostat|Chat|TCL";
 
 const uint8_t kDefaultRfCode[9] PROGMEM = { 0x21, 0x16, 0x01, 0x0E, 0x03, 0x48, 0x2E, 0x1A, 0x00 };
 
@@ -348,6 +357,7 @@ enum TasmotaSerialConfig {
   TS_SERIAL_5O1, TS_SERIAL_6O1, TS_SERIAL_7O1, TS_SERIAL_8O1,
   TS_SERIAL_5O2, TS_SERIAL_6O2, TS_SERIAL_7O2, TS_SERIAL_8O2 };
 
+#ifdef ESP8266
 const SerConfu8 kTasmotaSerialConfig[] PROGMEM = {
   SERIAL_5N1, SERIAL_6N1, SERIAL_7N1, SERIAL_8N1,
   SERIAL_5N2, SERIAL_6N2, SERIAL_7N2, SERIAL_8N2,
@@ -356,6 +366,17 @@ const SerConfu8 kTasmotaSerialConfig[] PROGMEM = {
   SERIAL_5O1, SERIAL_6O1, SERIAL_7O1, SERIAL_8O1,
   SERIAL_5O2, SERIAL_6O2, SERIAL_7O2, SERIAL_8O2
 };
+#endif  // ESP8266
+#ifdef ESP32
+const uint32_t kTasmotaSerialConfig[] PROGMEM = {
+  SERIAL_5N1, SERIAL_6N1, SERIAL_7N1, SERIAL_8N1,
+  SERIAL_5N2, SERIAL_6N2, SERIAL_7N2, SERIAL_8N2,
+  SERIAL_5E1, SERIAL_6E1, SERIAL_7E1, SERIAL_8E1,
+  SERIAL_5E2, SERIAL_6E2, SERIAL_7E2, SERIAL_8E2,
+  SERIAL_5O1, SERIAL_6O1, SERIAL_7O1, SERIAL_8O1,
+  SERIAL_5O2, SERIAL_6O2, SERIAL_7O2, SERIAL_8O2
+};
+#endif  // ESP32
 
 enum TuyaSupportedFunctions { TUYA_MCU_FUNC_NONE,
                               TUYA_MCU_FUNC_SWT1 = 1, TUYA_MCU_FUNC_SWT2, TUYA_MCU_FUNC_SWT3, TUYA_MCU_FUNC_SWT4,
@@ -367,11 +388,15 @@ enum TuyaSupportedFunctions { TUYA_MCU_FUNC_NONE,
                               TUYA_MCU_FUNC_REL1_INV = 41, TUYA_MCU_FUNC_REL2_INV, TUYA_MCU_FUNC_REL3_INV, TUYA_MCU_FUNC_REL4_INV, TUYA_MCU_FUNC_REL5_INV,
                                 TUYA_MCU_FUNC_REL6_INV, TUYA_MCU_FUNC_REL7_INV, TUYA_MCU_FUNC_REL8_INV,
                               TUYA_MCU_FUNC_LOWPOWER_MODE = 51,
-                              TUYA_MCU_FUNC_FAN3 = 61, TUYA_MCU_FUNC_FAN4, TUYA_MCU_FUNC_FAN5, TUYA_MCU_FUNC_FAN6,
+                              TUYA_MCU_FUNC_ENUM1 = 61, TUYA_MCU_FUNC_ENUM2, TUYA_MCU_FUNC_ENUM3, TUYA_MCU_FUNC_ENUM4,
+                              TUYA_MCU_FUNC_TEMP = 71, TUYA_MCU_FUNC_TEMPSET, TUYA_MCU_FUNC_HUM, TUYA_MCU_FUNC_HUMSET,
+                              TUYA_MCU_FUNC_LX = 75, TUYA_MCU_FUNC_TVOC, TUYA_MCU_FUNC_CO2, TUYA_MCU_FUNC_ECO2,
+                              TUYA_MCU_FUNC_TIMER1 = 81, TUYA_MCU_FUNC_TIMER2, TUYA_MCU_FUNC_TIMER3, TUYA_MCU_FUNC_TIMER4,
                               TUYA_MCU_FUNC_MOTOR_DIR = 97,
                               TUYA_MCU_FUNC_ERROR = 98,
                               TUYA_MCU_FUNC_DUMMY = 99,
                               TUYA_MCU_FUNC_LAST = 255
+                              // IDs from 230 to 234 are reserved for internal use
 };
 
 #endif  // _TASMOTA_H_

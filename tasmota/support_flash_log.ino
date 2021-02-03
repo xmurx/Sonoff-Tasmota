@@ -1,7 +1,7 @@
 /*
   support_flash_log.ino - log to flash support for Sonoff-Tasmota
 
-  Copyright (C) 2020  Theo Arends & Christian Baars
+  Copyright (C) 2021  Theo Arends & Christian Baars
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -397,7 +397,7 @@ void FLOG::stopRecording(void){
       if(k%128 == 0){  // give control to the system every x iteration, TODO: This will fail, when record/entry-size is not 8
         // DEBUG_SENSOR_LOG(PSTR("FLOG: now loop(), %u bytes left"), Flog->bytes_left);
         OsWatchLoop();
-        delay(ssleep);
+        delay(TasmotaGlobal.sleep);
         }
       k+=size;
       if(bytes_left>7){
@@ -416,7 +416,7 @@ void FLOG::stopRecording(void){
     _readSector(next_sector);
     bytes_left = sector.header.buf_pointer - sizeof(sector.header);
     OsWatchLoop();
-    delay(ssleep);
+    delay(TasmotaGlobal.sleep);
   }
   running_download = false;
   // Callback 3: create a footer or simply finish the download with an empty payload

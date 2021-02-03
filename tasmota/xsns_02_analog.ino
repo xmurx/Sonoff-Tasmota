@@ -1,7 +1,7 @@
 /*
   xsns_02_analog.ino - ADC support for Tasmota
 
-  Copyright (C) 2020  Theo Arends
+  Copyright (C) 2021  Theo Arends
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,12 +27,16 @@
 #ifdef ESP8266
 #define ANALOG_RESOLUTION             10               // 12 = 4095, 11 = 2047, 10 = 1023
 #define ANALOG_RANGE                  1023             // 4095 = 12, 2047 = 11, 1023 = 10
-#else  // ESP32
+#define ANALOG_PERCENT                10               // backward compatible div10 range
+#endif  // ESP8266
+#ifdef ESP32
 #undef ANALOG_RESOLUTION
 #define ANALOG_RESOLUTION             12               // 12 = 4095, 11 = 2047, 10 = 1023
 #undef ANALOG_RANGE
 #define ANALOG_RANGE                  4095             // 4095 = 12, 2047 = 11, 1023 = 10
-#endif  // ESP8266 or ESP32
+#undef ANALOG_PERCENT
+#define ANALOG_PERCENT                ((ANALOG_RANGE + 50) / 100)  // approximation to 1% ADC range
+#endif  // ESP32
 
 #define TO_CELSIUS(x) ((x) - 273.15)
 #define TO_KELVIN(x) ((x) + 273.15)
@@ -93,6 +97,20 @@
 // Press "Up" will raise ADC to ANALOG_RANGE, Press "Dn" will raise ADC to ANALOG_RANGE/2
 #define ANALOG_JOYSTICK              (ANALOG_RANGE / 3) +100  // Add resistor tolerance
 
+// pH scale minimum and maximum values
+#define ANALOG_PH_MAX                             14.0
+#define ANALOG_PH_MIN                             0.0
+
+// Default values for calibration solution with lower PH
+#define ANALOG_PH_CALSOLUTION_LOW_PH              4.0
+#define ANALOG_PH_CALSOLUTION_LOW_ANALOG_VALUE    282
+// Default values for calibration solution with higher PH
+#define ANALOG_PH_CALSOLUTION_HIGH_PH             9.18
+#define ANALOG_PH_CALSOLUTION_HIGH_ANALOG_VALUE   435
+
+// Multiplier used to store pH with 2 decimal places in a non decimal datatype
+#define ANALOG_PH_DECIMAL_MULTIPLIER              100.0
+
 struct {
   uint8_t present = 0;
   uint8_t type = 0;
@@ -132,7 +150,7 @@ void AdcGetSettings(uint32_t idx) {
   Adc[idx].param2 = 0;
   Adc[idx].param3 = 0;
   Adc[idx].param4 = 0;
-  if (strstr(SettingsText(SET_ADC_PARAM1 + idx), ",") != nullptr) {
+  if (strchr(SettingsText(SET_ADC_PARAM1 + idx), ',') != nullptr) {
     Adcs.type = atoi(subStr(parameters, SettingsText(SET_ADC_PARAM1 + idx), ",", 1));
     Adc[idx].param1 = atoi(subStr(parameters, SettingsText(SET_ADC_PARAM1 + idx), ",", 2));
     Adc[idx].param2 = atoi(subStr(parameters, SettingsText(SET_ADC_PARAM1 + idx), ",", 3));
@@ -164,6 +182,12 @@ void AdcInitParams(uint8_t idx) {
       Adc[idx].param1 = ANALOG_CT_FLAGS;         // (uint32_t) 0
       Adc[idx].param2 = ANALOG_CT_MULTIPLIER;    // (uint32_t) 100000
       Adc[idx].param3 = ANALOG_CT_VOLTAGE;       // (int)      10
+    }
+    else if (ADC_PH == Adc[idx].type) {
+      Adc[idx].param1 = ANALOG_PH_CALSOLUTION_LOW_PH * ANALOG_PH_DECIMAL_MULTIPLIER;  // PH of the calibration solution 1, which is the one with the lower PH
+      Adc[idx].param2 = ANALOG_PH_CALSOLUTION_LOW_ANALOG_VALUE;                       // Reading of AnalogInput while probe is in solution 1
+      Adc[idx].param3 = ANALOG_PH_CALSOLUTION_HIGH_PH * ANALOG_PH_DECIMAL_MULTIPLIER; // PH of the calibration solution 2, which is the one with the higher PH
+      Adc[idx].param4 = ANALOG_PH_CALSOLUTION_HIGH_ANALOG_VALUE;                      // Reading of AnalogInput while probe is in solution 2
     }
   }
   if ((Adcs.type != Adc[idx].type) || (0 == Adc[idx].param1) || (Adc[idx].param1 > ANALOG_RANGE)) {
@@ -207,6 +231,9 @@ void AdcInit(void) {
     if (PinUsed(GPIO_ADC_JOY, i)) {
       AdcAttach(Pin(GPIO_ADC_JOY, i), ADC_JOY);
     }
+    if (PinUsed(GPIO_ADC_PH, i)) {
+      AdcAttach(Pin(GPIO_ADC_PH, i), ADC_PH);
+    }
   }
   for (uint32_t i = 0; i < MAX_KEYS; i++) {
     if (PinUsed(GPIO_ADC_BUTTON, i)) {
@@ -220,7 +247,9 @@ void AdcInit(void) {
   if (Adcs.present) {
 #ifdef ESP32
     analogSetClockDiv(1);               // Default 1
+#if CONFIG_IDF_TARGET_ESP32
     analogSetWidth(ANALOG_RESOLUTION);  // Default 12 bits (0 - 4095)
+#endif  // CONFIG_IDF_TARGET_ESP32
     analogSetAttenuation(ADC_11db);     // Default 11db
 #endif
     for (uint32_t idx = 0; idx < Adcs.present; idx++) {
@@ -258,9 +287,9 @@ void AdcEvery250ms(void) {
 #endif
     if (ADC_INPUT == Adc[idx].type) {
       uint16_t new_value = AdcRead(Adc[idx].pin, 5);
-      if ((new_value < Adc[idx].last_value -10) || (new_value > Adc[idx].last_value +10)) {
+      if ((new_value < Adc[idx].last_value -ANALOG_PERCENT) || (new_value > Adc[idx].last_value +ANALOG_PERCENT)) {
         Adc[idx].last_value = new_value;
-        uint16_t value = Adc[idx].last_value / 10;
+        uint16_t value = Adc[idx].last_value / ANALOG_PERCENT;
         Response_P(PSTR("{\"ANALOG\":{\"A%ddiv10\":%d}}"), idx + offset, (value > 99) ? 100 : value);
         XdrvRulesProcess();
       }
@@ -303,6 +332,28 @@ uint16_t AdcGetLux(uint32_t idx) {
   double ldrLux = (double)Adc[idx].param2 * FastPrecisePow(ldrResistance, (double)Adc[idx].param3 / 10000);
 
   return (uint16_t)ldrLux;
+}
+
+float AdcGetPh(uint32_t idx) {
+  int adc = AdcRead(Adc[idx].pin, 2);
+
+
+  float y1 = Adc[idx].param1 / ANALOG_PH_DECIMAL_MULTIPLIER;
+  uint32_t x1 = Adc[idx].param2;
+  float y2 = Adc[idx].param3 / ANALOG_PH_DECIMAL_MULTIPLIER;
+  uint32_t x2 = Adc[idx].param4;
+
+  float m = (y2 - y1) / (x2 - x1);
+  float ph = m * (adc - x1) + y1;
+
+
+  char phLow_chr[6];
+  char phHigh_chr[6];
+  dtostrfd(y1, 2, phLow_chr);
+  dtostrfd(y2, 2, phHigh_chr);
+  AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_APPLICATION "Analog pH read. ADC-RAW: %d, cal-low(pH=ADC): %s=%d, cal-high(pH=ADC): %s=%d"), adc, phLow_chr, x1, phHigh_chr,x2);
+
+  return ph;
 }
 
 uint16_t AdcGetRange(uint32_t idx) {
@@ -408,15 +459,12 @@ void AdcShow(bool json) {
         break;
       }
       case ADC_TEMP: {
-        char temperature[33];
-        dtostrfd(Adc[idx].temperature, Settings.flag2.temperature_resolution, temperature);
-
         if (json) {
           AdcShowContinuation(&jsonflg);
-          ResponseAppend_P(PSTR("\"" D_JSON_TEMPERATURE "%s\":%s"), adc_idx, temperature);
-          if ((0 == tele_period) && (!domo_flag[ADC_TEMP])) {
+          ResponseAppend_P(PSTR("\"" D_JSON_TEMPERATURE "%s\":%*_f"), adc_idx, Settings.flag2.temperature_resolution, &Adc[idx].temperature);
+          if ((0 == TasmotaGlobal.tele_period) && (!domo_flag[ADC_TEMP])) {
 #ifdef USE_DOMOTICZ
-            DomoticzSensor(DZ_TEMP, temperature);
+            DomoticzFloatSensor(DZ_TEMP, Adc[idx].temperature);
             domo_flag[ADC_TEMP] = true;
 #endif  // USE_DOMOTICZ
 #ifdef USE_KNX
@@ -425,7 +473,7 @@ void AdcShow(bool json) {
           }
 #ifdef USE_WEBSERVER
         } else {
-          WSContentSend_PD(HTTP_SNS_TEMP, adc_name, temperature, TempUnit());
+          WSContentSend_Temp(adc_name, Adc[idx].temperature);
 #endif  // USE_WEBSERVER
         }
         break;
@@ -437,7 +485,7 @@ void AdcShow(bool json) {
           AdcShowContinuation(&jsonflg);
           ResponseAppend_P(PSTR("\"" D_JSON_ILLUMINANCE "%s\":%d"), adc_idx, adc_light);
 #ifdef USE_DOMOTICZ
-          if ((0 == tele_period) && (!domo_flag[ADC_LIGHT])) {
+          if ((0 == TasmotaGlobal.tele_period) && (!domo_flag[ADC_LIGHT])) {
             DomoticzSensor(DZ_ILLUMINANCE, adc_light);
             domo_flag[ADC_LIGHT] = true;
           }
@@ -480,7 +528,7 @@ void AdcShow(bool json) {
           ResponseAppend_P(PSTR("\"CTEnergy%s\":{\"" D_JSON_ENERGY "\":%s,\"" D_JSON_POWERUSAGE "\":%s,\"" D_JSON_VOLTAGE "\":%s,\"" D_JSON_CURRENT "\":%s}"),
             adc_idx, energy_chr, power_chr, voltage_chr, current_chr);
 #ifdef USE_DOMOTICZ
-          if ((0 == tele_period) && (!domo_flag[ADC_CT_POWER])) {
+          if ((0 == TasmotaGlobal.tele_period) && (!domo_flag[ADC_CT_POWER])) {
             DomoticzSensor(DZ_POWER_ENERGY, power_chr);
             DomoticzSensor(DZ_VOLTAGE, voltage_chr);
             DomoticzSensor(DZ_CURRENT, current_chr);
@@ -503,6 +551,22 @@ void AdcShow(bool json) {
         if (json) {
           AdcShowContinuation(&jsonflg);
           ResponseAppend_P(PSTR("\"Joy%s\":%d"), adc_idx, value);
+        }
+        break;
+      }
+      case ADC_PH: {
+        float ph = AdcGetPh(idx);
+        char ph_chr[6];
+        dtostrfd(ph, 2, ph_chr);
+
+
+        if (json) {
+          AdcShowContinuation(&jsonflg);
+          ResponseAppend_P(PSTR("\"pH%d\":%s"), idx + offset, ph_chr);
+  #ifdef USE_WEBSERVER
+        } else {
+          WSContentSend_PD(HTTP_SNS_PH, "", ph_chr);
+  #endif // USE_WEBSERVER
         }
         break;
       }
@@ -529,8 +593,8 @@ void CmndAdcParam(void) {
     if (XdrvMailbox.data_len) {
       if (XdrvMailbox.payload > ADC_INPUT) {
         AdcGetSettings(idx);
-        if (ChrCount(XdrvMailbox.data, ",") > 2) {  // Process parameter entry
-          char sub_string[XdrvMailbox.data_len +1];
+        if (ArgC() > 3) {  // Process parameter entry
+          char argument[XdrvMailbox.data_len];
           // AdcParam 2, 32000, 10000, 3350
           // AdcParam 3, 10000, 12518931, -1.405
           // AdcParam 4, 128, 0, 0
@@ -539,13 +603,23 @@ void CmndAdcParam(void) {
           // AdcParam 7, 0, 2146, 0.23
           // AdcParam 8, 1000, 0, 0
           Adc[idx].type = XdrvMailbox.payload;
-          Adc[idx].param1 = strtol(subStr(sub_string, XdrvMailbox.data, ",", 2), nullptr, 10);
-          Adc[idx].param2 = strtol(subStr(sub_string, XdrvMailbox.data, ",", 3), nullptr, 10);
+          Adc[idx].param1 = strtol(ArgV(argument, 2), nullptr, 10);
+          Adc[idx].param2 = strtol(ArgV(argument, 3), nullptr, 10);
           if (ADC_RANGE == XdrvMailbox.payload) {
-            Adc[idx].param3 = abs(strtol(subStr(sub_string, XdrvMailbox.data, ",", 4), nullptr, 10));
-            Adc[idx].param4 = abs(strtol(subStr(sub_string, XdrvMailbox.data, ",", 5), nullptr, 10));
+            Adc[idx].param3 = abs(strtol(ArgV(argument, 4), nullptr, 10));
+            Adc[idx].param4 = abs(strtol(ArgV(argument, 5), nullptr, 10));
           } else {
-            Adc[idx].param3 = (int)(CharToFloat(subStr(sub_string, XdrvMailbox.data, ",", 4)) * 10000);
+            Adc[idx].param3 = (int)(CharToFloat(ArgV(argument, 4)) * 10000);
+          }
+          if (ADC_PH == XdrvMailbox.payload) {
+            float phLow = CharToFloat(ArgV(argument, 2));
+            float phHigh = CharToFloat(ArgV(argument, 4));
+            Adc[idx].param1 = phLow * ANALOG_PH_DECIMAL_MULTIPLIER;
+            Adc[idx].param2 = strtol(ArgV(argument, 3), nullptr, 10);
+            Adc[idx].param3 = phHigh * ANALOG_PH_DECIMAL_MULTIPLIER;
+            Adc[idx].param4 = strtol(ArgV(argument, 5), nullptr, 10);
+            AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_APPLICATION "Analog pH probe calibrated. cal-low(pH=ADC) %2_f=%d, cal-high(pH=ADC) %2_f=%d"),
+              &phLow, Adc[idx].param2, &phHigh, Adc[idx].param4);
           }
           if (ADC_CT_POWER == XdrvMailbox.payload) {
             if (((1 == Adc[idx].param1) & CT_FLAG_ENERGY_RESET) > 0) {

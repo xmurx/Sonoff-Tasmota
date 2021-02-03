@@ -1,7 +1,7 @@
 /*
   xdrv_03_energy.ino - Energy sensor support for Tasmota
 
-  Copyright (C) 2020  Theo Arends
+  Copyright (C) 2021  Theo Arends
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -225,9 +225,7 @@ void EnergyUpdateToday(void)
 
 void EnergyUpdateTotal(float value, bool kwh)
 {
-//  char energy_total_chr[FLOATSZ];
-//  dtostrfd(value, 4, energy_total_chr);
-//  AddLog_P2(LOG_LEVEL_DEBUG, PSTR("NRG: Energy Total %s %sWh"), energy_total_chr, (kwh) ? "k" : "");
+//  AddLog(LOG_LEVEL_DEBUG, PSTR("NRG: Energy Total %4_f %sWh"), &value, (kwh) ? "k" : "");
 
   uint32_t multiplier = (kwh) ? 100000 : 100;  // kWh or Wh to deca milli Wh
 
@@ -244,7 +242,7 @@ void EnergyUpdateTotal(float value, bool kwh)
     Settings.energy_kWhtotal = RtcSettings.energy_kWhtotal;
     Energy.total = (float)(RtcSettings.energy_kWhtotal + Energy.kWhtoday_offset + Energy.kWhtoday) / 100000;
     Settings.energy_kWhtotal_time = (!Energy.kWhtoday_offset) ? LocalTime() : Midnight();
-//    AddLog_P2(LOG_LEVEL_DEBUG, PSTR("NRG: Energy Total updated with hardware value"));
+//    AddLog(LOG_LEVEL_DEBUG, PSTR("NRG: Energy Total updated with hardware value"));
   }
   EnergyUpdateToday();
 }
@@ -253,7 +251,7 @@ void EnergyUpdateTotal(float value, bool kwh)
 
 void Energy200ms(void)
 {
-  Energy.power_on = (power != 0) | Settings.flag.no_power_on_check;  // SetOption21 - Show voltage even if powered off
+  Energy.power_on = (TasmotaGlobal.power != 0) | Settings.flag.no_power_on_check;  // SetOption21 - Show voltage even if powered off
 
   Energy.fifth_second++;
   if (5 == Energy.fifth_second) {
@@ -337,6 +335,8 @@ void EnergyMarginCheck(void)
   int16_t power_diff[3] = { 0 };
   for (uint32_t phase = 0; phase < Energy.phase_count; phase++) {
     uint16_t active_power = (uint16_t)(Energy.active_power[phase]);
+
+//    AddLog(LOG_LEVEL_DEBUG, PSTR("NRG: APower %d, HPower0 %d, HPower1 %d, HPower2 %d"), active_power, Energy.power_history[phase][0], Energy.power_history[phase][1], Energy.power_history[phase][2]);
 
     if (Settings.energy_power_delta[phase]) {
       power_diff[phase] = active_power - Energy.power_history[phase][0];
@@ -437,12 +437,12 @@ void EnergyMarginCheck(void)
         }
       }
     }
-    else if (power && (energy_power_u <= Settings.energy_max_power_limit)) {
+    else if (TasmotaGlobal.power && (energy_power_u <= Settings.energy_max_power_limit)) {
       Energy.mplh_counter = 0;
       Energy.mplr_counter = 0;
       Energy.mplw_counter = 0;
     }
-    if (!power) {
+    if (!TasmotaGlobal.power) {
       if (Energy.mplw_counter) {
         Energy.mplw_counter--;
       } else {
@@ -474,9 +474,7 @@ void EnergyMarginCheck(void)
     }
     else if ((1 == Energy.max_energy_state ) && (energy_daily_u >= Settings.energy_max_energy)) {
       Energy.max_energy_state  = 2;
-      char stemp[FLOATSZ];
-      dtostrfd(Energy.daily, 3, stemp);
-      ResponseTime_P(PSTR(",\"" D_JSON_MAXENERGYREACHED "\":%s}"), stemp);
+      ResponseTime_P(PSTR(",\"" D_JSON_MAXENERGYREACHED "\":%3_f}"), &Energy.daily);
       MqttPublishPrefixTopic_P(STAT, S_RSLT_WARNING);
       EnergyMqttShow();
       SetAllPower(POWER_ALL_OFF, SRC_MAXENERGY);
@@ -488,12 +486,12 @@ void EnergyMarginCheck(void)
 void EnergyMqttShow(void)
 {
 // {"Time":"2017-12-16T11:48:55","ENERGY":{"Total":0.212,"Yesterday":0.000,"Today":0.014,"Period":2.0,"Power":22.0,"Factor":1.00,"Voltage":213.6,"Current":0.100}}
-  int tele_period_save = tele_period;
-  tele_period = 2;
-  mqtt_data[0] = '\0';
+  int tele_period_save = TasmotaGlobal.tele_period;
+  TasmotaGlobal.tele_period = 2;
+  ResponseClear();
   ResponseAppendTime();
   EnergyShow(true);
-  tele_period = tele_period_save;
+  TasmotaGlobal.tele_period = tele_period_save;
   ResponseJsonEnd();
   MqttPublishTeleSensor();
 }
@@ -502,12 +500,10 @@ void EnergyMqttShow(void)
 void EnergyEverySecond(void)
 {
   // Overtemp check
-  if (global_update) {
-    if (power && !isnan(global_temperature_celsius) && (global_temperature_celsius > (float)Settings.param[P_OVER_TEMP])) {  // Device overtemp, turn off relays
+  if (TasmotaGlobal.global_update) {
+    if (TasmotaGlobal.power && !isnan(TasmotaGlobal.temperature_celsius) && (TasmotaGlobal.temperature_celsius > (float)Settings.param[P_OVER_TEMP])) {  // Device overtemp, turn off relays
 
-      char temperature[33];
-      dtostrfd(global_temperature_celsius, 1, temperature);
-      AddLog_P2(LOG_LEVEL_DEBUG, PSTR("NRG: GlobTemp %s"), temperature);
+      AddLog(LOG_LEVEL_DEBUG, PSTR("NRG: GlobTemp %1_f"), &TasmotaGlobal.temperature_celsius);
 
       SetAllPower(POWER_ALL_OFF, SRC_OVERTEMP);
     }
@@ -534,7 +530,8 @@ void EnergyEverySecond(void)
     }
   }
   if (!data_valid) {
-    Energy.start_energy = 0;
+    //Energy.start_energy = 0;
+    AddLog(LOG_LEVEL_DEBUG, PSTR("NRG: Energy reset by " STR(ENERGY_WATCHDOG) " seconds invalid data"));
 
     XnrgCall(FUNC_ENERGY_RESET);
   }
@@ -556,14 +553,16 @@ void EnergyCommandCalResponse(uint32_t nvalue)
 
 void CmndEnergyReset(void)
 {
-  if ((XdrvMailbox.index > 0) && (XdrvMailbox.index <= 3)) {
-    char *p;
-    unsigned long lnum = strtoul(XdrvMailbox.data, &p, 10);
-    if (p != XdrvMailbox.data) {
+  uint32_t values[2] = { 0 };
+  uint32_t params = ParseParameters(2, values);
+  values[0] *= 100;
+
+  if ((XdrvMailbox.index > 0) && (XdrvMailbox.index <= 5)) {
+    if (params > 0) {
       switch (XdrvMailbox.index) {
       case 1:
         // Reset Energy Today
-        Energy.kWhtoday_offset = lnum *100;
+        Energy.kWhtoday_offset = values[0];
         Energy.kWhtoday = 0;
         Energy.kWhtoday_delta = 0;
         Energy.start_energy = 0;
@@ -571,78 +570,73 @@ void CmndEnergyReset(void)
         Settings.energy_kWhtoday = Energy.kWhtoday_offset;
         RtcSettings.energy_kWhtoday = Energy.kWhtoday_offset;
         Energy.daily = (float)Energy.kWhtoday_offset / 100000;
-        if (!RtcSettings.energy_kWhtotal && !Energy.kWhtoday_offset) {
-          Settings.energy_kWhtotal_time = LocalTime();
+        if( params > 1) {
+          Settings.energy_kWhtotal_time = values[1];
+        }
+        else {
+          if (!RtcSettings.energy_kWhtotal && !Energy.kWhtoday_offset) {
+            Settings.energy_kWhtotal_time = LocalTime();
+          }
         }
         break;
       case 2:
         // Reset Energy Yesterday
-        Settings.energy_kWhyesterday = lnum *100;
+        Settings.energy_kWhyesterday = values[0];
+        if( params > 1) {
+          Settings.energy_kWhtotal_time = values[1];
+        }
         break;
       case 3:
         // Reset Energy Total
-        RtcSettings.energy_kWhtotal = lnum *100;
+        RtcSettings.energy_kWhtotal = values[0];
         Settings.energy_kWhtotal = RtcSettings.energy_kWhtotal;
 //        Energy.total = (float)(RtcSettings.energy_kWhtotal + Energy.kWhtoday_offset + Energy.kWhtoday) / 100000;
-        Settings.energy_kWhtotal_time = (!Energy.kWhtoday_offset) ? LocalTime() : Midnight();
+        if( params > 1) {
+          Settings.energy_kWhtotal_time = values[1];
+        }
+        else {
+          Settings.energy_kWhtotal_time = (!Energy.kWhtoday_offset) ? LocalTime() : Midnight();
+        }
         RtcSettings.energy_usage.last_usage_kWhtotal = (uint32_t)(Energy.total * 1000);
         break;
-      }
-    }
-  }
-  else if ((XdrvMailbox.index > 3) && (XdrvMailbox.index <= 5)) {
-    uint32_t values[2] = { 0 };
-    uint32_t position = ParseParameters(2, values);
-    values[0] *= 100;
-    values[1] *= 100;
-
-    switch (XdrvMailbox.index)
-    {
       case 4:
         // Reset energy_usage.usage totals
-        if (position > 0) {
-          RtcSettings.energy_usage.usage1_kWhtotal = values[0];
-        }
-        if (position > 1) {
-          RtcSettings.energy_usage.usage2_kWhtotal = values[1];
+        RtcSettings.energy_usage.usage1_kWhtotal = values[0];
+        if (params > 1) {
+          RtcSettings.energy_usage.usage2_kWhtotal = values[1] * 100;
         }
         Settings.energy_usage.usage1_kWhtotal = RtcSettings.energy_usage.usage1_kWhtotal;
         Settings.energy_usage.usage2_kWhtotal = RtcSettings.energy_usage.usage2_kWhtotal;
         break;
       case 5:
         // Reset energy_usage.return totals
-        if (position > 0) {
-          RtcSettings.energy_usage.return1_kWhtotal = values[0];
-        }
-        if (position > 1) {
-          RtcSettings.energy_usage.return2_kWhtotal = values[1];
+        RtcSettings.energy_usage.return1_kWhtotal = values[0];
+        if (params > 1) {
+          RtcSettings.energy_usage.return2_kWhtotal = values[1] * 100;
         }
         Settings.energy_usage.return1_kWhtotal = RtcSettings.energy_usage.return1_kWhtotal;
         Settings.energy_usage.return2_kWhtotal = RtcSettings.energy_usage.return2_kWhtotal;
         break;
       }
+    }
   }
 
   Energy.total = (float)(RtcSettings.energy_kWhtotal + Energy.kWhtoday_offset + Energy.kWhtoday) / 100000;
+  float energy_kWhyesterday = (float)Settings.energy_kWhyesterday / 100000;
+  float usage1_kWhtotal = (float)Settings.energy_usage.usage1_kWhtotal / 100000;
+  float usage2_kWhtotal = (float)Settings.energy_usage.usage2_kWhtotal / 100000;
+  float return1_kWhtotal = (float)Settings.energy_usage.return1_kWhtotal / 100000;
+  float return2_kWhtotal = (float)Settings.energy_usage.return2_kWhtotal / 100000;
 
-  char energy_total_chr[FLOATSZ];
-  dtostrfd(Energy.total, Settings.flag2.energy_resolution, energy_total_chr);
-  char energy_daily_chr[FLOATSZ];
-  dtostrfd(Energy.daily, Settings.flag2.energy_resolution, energy_daily_chr);
-  char energy_yesterday_chr[FLOATSZ];
-  dtostrfd((float)Settings.energy_kWhyesterday / 100000, Settings.flag2.energy_resolution, energy_yesterday_chr);
-
-  char energy_usage1_chr[FLOATSZ];
-  dtostrfd((float)Settings.energy_usage.usage1_kWhtotal / 100000, Settings.flag2.energy_resolution, energy_usage1_chr);
-  char energy_usage2_chr[FLOATSZ];
-  dtostrfd((float)Settings.energy_usage.usage2_kWhtotal / 100000, Settings.flag2.energy_resolution, energy_usage2_chr);
-  char energy_return1_chr[FLOATSZ];
-  dtostrfd((float)Settings.energy_usage.return1_kWhtotal / 100000, Settings.flag2.energy_resolution, energy_return1_chr);
-  char energy_return2_chr[FLOATSZ];
-  dtostrfd((float)Settings.energy_usage.return2_kWhtotal / 100000, Settings.flag2.energy_resolution, energy_return2_chr);
-
-  Response_P(PSTR("{\"%s\":{\"" D_JSON_TOTAL "\":%s,\"" D_JSON_YESTERDAY "\":%s,\"" D_JSON_TODAY "\":%s,\"" D_JSON_USAGE "\":[%s,%s],\"" D_JSON_EXPORT "\":[%s,%s]}}"),
-    XdrvMailbox.command, energy_total_chr, energy_yesterday_chr, energy_daily_chr, energy_usage1_chr, energy_usage2_chr, energy_return1_chr, energy_return2_chr);
+  Response_P(PSTR("{\"%s\":{\"" D_JSON_TOTAL "\":%*_f,\"" D_JSON_YESTERDAY "\":%*_f,\"" D_JSON_TODAY "\":%*_f,\"" D_JSON_USAGE "\":[%*_f,%*_f],\"" D_JSON_EXPORT "\":[%*_f,%*_f]}}"),
+    XdrvMailbox.command,
+    Settings.flag2.energy_resolution, &Energy.total,
+    Settings.flag2.energy_resolution, &energy_kWhyesterday,
+    Settings.flag2.energy_resolution, &Energy.daily,
+    Settings.flag2.energy_resolution, &usage1_kWhtotal,
+    Settings.flag2.energy_resolution, &usage2_kWhtotal,
+    Settings.flag2.energy_resolution, &return1_kWhtotal,
+    Settings.flag2.energy_resolution, &return2_kWhtotal);
 }
 
 void CmndTariff(void)
@@ -896,7 +890,7 @@ void EnergySnsInit(void)
 {
   XnrgCall(FUNC_INIT);
 
-  if (energy_flg) {
+  if (TasmotaGlobal.energy_driver) {
     Energy.kWhtoday_offset = 0;
     // Do not use at Power On as Rtc was invalid (but has been restored from Settings already)
     if ((ResetReason() != REASON_DEFAULT_RST) && RtcSettingsValid()) {
@@ -1031,7 +1025,7 @@ void EnergyShow(bool json)
   char value3_chr[FLOATSZ *3];
 
   if (json) {
-    bool show_energy_period = (0 == tele_period);
+    bool show_energy_period = (0 == TasmotaGlobal.tele_period);
 
     ResponseAppend_P(PSTR(",\"" D_RSLT_ENERGY "\":{\"" D_JSON_TOTAL_START_TIME "\":\"%s\",\"" D_JSON_TOTAL "\":%s"),
       GetDateAndTime(DT_ENERGY).c_str(),
@@ -1178,16 +1172,18 @@ bool Xdrv03(uint8_t function)
   bool result = false;
 
   if (FUNC_PRE_INIT == function) {
-    energy_flg = ENERGY_NONE;
+    TasmotaGlobal.energy_driver = ENERGY_NONE;
     XnrgCall(FUNC_PRE_INIT);  // Find first energy driver
   }
-  else if (energy_flg) {
+  else if (TasmotaGlobal.energy_driver) {
     switch (function) {
       case FUNC_LOOP:
         XnrgCall(FUNC_LOOP);
         break;
       case FUNC_EVERY_250_MSECOND:
-        XnrgCall(FUNC_EVERY_250_MSECOND);
+        if (TasmotaGlobal.uptime > 4) {
+          XnrgCall(FUNC_EVERY_250_MSECOND);
+        }
         break;
       case FUNC_EVERY_SECOND:
         XnrgCall(FUNC_EVERY_SECOND);
@@ -1212,7 +1208,7 @@ bool Xsns03(uint8_t function)
 {
   bool result = false;
 
-  if (energy_flg) {
+  if (TasmotaGlobal.energy_driver) {
     switch (function) {
       case FUNC_EVERY_SECOND:
         EnergyEverySecond();
