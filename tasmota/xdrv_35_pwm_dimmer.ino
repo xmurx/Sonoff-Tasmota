@@ -1,7 +1,7 @@
 /*
   xdrv_35_pwm_dimmer.ino - PWM Dimmer Switch support for Tasmota
 
-  Copyright (C) 2020  Paul C Diem
+  Copyright (C) 2021  Paul C Diem
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -76,6 +76,7 @@ bool tap_handled = false;
 bool invert_power_button_bri_direction = false;
 bool button_pressed[3] = { false, false, false };
 bool button_held[3];
+bool button_unprocessed[3] = { false, false, false };
 #ifdef USE_PWM_DIMMER_REMOTE
 struct remote_pwm_dimmer remote_pwm_dimmers[MAX_PWM_DIMMER_KEYS];
 struct remote_pwm_dimmer * active_remote_pwm_dimmer;
@@ -98,7 +99,7 @@ void PWMModulePreInit(void)
   // determine how long a button is held before a reset command is executed. If SetOption32 is
   // still 5, change it to 40 (the default).
   if (Settings.param[P_HOLD_TIME] == 5) Settings.param[P_HOLD_TIME] = 40;
- 
+
   // Make sure the brightness level settings are sensible.
   if (!Settings.bri_power_on) Settings.bri_power_on = 128;
   if (!Settings.bri_preset_low) Settings.bri_preset_low = 10;
@@ -251,8 +252,14 @@ void PWMDimmerHandleDevGroupItem(void)
 #ifdef USE_PWM_DIMMER_REMOTE
       if (is_local)
 #endif  // USE_PWM_DIMMER_REMOTE
-        SendLocalDeviceGroupMessage(DGR_MSGTYP_UPDATE, DGR_ITEM_BRI_POWER_ON, Settings.bri_power_on,
+        SendDeviceGroupMessage(0, DGR_MSGTYP_UPDATE, DGR_ITEM_BRI_POWER_ON, Settings.bri_power_on,
           DGR_ITEM_BRI_PRESET_LOW, Settings.bri_preset_low, DGR_ITEM_BRI_PRESET_HIGH, Settings.bri_preset_high);
+#ifdef USE_PWM_DIMMER_REMOTE
+      else
+        SendDeviceGroupMessage(-device_group_index, DGR_MSGTYP_UPDATE, DGR_ITEM_POWER, remote_pwm_dimmer->power_on,
+          DGR_ITEM_BRI_POWER_ON, remote_pwm_dimmer->bri_power_on, DGR_ITEM_BRI_PRESET_LOW, remote_pwm_dimmer->bri_preset_low,
+          DGR_ITEM_BRI_PRESET_HIGH, remote_pwm_dimmer->bri_preset_high);
+#endif  // USE_PWM_DIMMER_REMOTE
       break;
   }
 }
@@ -284,8 +291,18 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
   if (pressed) {
     uint32_t now = millis();
 
-    // If this is about the power button, ...
-    if (is_power_button) {
+    // If the button was pressed and released but was not processed by support_button because the
+    // button interval had not elapsed,
+    if (button_unprocessed[button_index]) {
+      mqtt_trigger = 5;
+#ifdef USE_PWM_DIMMER_REMOTE
+      if (!active_remote_pwm_dimmer) mqtt_trigger += button_index;
+#endif  // USE_PWM_DIMMER_REMOTE
+      button_hold_time[button_index] = now + 750;
+    }
+
+    // Otherwise, if this is about the power button, ...
+    else if (is_power_button) {
 
       // If we're not ignoring the power button and no other buttons are pressed, ...
       if (!ignore_power_button && buttons_pressed == 1) {
@@ -325,8 +342,8 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
         // If the up or down button was tapped while holding the power button before this, handle
         // the operation below.
         if (button_tapped) {
-          handle_tap = true;
-          button_hold_time[button_index] = now + 500;
+          handle_tap = ignore_power_button = true;
+          button_hold_time[button_index] = now + 750;
         }
 
         // Otherwise, if the power is on and remote mode is enabled, adjust the brightness. Set the
@@ -474,6 +491,7 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
   }
 
   // If we need to adjust the brightness, do it.
+  int32_t negated_device_group_index = -power_button_index;
   if (bri_offset) {
     int32_t bri;
 #ifdef USE_PWM_DIMMER_REMOTE
@@ -492,7 +510,7 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
     }
     if (new_bri != bri) {
 #ifdef USE_DEVICE_GROUPS
-      SendDeviceGroupMessage(power_button_index, (dgr_more_to_come ? DGR_MSGTYP_UPDATE_MORE_TO_COME : DGR_MSGTYP_UPDATE_DIRECT), DGR_ITEM_LIGHT_BRI, new_bri);
+      SendDeviceGroupMessage(negated_device_group_index, (dgr_more_to_come ? DGR_MSGTYP_UPDATE_MORE_TO_COME : DGR_MSGTYP_UPDATE_DIRECT), DGR_ITEM_LIGHT_BRI, new_bri, DGR_ITEM_BRI_POWER_ON, new_bri);
 #endif  // USE_DEVICE_GROUPS
 #ifdef USE_PWM_DIMMER_REMOTE
       if (active_remote_pwm_dimmer) {
@@ -542,9 +560,9 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
     }
 #endif  // USE_PWM_DIMMER_REMOTE
     if (new_power)
-      SendDeviceGroupMessage(power_button_index, DGR_MSGTYP_UPDATE, DGR_ITEM_LIGHT_BRI, power_on_bri, DGR_ITEM_POWER, new_power);
+      SendDeviceGroupMessage(negated_device_group_index, DGR_MSGTYP_UPDATE, DGR_ITEM_LIGHT_BRI, power_on_bri, DGR_ITEM_POWER, new_power);
     else
-      SendDeviceGroupMessage(power_button_index, DGR_MSGTYP_UPDATE, DGR_ITEM_POWER, new_power);
+      SendDeviceGroupMessage(negated_device_group_index, DGR_MSGTYP_UPDATE, DGR_ITEM_POWER, new_power);
 #endif  // USE_DEVICE_GROUPS
 #ifdef USE_PWM_DIMMER_REMOTE
     if (active_remote_pwm_dimmer)
@@ -568,7 +586,7 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
   // If the up or down button was tapped while holding the power button and the up or down button
   // is being held or was just released after not being held, handle the operation.
   if (handle_tap) {
-    ignore_power_button = tap_handled = true;
+    tap_handled = true;
 
     // If the down button was tapped while holding the power button, send a device group update to
     // select the previous/next fixed color.
@@ -591,9 +609,10 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
 #endif // USE_DEVICE_GROUPS
       ;
     }
-    // If the down button was tapped while holding the power button, publish an MQTT Event Trigger#.
+    // If the up button was tapped while holding the power button, publish an MQTT Event Trigger#.
     else {
-      mqtt_trigger = (is_down_button ? 3 : 4);
+      mqtt_trigger = 3;
+      if (is_down_button) mqtt_trigger = 4;
     }
   }
 
@@ -601,13 +620,13 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
   if (mqtt_trigger) {
     char topic[TOPSZ];
     sprintf_P(TasmotaGlobal.mqtt_data, PSTR("Trigger%u"), mqtt_trigger);
-#ifdef USE_PWM_DIMMER_REMOTE
-    if (active_remote_pwm_dimmer) {
+#ifdef USE_DEVICE_GROUPS
+    if (Settings.flag4.device_groups_enabled) {
       snprintf_P(topic, sizeof(topic), PSTR("cmnd/%s/EVENT"), device_groups[power_button_index].group_name);
       MqttPublish(topic);
     }
     else
-#endif  // USE_PWM_DIMMER_REMOTE
+#endif  // USE_DEVICE_GROUPS
       MqttPublishPrefixTopic_P(CMND, PSTR("EVENT"));
   }
 
@@ -621,7 +640,7 @@ void PWMDimmerHandleButton(uint32_t button_index, bool pressed)
     if (handle_tap)
 #endif  // USE_PWM_DIMMER_REMOTE
       message_type = (DevGroupMessageType)(message_type + DGR_MSGTYPFLAG_WITH_LOCAL);
-    SendDeviceGroupMessage(power_button_index, message_type, dgr_item, dgr_value);
+    SendDeviceGroupMessage(negated_device_group_index, message_type, dgr_item, dgr_value);
 #endif  // USE_DEVICE_GROUPS
 #ifdef USE_PWM_DIMMER_REMOTE
     if (!active_remote_pwm_dimmer)
@@ -679,7 +698,7 @@ void CmndBriPreset(void)
         Settings.bri_preset_high = parm[0];
       }
 #ifdef USE_DEVICE_GROUPS
-      SendLocalDeviceGroupMessage(DGR_MSGTYP_UPDATE, DGR_ITEM_BRI_PRESET_LOW, Settings.bri_preset_low, DGR_ITEM_BRI_PRESET_HIGH, Settings.bri_preset_high);
+      SendDeviceGroupMessage(0, DGR_MSGTYP_UPDATE, DGR_ITEM_BRI_PRESET_LOW, Settings.bri_preset_low, DGR_ITEM_BRI_PRESET_HIGH, Settings.bri_preset_high);
 #endif  // USE_DEVICE_GROUPS
     }
   }
@@ -739,7 +758,15 @@ bool Xdrv35(uint8_t function)
           // increment the buttons pressed count.
           if (!button_pressed[button_index]) {
             button_pressed[button_index] = true;
-            button_hold_time[button_index] = now + (button_index == power_button_index ? 500 : 250);
+            uint32_t hold_delay = 250;
+            if (button_index == power_button_index) {
+#ifdef USE_PWM_DIMMER_REMOTE
+              if (!(active_remote_pwm_dimmer ? active_remote_pwm_dimmer->power_on : TasmotaGlobal.power)) hold_delay = 500;
+#else // USE_PWM_DIMMER_REMOTE
+              if (!TasmotaGlobal.power) hold_delay = 500;
+#endif  // USE_PWM_DIMMER_REMOTE
+            }
+            button_hold_time[button_index] = now + hold_delay;
             buttons_pressed++;
             if (buttons_pressed > 1) multibutton_in_progress = true;
 
@@ -767,10 +794,19 @@ bool Xdrv35(uint8_t function)
 #endif  // USE_PWM_DIMMER_REMOTE
           }
 
-          // If hold time has arrived, handle it.
+          // If hold time has arrived and a rule is enabled that handles the button hold, handle it.
           else if (button_hold_time[button_index] <= now) {
-            PWMDimmerHandleButton(button_index, true);
-            button_held[button_index] = true;
+#ifdef USE_RULES
+            sprintf(TasmotaGlobal.mqtt_data, PSTR("{\"Button%u\":{\"State\":3}}"), button_index + 1);
+            Rules.no_execute = true;
+            if (!XdrvRulesProcess()) {
+#endif  // USE_RULES
+              PWMDimmerHandleButton(button_index, true);
+              button_held[button_index] = true;
+#ifdef USE_RULES
+            }
+            Rules.no_execute = false;
+#endif  // USE_RULES
           }
         }
 
@@ -787,6 +823,16 @@ bool Xdrv35(uint8_t function)
             // Set a timer so FUNC_ANY_KEY ignores the button if support_button winds up sending a
             // key because of this.
             ignore_any_key_time = now + 500;
+
+            // If a multi-button operation is in progress or the button was pressed, released and
+            // then held, tell support_button that we've handled it.
+            result = true;
+            Button.press_counter[button_index] = 0;
+            if (buttons_pressed == 0) multibutton_in_progress = false;
+            button_unprocessed[button_index] = false;
+          }
+          else {
+            button_unprocessed[button_index] = true;
           }
 
           // If the power button was just released, clear the flags associated with it.
@@ -797,12 +843,6 @@ bool Xdrv35(uint8_t function)
           }
           button_held[button_index] = false;
         }
-
-        // If a multi-button operation is in progress, tell support_button that we've handled it.
-        if (multibutton_in_progress) {
-          result = true;
-          if (buttons_pressed == 0) multibutton_in_progress = false;
-        }
       }
       break;
 
@@ -810,7 +850,9 @@ bool Xdrv35(uint8_t function)
       {
         uint32_t state = (XdrvMailbox.payload >> 8) & 0xFF;  // 0 = Off, 1 = On, 2 = Toggle, 3 = Hold, 10,11,12,13 and 14 for Button Multipress
         if ((state == 2 || state == 10) && ignore_any_key_time < millis()) {
-          PWMDimmerHandleButton((XdrvMailbox.payload & 0xFF) - 1, false);
+          uint32_t button_index = (XdrvMailbox.payload & 0xFF) - 1;
+          button_unprocessed[button_index] = false;
+          PWMDimmerHandleButton(button_index, false);
         }
       }
       break;

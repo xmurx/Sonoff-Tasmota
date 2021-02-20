@@ -4,6 +4,8 @@
 
 ## Migration Information
 
+**This version removes support for direct migration from versions before v8.1.0 (Doris)**
+
 See [migration path](https://tasmota.github.io/docs/Upgrading#migration-path) for instructions how to migrate to a major version. Pay attention to the following version breaks due to dynamic settings updates:
 
 1. Migrate to **Sonoff-Tasmota 3.9.x**
@@ -24,13 +26,13 @@ While fallback or downgrading is common practice it was never supported due to S
 
 ## Supported Core versions
 
-This release will be supported from ESP8266/Arduino library Core version **2.7.4.7** due to reported security and stability issues on previous Core version. This will also support gzipped binaries.
+This release will be supported from ESP8266/Arduino library Core version **2.7.4.9** due to reported security and stability issues on previous Core version. This will also support gzipped binaries.
 
 Support of Core versions before 2.7.1 has been removed.
 
 ## Support of TLS
 
-To save resources when TLS is enabled mDNS needs to be disabled. In addition to TLS using fingerprints now also user supplied CA certs and AWS IoT is supported. Read [full documentation](https://tasmota.github.io/docs/AWS-IoT)
+In addition to TLS using fingerprints now also user supplied CA certs and AWS IoT is supported. Read [full documentation](https://tasmota.github.io/docs/AWS-IoT)
 
 ## Initial configuration tools
 
@@ -38,38 +40,49 @@ For initial configuration this release supports Webserver based **WifiManager** 
 
 ## Provided Binary Downloads
 
-The following binary downloads have been compiled with ESP8266/Arduino library core version **2.7.4.7**.
+### ESP8266 or ESP8285 based
+The following binary downloads have been compiled with ESP8266/Arduino library core version **2.7.4.9**.
 
 - **tasmota.bin** = The Tasmota version with most drivers. **RECOMMENDED RELEASE BINARY**
 - **tasmota-BG.bin** to **tasmota-TW.bin** = The Tasmota version in different languages.
 - **tasmota-lite.bin** = The Lite version without most drivers and sensors.
 - **tasmota-knx.bin** = The Knx version without some features but adds KNX support.
 - **tasmota-sensors.bin** = The Sensors version adds more useful sensors.
-- **tasmota-ir** = The InfraRed Receiver and transmitter version allowing all available protocols provided by library IRremoteESP8266 but without most other features.
+- **tasmota-ir.bin** = The InfraRed Receiver and transmitter version allowing all available protocols provided by library IRremoteESP8266 but without most other features.
 - **tasmota-display.bin** = The Display version without Energy Monitoring but adds display support.
 - **tasmota-zbbridge.bin** = The dedicated Sonoff Zigbee Bridge version.
 - **tasmota-minimal.bin** = The Minimal version allows intermediate OTA uploads to support larger versions and does NOT change any persistent parameter. This version **should NOT be used for initial installation**.
 
-The attached binaries can also be downloaded from http://ota.tasmota.com/tasmota/release for ESP8266 or http://ota.tasmota.com/tasmota32/release for ESP32. The links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmota.com/tasmota/release/tasmota.bin.gz``
+Above binaries are also available as gzipped version allowing faster uploads.
+
+The attached binaries can also be downloaded from http://ota.tasmota.com/tasmota/release. The links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmota.com/tasmota/release/tasmota.bin.gz``
+
+### ESP32 based
+The following binary downloads have been compiled with ESP32/Arduino library core version **1.0.5-rc6**.
+
+- **tasmota32.bin** = The Tasmota version with most drivers. **RECOMMENDED RELEASE BINARY**
+- **tasmota32-BG.bin** to **tasmota32-TW.bin** = The Tasmota version in different languages.
+- **tasmota32-lite.bin** = The Lite version without most drivers and sensors.
+- **tasmota32-knx.bin** = The Knx version without some features but adds KNX support.
+- **tasmota32-sensors.bin** = The Sensors version adds more useful sensors.
+- **tasmota32-ir.bin** = The InfraRed Receiver and transmitter version allowing all available protocols provided by library IRremoteESP8266 but without most other features.
+- **tasmota32-display.bin** = The Display version without Energy Monitoring but adds display support.
+- **tasmota32-webcam.bin** = The Webcam version adds webcam support.
+- **tasmota32-bluetooth.bin** = The Bluetooth version adds BLE support.
+- **tasmota32-odroidgo.bin** = The Odroid-Go version is specifically tailored to Odroid_go hardware.
+- **tasmota32-core2.bin** = The Core2 version is specifically tailored to M5Stack Core2 hardware.
+
+The attached binaries can also be downloaded from http://ota.tasmota.com/tasmota32/release. The links can be used for OTA upgrades too like ``OtaUrl http://ota.tasmota.com/tasmota32/release/tasmota32.bin``
 
 [List](MODULES.md) of embedded modules.
 
 [Complete list](BUILDS.md) of available feature and sensors.
 
-## Changelog v9.1.0.1
-### Added
-- Zigbee support for Mi Door and Contact (#9759)
-- Zigbee alarm persistence (#9785)
-- Support for additional EZO sensors by Christopher Tremblay
-- Commands ``TuyaRGB``, ``TuyaEnum`` and ``TuyaEnumList`` (#9769)
-
+## Changelog v9.3.0.1
 ### Changed
-- Core library from v2.7.4.5 to v2.7.4.7
-- Platformio compiler option `no target align` enabled (#9749)
-- Sonoff L1 color up scaling and color margin detection (#9545)
+- Remove the need to start filenames with a slash (/) in Ufs commands
+- Removed command ``VirtualCT`` as synonym for ``SetOption106`` [#11049](https://github.com/arendst/Tasmota/issues/11049)
 
 ### Fixed
-- NTP fallback server functionality (#9739)
-
-### Removed
-- Version compatibility check
+- Ili1942 driver [#11046](https://github.com/arendst/Tasmota/issues/11046)
+- ESP32 Mi32 driver [#11048](https://github.com/arendst/Tasmota/issues/11048)

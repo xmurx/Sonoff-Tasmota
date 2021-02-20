@@ -1,7 +1,7 @@
 /*
   xnrg_interface.ino - Energy driver interface support for Tasmota
 
-  Copyright (C) 2020  Theo Arends inspired by ESPEasy
+  Copyright (C) 2021  Theo Arends inspired by ESPEasy
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -145,7 +145,7 @@ bool (* const xnrg_func_ptr[])(uint8_t) = {   // Energy driver Function Pointers
   &Xnrg30,
 #endif
 
-#ifdef XNRG_31
+#ifdef XNRG_31  // Reserved for use by xdrv_45_shelly_dimmer.ino
   &Xnrg31,
 #endif
 
