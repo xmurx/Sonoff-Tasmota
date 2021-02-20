@@ -3,7 +3,50 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] - Development
 
-## [9.2.0.4]
+## [9.3.0.1]
+### Changed
+- Remove the need to start filenames with a slash (/) in Ufs commands
+- Removed command ``VirtualCT`` as synonym for ``SetOption106`` (#11049)
+
+### Fixed
+- Ili1942 driver (#11046)
+- ESP32 Mi32 driver (#11048)
+
+## [Released]
+
+## [9.3.0] 20210219
+- Release Kenneth
+
+## [9.2.0.7] 20210219
+### Added
+- Support for Device Groups Device Map (#10898)
+- Support for Eastron SDM72D-M three phase 100A Modbus energy meter (#10862)
+- Support for Frysk language translations by Christiaan Heerze
+- ESP8266 Fallback to ``*.bin.gz`` binary when OTA upload of ``*.bin`` binary fails
+- Berry language improved Tasmota integration
+- Berry file system support
+- Filesystem commands ``Ufs``, ``UfsType``, ``UfsSize``, ``UfsFree``, ``UfsDelete``, ``UfsRename`` and ``UfsRun``
+- Support for filesystem ``autoexec.bat`` to execute sequential commands like backlog
+- Support for TM1637 seven segment display by Ajith Vasudevan (#10889)
+
+### Changed
+- IRremoteESP8266 library from v2.7.14 to v2.7.15
+- NeoPixelBus library from v2.6.0 to v2.6.1.4
+- ILI9341 library from Adafruit_ILI9341-1.2.0-Tasmota-1.0 to ILI9341-gemu-1.0
+
+## [9.2.0.6] 20210210
+### Changed
+- Remove support for direct migration from versions before v8.1.0 (Doris)
+- ESP32 Increase number of switch GPIOs from 8 to 28
+- ESP32 Increase number of interlock groups from 4 to 14
+- Increase number of button GPIOs from 4 to 8
+- Preview of Berry language for Tasmota32
+
+## [9.2.0.5] 20210205
+### Changed
+- ESP32 increase number of relay GPIOs from 8 to 28
+
+## [9.2.0.4] 20210204
 ### Added
 - Function ``AddLog`` to provide logging for up to 128 (LOGSZ) characters to save stack space
 - Commands ``ChannelRemap``, ``MultiPWM``, ``AlexaCTRange``, ``PowerOnFade``, ``PWMCT``, ``WhiteBlend`` and ``VirtualCT`` as synonyms for ``SetOption37, 68, 82, 91, 92, 105`` and ``106``
@@ -15,6 +58,7 @@ All notable changes to this project will be documented in this file.
 - Command ``L1MusicSync <0|Off>|<1|On>|<2|Toggle>, 1..10, 1..100>`` to control Sonoff L1 Music Sync mode sensitivity and speed (#10722)
 - Command ``Speed2`` to control a once off fade (#10741)
 - Zigbee command ``SetOption120 1`` or ``ZbEndpointTopic 1`` to add the endpoint as suffix in topic when using ``SetOption89 1``
+- Zigbee command ``ZbScan`` to do an energy scan on each radio channel
 
 ### Changed
 - Maximum chars in ``AddLog_P`` logging restored from 128 to 700 (MAX_LOGSZ) to solve broken error messages
@@ -101,8 +145,6 @@ All notable changes to this project will be documented in this file.
 - ESP32 LoadStoreError when using ``#define USER_TEMPLATE`` (#9506)
 - Compile error when ``#ifdef USE_IR_RECEIVE`` is disabled regression from 9.1.0.2
 - Prometheus memory leak (#10221)
-
-## [Released]
 
 ## [9.2.0] 20201216
 - Release Julie

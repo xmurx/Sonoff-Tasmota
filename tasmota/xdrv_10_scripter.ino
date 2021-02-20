@@ -4317,6 +4317,23 @@ int16_t Run_script_sub(const char *type, int8_t tlen, struct GVARS *gv) {
               WSContentFlush();
               goto next_line;
             }
+            else if (!strncmp(lp, "rapp", 3)) {
+              lp+=4;
+              // skip one space after cmd
+              char tmp[256];
+              Replace_Cmd_Vars(lp ,1 , tmp, sizeof(tmp));
+              ResponseAppend_P(PSTR("%s"), tmp);
+              goto next_line;
+            }
+#if defined(USE_SENDMAIL) || defined(USE_ESP32MAIL)
+            else if (!strncmp(lp, "mail", 4)) {
+              lp+=5;
+              char tmp[256];
+              Replace_Cmd_Vars(lp ,1 , tmp, sizeof(tmp));
+              SendMail(tmp);
+              goto next_line;
+            }
+#endif
             else if (!strncmp(lp,"=>",2) || !strncmp(lp,"->",2) || !strncmp(lp,"+>",2) || !strncmp(lp,"print",5)) {
                 // execute cmd
                 uint8_t sflag = 0,pflg = 0,svmqtt,swll;
@@ -4663,10 +4680,9 @@ int16_t Run_script_sub(const char *type, int8_t tlen, struct GVARS *gv) {
 
 uint8_t script_xsns_index = 0;
 
-
 void ScripterEvery100ms(void) {
 
-  if (Settings.rule_enabled && (TasmotaGlobal.uptime > 4)) {
+  if (bitRead(Settings.rule_enabled, 0) && (TasmotaGlobal.uptime > 4)) {
     ResponseClear();
     uint16_t script_tele_period_save = TasmotaGlobal.tele_period;
     TasmotaGlobal.tele_period = 2;
@@ -4678,7 +4694,7 @@ void ScripterEvery100ms(void) {
       Run_Scripter(">T", 2, TasmotaGlobal.mqtt_data);
     }
   }
-  if (Settings.rule_enabled) {
+  if (bitRead(Settings.rule_enabled, 0)) {
     if (glob_script_mem.fast_script == 99) Run_Scripter(">F", 2, 0);
   }
 }
@@ -5801,14 +5817,14 @@ void dateTime(uint16_t* date, uint16_t* time) {
 
 
 #ifdef SUPPORT_MQTT_EVENT
-
+/*
 //#define DEBUG_MQTT_EVENT
-
+// parser object, source keys, delimiter, float result or NULL, string result or NULL, string size
 uint32_t JsonParsePath(JsonParserObject *jobj, const char *spath, char delim, float *nres, char *sres, uint32_t slen) {
   uint32_t res = 0;
   const char *cp = spath;
-#ifdef DEBUG_MQTT_EVENT
-//  AddLog(LOG_LEVEL_INFO, PSTR("Script: parsing json key: %s from json: %s"), cp, jpath);
+#ifdef DEBUG_JSON_PARSE_PATH
+  AddLog(LOG_LEVEL_INFO, PSTR("JSON: parsing json key: %s from json: %s"), cp, jpath);
 #endif
   JsonParserObject obj = *jobj;
   JsonParserObject lastobj = obj;
@@ -5825,8 +5841,8 @@ uint32_t JsonParsePath(JsonParserObject *jobj, const char *spath, char delim, fl
       }
       selem[sp] = *cp++;
     }
-#ifdef DEBUG_MQTT_EVENT
-    AddLog(LOG_LEVEL_INFO, PSTR("Script: cmp current key: %s"), selem);
+#ifdef DEBUG_JSON_PARSE_PATH
+    AddLog(LOG_LEVEL_INFO, PSTR("JSON: cmp current key: %s"), selem);
 #endif
     // check for array
     char *sp = strchr(selem,'[');
@@ -5838,8 +5854,8 @@ uint32_t JsonParsePath(JsonParserObject *jobj, const char *spath, char delim, fl
     // now check element
     obj = obj[selem];
     if (!obj.isValid()) {
-#ifdef DEBUG_MQTT_EVENT
-      AddLog(LOG_LEVEL_INFO, PSTR("Script: obj invalid: %s"), selem);
+#ifdef DEBUG_JSON_PARSE_PATH
+      AddLog(LOG_LEVEL_INFO, PSTR("JSON: obj invalid: %s"), selem);
 #endif
       JsonParserToken tok = lastobj[selem];
       if (tok.isValid()) {
@@ -5863,8 +5879,8 @@ uint32_t JsonParsePath(JsonParserObject *jobj, const char *spath, char delim, fl
         }
 
       }
-#ifdef DEBUG_MQTT_EVENT
-      AddLog(LOG_LEVEL_INFO, PSTR("Script: token invalid: %s"), selem);
+#ifdef DEBUG_JSON_PARSE_PATH
+      AddLog(LOG_LEVEL_INFO, PSTR("JSON: token invalid: %s"), selem);
 #endif
       break;
     }
@@ -5874,11 +5890,13 @@ uint32_t JsonParsePath(JsonParserObject *jobj, const char *spath, char delim, fl
     }
     if (!*cp) break;
   }
-  strlcpy(sres,value.c_str(),slen);
+  if (sres) {
+    strlcpy(sres,value.c_str(), slen);
+  }
   return res;
 
 }
-
+*/
 #ifndef MQTT_EVENT_MSIZE
 #define MQTT_EVENT_MSIZE 256
 #endif // MQTT_EVENT_MSIZE
@@ -7142,7 +7160,7 @@ nextwebline:
 #endif //USE_SCRIPT_WEB_DISPLAY
 
 
-#ifdef USE_SENDMAIL
+#if defined(USE_SENDMAIL) || defined(USE_ESP32MAIL)
 
 void script_send_email_body(void(*func)(char *)) {
 uint8_t msect = Run_Scripter(">m", -2, 0);
@@ -7192,8 +7210,13 @@ void ScriptJsonAppend(void) {
       }
       if (*lp!=';') {
         // send this line to mqtt
-        Replace_Cmd_Vars(lp, 1, tmp, sizeof(tmp));
-        ResponseAppend_P(PSTR("%s"), tmp);
+        if (!strncmp(lp, "%=#", 3)) {
+          // subroutine
+          lp = scripter_sub(lp + 1, 0);
+        } else {
+          Replace_Cmd_Vars(lp, 1, tmp, sizeof(tmp));
+          ResponseAppend_P(PSTR("%s"), tmp);
+        }
       }
       if (*lp==SCRIPT_EOL) {
         lp++;

@@ -1015,6 +1015,18 @@ int fromHex(uint8_t *dest, const char *src, int maxlen){
     t[0] = src[i*2];
     t[1] = src[i*2 + 1];
     t[2] = 0;
+    t[0] |= 0x20;
+    t[1] |= 0x20;
+    if (isalpha(t[0])){
+      if (t[0] < 'a' || t[0] > 'f'){
+        return 0;
+      }
+    }
+    if (isalpha(t[1])){
+      if (t[1] < 'a' || t[1] > 'f'){
+        return 0;
+      }
+    }
 
     int byte = strtol(t, NULL, 16);
     *dest++ = byte;
@@ -1077,6 +1089,10 @@ void setDetails(ble_advertisment_t *ad){
   p += len;
   maxlen -= len;
   *(p++) = '\"'; maxlen--;
+
+  sprintf(p, ",\"RSSI\":%d", ad->RSSI);
+  len = strlen(p);
+  p += len;
 
   if (BLEAdvertismentDetailsJsonLost){
     BLEAdvertismentDetailsJsonLost = 0;
@@ -1474,12 +1490,14 @@ static void BLEInit(void) {
 
   if (BLEInitState) { return; }
 
-  if (TasmotaGlobal.global_state.wifi_down) { return; }
+  if (TasmotaGlobal.global_state.wifi_down && TasmotaGlobal.global_state.eth_down) { return; }
 
-  TasmotaGlobal.wifi_stay_asleep = true;
-  if (WiFi.getSleep() == false) {
-    AddLog(LOG_LEVEL_DEBUG,PSTR("%s: Put WiFi modem in sleep mode"),"BLE");
-    WiFi.setSleep(true); // Sleep
+  if (!TasmotaGlobal.global_state.wifi_down) {
+    TasmotaGlobal.wifi_stay_asleep = true;
+    if (WiFi.getSleep() == false) {
+      AddLog(LOG_LEVEL_DEBUG,PSTR("%s: Put WiFi modem in sleep mode"), "BLE");
+      WiFi.setSleep(true); // Sleep
+    }
   }
 
   // this is only for testing, does nothin if examples are undefed
@@ -1598,16 +1616,18 @@ int BLETaskStartScan(int time){
   if (BLEMode == BLEModeDisabled) return -4;
   // don't scan whilst OTA in progress
   if (BLEOtaStallBLE) return -5;
-  if (currentOperations.size()) return -3;
+  //if (currentOperations.size()) return -3;
 
   if (BLERunningScan) {
+
     // if we hit 2, wait one more time before starting
     if (BLERunningScan == 2){
-      // wait 100ms
-      vTaskDelay(100/ portTICK_PERIOD_MS);
+      // wait 10ms
+      vTaskDelay(10/ portTICK_PERIOD_MS);
       BLERunningScan = 0;
+    } else {
+      return -2;
     }
-    return -2;
   }
 
 #ifdef BLE_ESP32_DEBUG
@@ -1752,6 +1772,9 @@ static void BLETaskRunCurrentOperation(BLE_ESP32::generic_sensor_t** pCurrentOpe
   }
 
   if (pClient->connect(op->addr, true)) {
+
+    // as soon as connected, start another scan if possible
+    BLE_ESP32::BLETaskStartScan(20);
 
 #ifdef BLE_ESP32_DEBUG
     if (BLEDebugMode > 0) AddLog(LOG_LEVEL_DEBUG,PSTR("BLE: connected %s -> getservice"), ((std::string)op->addr).c_str());
@@ -1951,7 +1974,7 @@ static void BLETaskRunCurrentOperation(BLE_ESP32::generic_sensor_t** pCurrentOpe
 
     // failed to connect
 #ifdef BLE_ESP32_DEBUG
-    AddLog(LOG_LEVEL_DEBUG,PSTR("BLE: failed to connect to device %d"), rc);
+    AddLog(LOG_LEVEL_DEBUG,PSTR("BLE: failed to connect to device"));
 #endif
   }
   op->state = newstate;

@@ -148,6 +148,7 @@ enum UserSelectablePins {
   GPIO_BS814_CLK, GPIO_BS814_DAT,      // Holtek BS814A2 touch ctrlr
   GPIO_WIEGAND_D0, GPIO_WIEGAND_D1,    // Wiegand Data lines
   GPIO_NEOPOOL_TX, GPIO_NEOPOOL_RX,    // Sugar Valley RS485 interface
+  GPIO_SDM72_TX, GPIO_SDM72_RX,        // SDM72 Serial interface
   GPIO_SENSOR_END };
 
 enum ProgramSelectablePins {
@@ -316,6 +317,7 @@ const char kSensorNames[] PROGMEM =
   D_SENSOR_BS814_CLK "|" D_SENSOR_BS814_DAT "|"
   D_SENSOR_WIEGAND_D0 "|" D_SENSOR_WIEGAND_D1 "|"
   D_SENSOR_NEOPOOL_TX "|" D_SENSOR_NEOPOOL_RX "|"
+  D_SENSOR_SDM72_TX "|" D_SENSOR_SDM72_RX "|"
   ;
 
 const char kSensorNamesFixed[] PROGMEM =
@@ -604,6 +606,10 @@ const uint16_t kGpioNiceList[] PROGMEM = {
 #ifdef USE_WE517
   AGPIO(GPIO_WE517_TX),      // WE517 Serial interface
   AGPIO(GPIO_WE517_RX),      // WE517 Serial interface
+#endif
+#ifdef USE_SDM72
+  AGPIO(GPIO_SDM72_TX),      // SDM72 Serial interface
+  AGPIO(GPIO_SDM72_RX),      // SDM72 Serial interface
 #endif
 #endif  // USE_ENERGY_SENSOR
 
@@ -2373,6 +2379,7 @@ const uint8_t kModuleNiceList[] PROGMEM = {
 #endif  // USE_M5STACK_CORE2
 };
 
+// !!! Update this list in the same order as kModuleNiceList !!!
 const char kModuleNames[] PROGMEM =
   "ESP32-DevKit|"
 #ifdef USE_WEBCAM
@@ -2395,6 +2402,7 @@ const char kModuleNames[] PROGMEM =
 #endif  // USE_M5STACK_CORE2
   ;
 
+// !!! Update this list in the same order as SupportedModules !!!
 const mytmplt kModules[] PROGMEM = {
   {                              // WEMOS - Espressif ESP32-DevKitC - Any ESP32 device like WeMos and NodeMCU hardware (ESP32)
     AGPIO(GPIO_USER),            // 0       (I)O                GPIO0, ADC2_CH1, TOUCH1, RTC_GPIO11, CLK_OUT1, EMAC_TX_CLK

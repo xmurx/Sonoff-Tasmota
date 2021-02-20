@@ -83,7 +83,13 @@ uint8_t ufs_dir;
 // 0 = None, 1 = SD, 2 = ffat, 3 = littlefs
 uint8_t ufs_type;
 uint8_t ffs_type;
-bool download_busy;
+
+struct {
+  char run_file[48];
+  int run_file_pos = -1;
+  bool run_file_mutex = 0;
+  bool download_busy;
+} UfsData;
 
 /*********************************************************************************************/
 
@@ -123,8 +129,9 @@ void UfsInitOnce(void) {
   dfsp = ffsp;
 }
 
-// actually this inits flash file only
+// Called from tasmota.ino at restart. This inits flash file only
 void UfsInit(void) {
+  UfsData.run_file_pos = -1;
   UfsInitOnce();
   if (ufs_type) {
     AddLog(LOG_LEVEL_INFO, PSTR("UFS: FlashFS mounted with %d kB free"), UfsInfo(1, 0));
@@ -272,7 +279,7 @@ bool TfsFileExists(const char *fname){
 
   bool yes = ffsp->exists(fname);
   if (!yes) {
-    AddLog(LOG_LEVEL_INFO, PSTR("TFS: File not found"));
+    AddLog(LOG_LEVEL_DEBUG, PSTR("TFS: File not found"));
   }
   return yes;
 }
@@ -332,15 +339,106 @@ bool TfsDeleteFile(const char *fname) {
   return true;
 }
 
+bool TfsRenameFile(const char *fname1, const char *fname2) {
+  if (!ffs_type) { return false; }
+
+  if (!ffsp->rename(fname1, fname2)) {
+    AddLog(LOG_LEVEL_INFO, PSTR("TFS: Rename failed"));
+    return false;
+  }
+  return true;
+}
+
+/*********************************************************************************************\
+ * File command execute support
+\*********************************************************************************************/
+
+bool UfsExecuteCommandFileReady(void) {
+  return (UfsData.run_file_pos < 0);   // Check file ready to disable concurrency
+}
+
+void UfsExecuteCommandFileLoop(void) {
+  if (UfsExecuteCommandFileReady() || !ffs_type) { return; }
+
+  if (TimeReached(TasmotaGlobal.backlog_timer) && strlen(UfsData.run_file) && !UfsData.run_file_mutex) {
+    File file = ffsp->open(UfsData.run_file, "r");
+    if (!file || !file.seek(UfsData.run_file_pos)) {
+      UfsData.run_file_pos = -1;       // Signal file ready
+      return;
+    }
+
+    UfsData.run_file_mutex = true;
+
+    char cmd_line[512];
+    cmd_line[0] = '\0';                // Clear in case of re-entry
+    while (file.available()) {
+      uint16_t index = 0;
+      bool comment = false;
+      while (file.available()) {
+        uint8_t buf[1];
+        file.read(buf, 1);
+        if ((buf[0] == '\n') || (buf[0] == '\r')) {
+          break;                       // End of command with linefeed or carriage return
+        }
+        else if (index && !comment && (buf[0] == ';')) {
+          break;                       // End of command on multi command line
+        }
+        else if ((0 == index) && isspace(buf[0])) {
+                                       // Skip leading spaces (' ','\t','\n','\v','\f','\r')
+        }
+        else if ((0 == index) && (buf[0] == ';')) {
+          comment = true;              // Ignore comment lines until linefeed or carriage return
+        }
+        else if (!comment && (index < sizeof(cmd_line) - 2)) {
+          cmd_line[index++] = buf[0];  // Build command
+        }
+      }
+      if ((index > 0) && (index < sizeof(cmd_line) - 1)) {
+        cmd_line[index] = '\0';        // Valid command received
+        break;
+      }
+    }
+    UfsData.run_file_pos = (file.available()) ? file.position() : -1;
+    file.close();
+    if (strlen(cmd_line)) {
+      bool nodelay = (!(!strncasecmp_P(cmd_line, PSTR(D_CMND_DELAY), strlen(D_CMND_DELAY))));
+      ExecuteCommand(cmd_line, SRC_FILE);
+      if (nodelay) {
+        TasmotaGlobal.backlog_timer = millis();  // Reset backlog_timer which has been set by ExecuteCommand (CommandHandler)
+      }
+    }
+
+    UfsData.run_file_mutex = false;
+  }
+}
+
+bool UfsExecuteCommandFile(const char *fname) {
+  // Check for non-concurrency and file existance
+  if (UfsExecuteCommandFileReady() && TfsFileExists(fname)) {
+    snprintf(UfsData.run_file, sizeof(UfsData.run_file), fname);
+    UfsData.run_file_pos = 0;          // Signal start of file
+    return true;
+  }
+  return false;
+}
+
 /*********************************************************************************************\
  * Commands
 \*********************************************************************************************/
 
+const int UFS_FILENAME_SIZE = 48;
+
+char* UfsFilename(char* fname, char* fname_in) {
+  fname_in = Trim(fname_in);  // Remove possible leading spaces
+  snprintf_P(fname, UFS_FILENAME_SIZE, PSTR("%s%s"), ('/' == fname_in[0]) ? "" : "/", fname_in);
+  return fname;
+}
+
 const char kUFSCommands[] PROGMEM = "Ufs|"  // Prefix
-  "|Type|Size|Free|Delete";
+  "|Type|Size|Free|Delete|Rename|Run";
 
 void (* const kUFSCommand[])(void) PROGMEM = {
-  &UFSInfo, &UFSType, &UFSSize, &UFSFree, &UFSDelete};
+  &UFSInfo, &UFSType, &UFSSize, &UFSFree, &UFSDelete, &UFSRename, &UFSRun};
 
 void UFSInfo(void) {
   Response_P(PSTR("{\"Ufs\":{\"Type\":%d,\"Size\":%d,\"Free\":%d}"), ufs_type, UfsInfo(0, 0), UfsInfo(1, 0));
@@ -378,24 +476,66 @@ void UFSDelete(void) {
   // UfsDelete  sdcard or flashfs file if only one of them available
   // UfsDelete2 flashfs file if available
   if (XdrvMailbox.data_len > 0) {
+    char fname[UFS_FILENAME_SIZE];
+    UfsFilename(fname, XdrvMailbox.data);
     bool result = false;
     if (ffs_type && (ffs_type != ufs_type) && (2 == XdrvMailbox.index)) {
-      result = TfsDeleteFile(XdrvMailbox.data);
+      result = TfsDeleteFile(fname);
     } else {
-      result = (ufs_type && ufsp->remove(XdrvMailbox.data));
+      result = (ufs_type && ufsp->remove(fname));
     }
     if (!result) {
-      ResponseCmndChar(PSTR(D_JSON_FAILED));
+      ResponseCmndFailed();
     } else {
       ResponseCmndDone();
     }
   }
 }
 
+void UFSRename(void) {
+  // UfsRename  sdcard or flashfs file if only one of them available
+  // UfsRename2 flashfs file if available
+  if (XdrvMailbox.data_len > 0) {
+    bool result = false;
+    char *fname1 = strtok(XdrvMailbox.data, ",");
+    char *fname2 = strtok(nullptr, ",");
+    if (fname1 && fname2) {
+      char fname_old[UFS_FILENAME_SIZE];
+      UfsFilename(fname_old, fname1);
+      char fname_new[UFS_FILENAME_SIZE];
+      UfsFilename(fname_new, fname2);
+      if (ffs_type && (ffs_type != ufs_type) && (2 == XdrvMailbox.index)) {
+        result = TfsRenameFile(fname_old, fname_new);
+      } else {
+        result = (ufs_type && ufsp->rename(fname_old, fname_new));
+      }
+    }
+    if (!result) {
+      ResponseCmndFailed();
+    } else {
+      ResponseCmndDone();
+    }
+  }
+}
+
+void UFSRun(void) {
+  if (XdrvMailbox.data_len > 0) {
+    char fname[UFS_FILENAME_SIZE];
+    if (UfsExecuteCommandFile(UfsFilename(fname, XdrvMailbox.data))) {
+      ResponseClear();
+    } else {
+      ResponseCmndFailed();
+    }
+  } else {
+    bool not_active = UfsExecuteCommandFileReady();
+    UfsData.run_file_pos = -1;
+    ResponseCmndChar(not_active ? PSTR(D_JSON_DONE) : PSTR(D_JSON_ABORTED));
+  }
+}
+
 /*********************************************************************************************\
  * Web support
 \*********************************************************************************************/
-
 
 #ifdef USE_WEBSERVER
 
@@ -654,12 +794,12 @@ uint8_t UfsDownloadFile(char *file) {
 #ifdef ESP32_DOWNLOAD_TASK
   download_file.close();
 
-  if (download_busy == true) {
+  if (UfsData.download_busy == true) {
     AddLog(LOG_LEVEL_INFO, PSTR("UFS: Download is busy"));
     return 0;
   }
 
-  download_busy = true;
+  UfsData.download_busy = true;
   char *path = (char*)malloc(128);
   strcpy(path,file);
   xTaskCreatePinnedToCore(donload_task, "DT", 6000, (void*)path, 3, NULL, 1);
@@ -710,7 +850,7 @@ void donload_task(void *path) {
   }
   download_file.close();
   download_Client.stop();
-  download_busy = false;
+  UfsData.download_busy = false;
   vTaskDelete( NULL );
 }
 #endif //  ESP32_DOWNLOAD_TASK
@@ -747,11 +887,19 @@ bool Xdrv50(uint8_t function) {
   bool result = false;
 
   switch (function) {
+    case FUNC_LOOP:
+      UfsExecuteCommandFileLoop();
+      break;
 #ifdef USE_SDCARD
     case FUNC_PRE_INIT:
       UfsCheckSDCardInit();
       break;
 #endif // USE_SDCARD
+    case FUNC_MQTT_INIT:
+      if (!TasmotaGlobal.no_autoexec) {
+        UfsExecuteCommandFile(TASM_FILE_AUTOEXEC);
+      }
+      break;
     case FUNC_COMMAND:
       result = DecodeCommand(kUFSCommands, kUFSCommand);
       break;
