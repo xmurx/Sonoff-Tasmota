@@ -18,7 +18,8 @@ namespace xControl
   {
     va_list arg;
     va_start(arg, formatP);
-    vsnprintf_P(TasmotaGlobal.log_data, sizeof(TasmotaGlobal.log_data), formatP, arg);
+    char log[LOGSZ+1];
+    vsnprintf_P(log, sizeof(log), formatP, arg);
     va_end(arg);
 
     uint32_t tasmotaLogLevel = LOG_LEVEL_NONE;
@@ -39,7 +40,7 @@ namespace xControl
       //LOG_LEVEL_NONE is allready assigned
     }
 
-    AddLog(tasmotaLogLevel);
+    AddLogData(tasmotaLogLevel, log);
   }
 }
 
