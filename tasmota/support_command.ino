@@ -36,7 +36,7 @@ const char kTasmotaCommands[] PROGMEM = "|"  // No prefix
 #ifdef USE_DEVICE_GROUPS_SEND
   D_CMND_DEVGROUP_SEND "|"
 #endif  // USE_DEVICE_GROUPS_SEND
-  D_CMND_DEVGROUP_SHARE "|" D_CMND_DEVGROUPSTATUS "|" D_CMND_DEVGROUP_DEVICE "|"
+  D_CMND_DEVGROUP_SHARE "|" D_CMND_DEVGROUPSTATUS "|" D_CMND_DEVGROUP_TIE "|"
 #endif  // USE_DEVICE_GROUPS
   D_CMND_SENSOR "|" D_CMND_DRIVER
 #ifdef ESP32
@@ -426,7 +426,8 @@ void CmndStatus(void)
     Response_P(PSTR("{\"" D_CMND_STATUS "\":{\"" D_CMND_MODULE "\":%d,\"" D_CMND_DEVICENAME "\":\"%s\",\"" D_CMND_FRIENDLYNAME "\":[%s],\"" D_CMND_TOPIC "\":\"%s\",\""
                           D_CMND_BUTTONTOPIC "\":\"%s\",\"" D_CMND_POWER "\":%d,\"" D_CMND_POWERONSTATE "\":%d,\"" D_CMND_LEDSTATE "\":%d,\""
                           D_CMND_LEDMASK "\":\"%04X\",\"" D_CMND_SAVEDATA "\":%d,\"" D_JSON_SAVESTATE "\":%d,\"" D_CMND_SWITCHTOPIC "\":\"%s\",\""
-                          D_CMND_SWITCHMODE "\":[%s],\"" D_CMND_BUTTONRETAIN "\":%d,\"" D_CMND_SWITCHRETAIN "\":%d,\"" D_CMND_SENSORRETAIN "\":%d,\"" D_CMND_POWERRETAIN "\":%d}}"),
+                          D_CMND_SWITCHMODE "\":[%s],\"" D_CMND_BUTTONRETAIN "\":%d,\"" D_CMND_SWITCHRETAIN "\":%d,\"" D_CMND_SENSORRETAIN "\":%d,\"" D_CMND_POWERRETAIN "\":%d,\""
+                          D_CMND_INFORETAIN "\":%d,\"" D_CMND_STATERETAIN "\":%d}}"),
                           ModuleNr(), EscapeJSONString(SettingsText(SET_DEVICENAME)).c_str(), stemp, TasmotaGlobal.mqtt_topic,
                           SettingsText(SET_MQTT_BUTTON_TOPIC), TasmotaGlobal.power, Settings.poweronstate, Settings.ledstate,
                           Settings.ledmask, Settings.save_data,
@@ -436,7 +437,9 @@ void CmndStatus(void)
                           Settings.flag.mqtt_button_retain,   // CMND_BUTTONRETAIN
                           Settings.flag.mqtt_switch_retain,   // CMND_SWITCHRETAIN
                           Settings.flag.mqtt_sensor_retain,   // CMND_SENSORRETAIN
-                          Settings.flag.mqtt_power_retain);   // CMND_POWERRETAIN
+                          Settings.flag.mqtt_power_retain,    // CMND_POWERRETAIN
+                          Settings.flag5.mqtt_info_retain,    // CMND_INFORETAIN
+                          Settings.flag5.mqtt_state_retain);  // CMND_STATERETAIN
     MqttPublishPrefixTopic_P(STAT, PSTR(D_CMND_STATUS));
   }
 
@@ -594,20 +597,20 @@ void CmndStatus(void)
 #ifdef USE_SHUTTER
   if (Settings.flag3.shutter_mode) {
     if ((0 == payload) || (13 == payload)) {
-      Response_P(PSTR("{\"" D_CMND_STATUS D_STATUS13_SHUTTER "\":"));
+      Response_P(PSTR("{\"" D_CMND_STATUS D_STATUS13_SHUTTER "\":{"));
       for (uint32_t i = 0; i < MAX_SHUTTERS; i++) {
         if (0 == Settings.shutter_startrelay[i]) { break; }
         if (i > 0) { ResponseAppend_P(PSTR(",")); }
-        ResponseAppend_P(PSTR("{\"" D_STATUS13_SHUTTER "%d\":{\"Relay1\":%d,\"Relay2\":%d,\"Open\":%d,\"Close\":%d,"
-                                    "\"50perc\":%d,\"Delay\":%d,\"Opt\":\"%s\","
-                                    "\"Calib\":[%d,%d,%d,%d,%d],"
-                                    "\"Mode\":\"%d\"}}"),
-                                    i, Settings.shutter_startrelay[i], Settings.shutter_startrelay[i] +1, Settings.shutter_opentime[i], Settings.shutter_closetime[i],
-                                    Settings.shutter_set50percent[i], Settings.shutter_motordelay[i], GetBinary8(Settings.shutter_options[i], 4).c_str(),
-                                    Settings.shuttercoeff[0][i], Settings.shuttercoeff[1][i], Settings.shuttercoeff[2][i], Settings.shuttercoeff[3][i], Settings.shuttercoeff[4][i],
-                                    Settings.shutter_mode);
+        ResponseAppend_P(PSTR("\"" D_STATUS13_SHUTTER "%d\":{\"Relay1\":%d,\"Relay2\":%d,\"Open\":%d,\"Close\":%d,"
+                                   "\"50perc\":%d,\"Delay\":%d,\"Opt\":\"%s\","
+                                   "\"Calib\":[%d,%d,%d,%d,%d],"
+                                   "\"Mode\":\"%d\"}"),
+                                   i, Settings.shutter_startrelay[i], Settings.shutter_startrelay[i] +1, Settings.shutter_opentime[i], Settings.shutter_closetime[i],
+                                   Settings.shutter_set50percent[i], Settings.shutter_motordelay[i], GetBinary8(Settings.shutter_options[i], 4).c_str(),
+                                   Settings.shuttercoeff[0][i], Settings.shuttercoeff[1][i], Settings.shuttercoeff[2][i], Settings.shuttercoeff[3][i], Settings.shuttercoeff[4][i],
+                                   Settings.shutter_mode);
       }
-      ResponseJsonEnd();
+      ResponseJsonEndEnd();
       MqttPublishPrefixTopic_P(STAT, PSTR(D_CMND_STATUS "13"));
     }
   }
@@ -629,7 +632,7 @@ void CmndState(void)
   ResponseClear();
   MqttShowState();
   if (Settings.flag3.hass_tele_on_power) {  // SetOption59 - Send tele/%topic%/STATE in addition to stat/%topic%/RESULT
-    MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_STATE), MQTT_TELE_RETAIN);
+    MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_STATE), Settings.flag5.mqtt_state_retain);
   }
 #ifdef USE_HOME_ASSISTANT
   if (Settings.flag.hass_discovery) {       // SetOption19 - Control Home Assistantautomatic discovery (See SetOption59)
@@ -1153,7 +1156,7 @@ void CmndModule(void)
         Settings.module = XdrvMailbox.payload;
         SetModuleType();
         if (Settings.last_module != XdrvMailbox.payload) {
-          for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
+          for (uint32_t i = 0; i < nitems(Settings.my_gp.io); i++) {
             Settings.my_gp.io[i] = GPIO_NONE;
           }
         }
@@ -1197,12 +1200,12 @@ void CmndModules(void)
 
 void CmndGpio(void)
 {
-  if (XdrvMailbox.index < ARRAY_SIZE(Settings.my_gp.io)) {
+  if (XdrvMailbox.index < nitems(Settings.my_gp.io)) {
     myio template_gp;
     TemplateGpios(&template_gp);
     if (ValidGPIO(XdrvMailbox.index, template_gp.io[XdrvMailbox.index]) && (XdrvMailbox.payload >= 0) && (XdrvMailbox.payload < AGPIO(GPIO_SENSOR_END))) {
       bool present = false;
-      for (uint32_t i = 0; i < ARRAY_SIZE(kGpioNiceList); i++) {
+      for (uint32_t i = 0; i < nitems(kGpioNiceList); i++) {
         uint32_t midx = pgm_read_word(kGpioNiceList + i);
         uint32_t max_midx = ((midx & 0x001F) > 0) ? midx : midx +1;
         if ((XdrvMailbox.payload >= (midx & 0xFFE0)) && (XdrvMailbox.payload < max_midx)) {
@@ -1211,7 +1214,7 @@ void CmndGpio(void)
         }
       }
       if (present) {
-        for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
+        for (uint32_t i = 0; i < nitems(Settings.my_gp.io); i++) {
           if (ValidGPIO(i, template_gp.io[i]) && (Settings.my_gp.io[i] == XdrvMailbox.payload)) {
             Settings.my_gp.io[i] = GPIO_NONE;
           }
@@ -1222,7 +1225,7 @@ void CmndGpio(void)
     }
     bool jsflg = false;
     bool jsflg2 = false;
-    for (uint32_t i = 0; i < ARRAY_SIZE(Settings.my_gp.io); i++) {
+    for (uint32_t i = 0; i < nitems(Settings.my_gp.io); i++) {
       if (ValidGPIO(i, template_gp.io[i]) || ((255 == XdrvMailbox.payload) && !FlashPin(i))) {
         if (!jsflg) {
           Response_P(PSTR("{"));
@@ -1240,7 +1243,7 @@ void CmndGpio(void)
         char sindex[4] = { 0 };
         uint32_t sensor_name_idx = BGPIO(sensor_type);
         uint32_t nice_list_search = sensor_type & 0xFFE0;
-        for (uint32_t j = 0; j < ARRAY_SIZE(kGpioNiceList); j++) {
+        for (uint32_t j = 0; j < nitems(kGpioNiceList); j++) {
           uint32_t nls_idx = pgm_read_word(kGpioNiceList + j);
           if (((nls_idx & 0xFFE0) == nice_list_search) && ((nls_idx & 0x001F) > 0)) {
             snprintf_P(sindex, sizeof(sindex), PSTR("%d"), (sensor_type & 0x001F) +1);
@@ -1307,10 +1310,10 @@ void CmndGpios(void)
 //    DumpConvertTable();
     ShowGpios(nullptr, GPIO_SENSOR_END, 0, lines);
   } else {
-    ShowGpios(kGpioNiceList, ARRAY_SIZE(kGpioNiceList), 0, lines);
+    ShowGpios(kGpioNiceList, nitems(kGpioNiceList), 0, lines);
 #ifdef ESP8266
 #ifndef USE_ADC_VCC
-    ShowGpios(kAdcNiceList, ARRAY_SIZE(kAdcNiceList), 1, lines);
+    ShowGpios(kAdcNiceList, nitems(kAdcNiceList), 1, lines);
 #endif  // USE_ADC_VCC
 #endif  // ESP8266
   }
@@ -1342,7 +1345,7 @@ void CmndTemplate(void)
       }
       SettingsUpdateText(SET_TEMPLATE_NAME, PSTR("Merged"));
       uint32_t j = 0;
-      for (uint32_t i = 0; i < ARRAY_SIZE(Settings.user_template.gp.io); i++) {
+      for (uint32_t i = 0; i < nitems(Settings.user_template.gp.io); i++) {
         if (6 == i) { j = 9; }
         if (8 == i) { j = 12; }
         if (TasmotaGlobal.my_module.io[j] > GPIO_NONE) {
@@ -2068,9 +2071,14 @@ void CmndWifiPower(void)
 #ifdef USE_I2C
 void CmndI2cScan(void)
 {
-  if (TasmotaGlobal.i2c_enabled) {
+  if ((1 == XdrvMailbox.index) && (TasmotaGlobal.i2c_enabled)) {
     I2cScan(TasmotaGlobal.mqtt_data, sizeof(TasmotaGlobal.mqtt_data));
   }
+#ifdef ESP32
+  if ((2 == XdrvMailbox.index) && (TasmotaGlobal.i2c_enabled_2)) {
+    I2cScan(TasmotaGlobal.mqtt_data, sizeof(TasmotaGlobal.mqtt_data), 1);
+  }
+#endif
 }
 
 void CmndI2cDriver(void)
@@ -2135,7 +2143,13 @@ void CmndDevGroupTie(void)
     if (XdrvMailbox.data_len > 0) {
       Settings.device_group_tie[XdrvMailbox.index - 1] = XdrvMailbox.payload;
     }
-    ResponseCmndIdxNumber(Settings.device_group_tie[XdrvMailbox.index - 1]);
+    char * ptr = TasmotaGlobal.mqtt_data;
+    *ptr++ = '{';
+    for (uint32_t i = 0; i < MAX_DEV_GROUP_NAMES; i++) {
+      ptr += sprintf(ptr, PSTR("\"%s%u\":%u,"), D_CMND_DEVGROUP_TIE, i + 1, Settings.device_group_tie[i]);
+    }
+    *(ptr - 1) = '}';
+    *ptr = 0;
   }
 }
 #endif  // USE_DEVICE_GROUPS
