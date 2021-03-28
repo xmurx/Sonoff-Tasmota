@@ -101,6 +101,9 @@
 // -- MQTT ----------------------------------------
 #define MQTT_USE               true              // [SetOption3] Select default MQTT use (false = Off, true = On)
 
+#define MQTT_KEEPALIVE         30                // [MqttKeepAlive]
+#define MQTT_SOCKET_TIMEOUT    4                 // [MqttTimeout]
+
 #define MQTT_HOST              ""                // [MqttHost]
 #define MQTT_FINGERPRINT1      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00  // [MqttFingerprint1] (auto-learn)
 #define MQTT_FINGERPRINT2      0xDA,0x39,0xA3,0xEE,0x5E,0x6B,0x4B,0x0D,0x32,0x55,0xBF,0xEF,0x95,0x60,0x18,0x90,0xAF,0xD8,0x07,0x09  // [MqttFingerprint2] (invalid)
@@ -355,11 +358,12 @@
 //#define MY_LANGUAGE            en_GB           // English in Great Britain. Enabled by Default
 //#define MY_LANGUAGE            es_ES           // Spanish in Spain
 //#define MY_LANGUAGE            fr_FR           // French in France
+//#define MY_LANGUAGE            fy_NL           // Frysk in Nederland
 //#define MY_LANGUAGE            he_HE           // Hebrew in Israel
 //#define MY_LANGUAGE            hu_HU           // Hungarian in Hungary
 //#define MY_LANGUAGE            it_IT           // Italian in Italy
 //#define MY_LANGUAGE            ko_KO           // Korean in Korea
-//#define MY_LANGUAGE            nl_NL           // Dutch in the Netherlands
+//#define MY_LANGUAGE            nl_NL           // Dutch in the Nederland
 //#define MY_LANGUAGE            pl_PL           // Polish in Poland
 //#define MY_LANGUAGE            pt_BR           // Portuguese in Brazil
 //#define MY_LANGUAGE            pt_PT           // Portuguese in Portugal
@@ -460,6 +464,11 @@
 
 //  #define SUPPORT_MQTT_EVENT                     // Support trigger event with MQTT subscriptions (+3k5 code)
 
+// -- Berry Scripting Language - ESP32 only  ----------------------------
+// #define USE_BERRY                                // Enable Berry scripting language
+  #define USE_BERRY_PSRAM                        // Allocate Berry memory in PSRAM if PSRAM is connected - this might be slightly slower but leaves main memory intact
+
+
 // -- Optional modules ----------------------------
 #define ROTARY_V1                                // Add support for Rotary Encoder as used in MI Desk Lamp (+0k8 code)
   #define ROTARY_MAX_STEPS     10                // Rotary step boundary
@@ -550,9 +559,9 @@
     #define USE_APDS9960_PROXIMITY                 // Enable APDS9960 Proximity feature (>50 code)
     #define USE_APDS9960_COLOR                     // Enable APDS9960 Color feature (+0.8k code)
     #define USE_APDS9960_STARTMODE  0              // Default to enable Gesture mode
-//  #define USE_MCP230xx                           // [I2cDriver22] Enable MCP23008/MCP23017 - Must define I2C Address in #define USE_MCP230xx_ADDR below - range 0x20 - 0x27 (+4k7 code)
+//  #define USE_MCP230xx                           // [I2cDriver22] Enable MCP23008/MCP23017 - Must define I2C Address in #define USE_MCP230xx_ADDR below - range 0x20 - 0x27 (+5k1 code)
 //    #define USE_MCP230xx_ADDR 0x20               // Enable MCP23008/MCP23017 I2C Address to use (Must be within range 0x20 through 0x26 - set according to your wired setup)
-//    #define USE_MCP230xx_OUTPUT                  // Enable MCP23008/MCP23017 OUTPUT support through sensor29 commands (+1k5 code)
+//    #define USE_MCP230xx_OUTPUT                  // Enable MCP23008/MCP23017 OUTPUT support through sensor29 commands (+2k2 code)
 //    #define USE_MCP230xx_DISPLAYOUTPUT           // Enable MCP23008/MCP23017 to display state of OUTPUT pins on Web UI (+0k2 code)
 //  #define USE_PCA9685                            // [I2cDriver1] Enable PCA9685 I2C HW PWM Driver - Must define I2C Address in #define USE_PCA9685_ADDR below - range 0x40 - 0x47 (+1k4 code)
 //    #define USE_PCA9685_ADDR 0x40                // Enable PCA9685 I2C Address to use (Must be within range 0x40 through 0x47 - set according to your wired setup)
@@ -607,6 +616,7 @@
 //  #define USE_EZORGB                             // [I2cDriver55] Enable support for EZO's RGB sensor (+0k5 code) - Shared EZO code required for any EZO device (+1k2 code)
 //  #define USE_EZOPMP                             // [I2cDriver55] Enable support for EZO's PMP sensor (+0k3 code) - Shared EZO code required for any EZO device (+1k2 code)
 //  #define USE_SEESAW_SOIL                        // [I2cDriver56] Enable Capacitice Soil Moisture & Temperature Sensor (I2C addresses 0x36 - 0x39) (+1k3 code)
+//  #define USE_MPU6886                            // [I2cDriver58] Enable MPU6886 - found in M5Stack - support 2 I2C buses on ESP32 (I2C address 0x68) (+2k code)
 
 #define USE_DISPLAY                            // Add I2C Display Support (+2k code)
     #define USE_DISPLAY_MODES1TO5                // Enable display mode 1 to 5 in addition to mode 0
@@ -669,6 +679,7 @@
   #define STARTING_OFFSET      30                // Turn on NovaSDS XX-seconds before tele_period is reached
 //#define USE_HPMA                                 // Add support for Honeywell HPMA115S0 particle concentration sensor (+1k4)
 //#define USE_SR04                                 // Add support for HC-SR04 ultrasonic devices (+1k code)
+  #define SR04_MAX_SENSOR_DISTANCE  500          // Set sensor max detection distance
 //#define USE_DYP                                  // Add support for DYP ME-007 ultrasonic distance sensor, serial port version (+0k5 code)
 #define USE_SERIAL_BRIDGE                        // Add support for software Serial Bridge (+0k8 code)
 //#define USE_TCP_BRIDGE                           //  Add support for Serial to TCP bridge (+1.3k code)
@@ -694,6 +705,7 @@
 //  #define USE_PROJECTOR_CTRL_OPTOMA              // Use codes for OPTOMA
 //#define USE_AS608                                // Add support for AS608 optical and R503 capacitive fingerprint sensor (+3k code)
 //  #define USE_AS608_MESSAGES                     // Add verbose error messages (+0k4 code)
+//#define USE_TFMINIPLUS                           // Add support for TFmini Plus (TFmini, TFmini-S) LiDAR modules via UART interface (+0k8)
 
 // -- Power monitoring sensors --------------------
 #define USE_ENERGY_MARGIN_DETECTION              // Add support for Energy Margin detection (+1k6 code)
@@ -887,6 +899,7 @@
 //  #define ETH_CLKMODE       0                    // [EthClockMode] 0 = ETH_CLOCK_GPIO0_IN, 1 = ETH_CLOCK_GPIO0_OUT, 2 = ETH_CLOCK_GPIO16_OUT, 3 = ETH_CLOCK_GPIO17_OUT
 
 #define USE_ADC                                  // Add support for ADC on GPIO32 to GPIO39
+#define USE_HALLEFFECT                           // Add support for internal Hall Effcet sensor connected to GPIO36 and GPIO39
 
 //#define USE_SPI                                  // Add support for hardware SPI
 //#define USE_MI_ESP32                             // Add support for ESP32 as a BLE-bridge (+9k2 mem, +292k flash)

@@ -2053,10 +2053,19 @@ void I2cSetActive(uint32_t addr, uint32_t count = 1)
 //  AddLog(LOG_LEVEL_DEBUG, PSTR("I2C: Active %08X,%08X,%08X,%08X"), i2c_active[0], i2c_active[1], i2c_active[2], i2c_active[3]);
 }
 
-void I2cSetActiveFound(uint32_t addr, const char *types)
+void I2cSetActiveFound(uint32_t addr, const char *types, uint32_t bus = 0);
+void I2cSetActiveFound(uint32_t addr, const char *types, uint32_t bus)
 {
   I2cSetActive(addr);
+#ifdef ESP32
+  if (0 == bus) {
+    AddLog(LOG_LEVEL_INFO, S_LOG_I2C_FOUND_AT, types, addr);
+  } else {
+    AddLog(LOG_LEVEL_INFO, S_LOG_I2C_FOUND_AT_PORT, types, addr, bus);
+  }
+#else
   AddLog(LOG_LEVEL_INFO, S_LOG_I2C_FOUND_AT, types, addr);
+#endif // ESP32
 }
 
 bool I2cActive(uint32_t addr)
@@ -2068,14 +2077,24 @@ bool I2cActive(uint32_t addr)
   return false;
 }
 
+#ifdef ESP32
+bool I2cSetDevice(uint32_t addr, uint32_t bus = 0);
+bool I2cSetDevice(uint32_t addr, uint32_t bus)
+#else
 bool I2cSetDevice(uint32_t addr)
+#endif
 {
+#ifdef ESP32
+  TwoWire & myWire = (bus == 0) ? Wire : Wire1;
+#else
+  TwoWire & myWire = Wire;
+#endif
   addr &= 0x7F;         // Max I2C address is 127
   if (I2cActive(addr)) {
     return false;       // If already active report as not present;
   }
-  Wire.beginTransmission((uint8_t)addr);
-  return (0 == Wire.endTransmission());
+  myWire.beginTransmission((uint8_t)addr);
+  return (0 == myWire.endTransmission());
 }
 #endif  // USE_I2C
 
@@ -2106,7 +2125,7 @@ void SyslogAsync(bool refresh) {
   static uint32_t syslog_host_hash = 0;   // Syslog host name hash
   static uint32_t index = 1;
 
-  if (!TasmotaGlobal.syslog_level) { return; }
+  if (!TasmotaGlobal.syslog_level || TasmotaGlobal.global_state.network_down) { return; }
   if (refresh && !NeedLogRefresh(TasmotaGlobal.syslog_level, index)) { return; }
 
   char* line;
@@ -2118,8 +2137,16 @@ void SyslogAsync(bool refresh) {
     if (mxtime > 0) {
       uint32_t current_hash = GetHash(SettingsText(SET_SYSLOG_HOST), strlen(SettingsText(SET_SYSLOG_HOST)));
       if (syslog_host_hash != current_hash) {
+        IPAddress temp_syslog_host_addr;
+        int ok = WiFi.hostByName(SettingsText(SET_SYSLOG_HOST), temp_syslog_host_addr);  // If sleep enabled this might result in exception so try to do it once using hash
+        if (!ok || (0xFFFFFFFF == (uint32_t)temp_syslog_host_addr)) { // 255.255.255.255 is assumed a DNS problem
+          TasmotaGlobal.syslog_level = 0;
+          TasmotaGlobal.syslog_timer = SYSLOG_TIMER;
+          AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_APPLICATION "Loghost DNS resolve failed (%s). " D_RETRY_IN " %d " D_UNIT_SECOND), SettingsText(SET_SYSLOG_HOST), SYSLOG_TIMER);
+          return;
+        }
         syslog_host_hash = current_hash;
-        WiFi.hostByName(SettingsText(SET_SYSLOG_HOST), syslog_host_addr);  // If sleep enabled this might result in exception so try to do it once using hash
+        syslog_host_addr = temp_syslog_host_addr;
       }
       if (!PortUdp.beginPacket(syslog_host_addr, Settings.syslog_port)) {
         TasmotaGlobal.syslog_level = 0;
