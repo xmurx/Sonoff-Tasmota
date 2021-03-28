@@ -155,6 +155,7 @@
 #define BE_USE_SYS_MODULE               0
 #define BE_USE_DEBUG_MODULE             1
 #define BE_USE_GC_MODULE                1
+#define BE_USE_SOLIDIFY_MODULE          1
 
 /* Macro: BE_EXPLICIT_XXX
  * If these macros are defined, the corresponding function will
@@ -162,11 +163,27 @@
  * are not required.
  * The default is to use the functions in the standard library.
  **/
+#ifdef USE_BERRY_PSRAM
+#ifdef __cplusplus
+extern "C" {
+#endif
+  extern void *berry_malloc(uint32_t size);
+  extern void *berry_realloc(void *ptr, size_t size);
+#ifdef __cplusplus
+}
+#endif
+  #define BE_EXPLICIT_MALLOC              special_malloc
+  #define BE_EXPLICIT_REALLOC             special_realloc
+#else
+  #define BE_EXPLICIT_MALLOC              malloc
+  #define BE_EXPLICIT_REALLOC             realloc
+#endif // USE_BERRY_PSRAM
+
 #define BE_EXPLICIT_ABORT               abort
 #define BE_EXPLICIT_EXIT                exit
-#define BE_EXPLICIT_MALLOC              malloc
+// #define BE_EXPLICIT_MALLOC              malloc
 #define BE_EXPLICIT_FREE                free
-#define BE_EXPLICIT_REALLOC             realloc
+// #define BE_EXPLICIT_REALLOC             realloc
 
 /* Macro: be_assert
  * Berry debug assertion. Only enabled when BE_DEBUG is active.
