@@ -80,18 +80,22 @@ The attached binaries can also be downloaded from http://ota.tasmota.com/tasmota
 
 ## Changelog v9.3.1.2
 ### Added
-- Commands ``MqttKeepAlive 1..100`` to set Mqtt Keep Alive timer (default 30) and ``MqttTimeout 1..100`` to set Mqtt Socket Timeout (default 4) [#5341](https://github.com/arendst/Tasmota/issues/5341)
 - Command ``Sensor80 1 <0..7>`` to control MFRC522 RFID antenna gain from 18dB (0) to 48dB (7) [#11073](https://github.com/arendst/Tasmota/issues/11073)
+- Command ``SerialBuffer 256..520`` to change hardware serial receive buffer size from default (256) to max local buffer size (520) [#11448](https://github.com/arendst/Tasmota/issues/11448)
+- Command ``SetOption126 1`` to enable DS18x20 arithmetic mean over teleperiod for JSON temperature based on [#11472](https://github.com/arendst/Tasmota/issues/11472)
+- Commands ``MqttKeepAlive 1..100`` to set Mqtt Keep Alive timer (default 30) and ``MqttTimeout 1..100`` to set Mqtt Socket Timeout (default 4) [#5341](https://github.com/arendst/Tasmota/issues/5341)
 - Commands ``DisplayType`` to select sub-modules where implemented and ``DisplayInvert`` to select inverted display where implemented
 - Support for SML VBUS [#11125](https://github.com/arendst/Tasmota/issues/11125)
 - Support for NEC and OPTOMA LCD/DLP Projector serial power control by Jan Bubík [#11145](https://github.com/arendst/Tasmota/issues/11145)
 - Support for XPT2046 touch screen digitizer on ILI9341 display by nonix [#11159](https://github.com/arendst/Tasmota/issues/11159)
 - Support for zigbee lumi.sensor_wleak [#11200](https://github.com/arendst/Tasmota/issues/11200)
+- Support for dummy energy monitor using user values set by commands ``VoltageSet``, ``CurrentSet``, ``PowerSet`` and ``FrequencySet``. Enable by selecting any GPIO as ``Option A2`` [#10640](https://github.com/arendst/Tasmota/issues/10640)
 - Support for CSE7761 energy monitor as used in ESP32 based Sonoff Dual R3 Pow [#10793](https://github.com/arendst/Tasmota/issues/10793)
 - Support for Frequency monitoring and zero-cross detection on CSE7761 (Sonoff Dual R3)
 - Support for TM1638 seven segment display by Ajith Vasudevan [#11031](https://github.com/arendst/Tasmota/issues/11031)
 - Support for MAX7219 seven segment display by Ajith Vasudevan [#11387](https://github.com/arendst/Tasmota/issues/11387)
 - Support for MPU6886 on primary or secondary I2C bus
+- Support for multiple CCS811 sensors with baseline control (USE_CCS811_V2) by clanganke [#10858](https://github.com/arendst/Tasmota/issues/10858)
 - Allow MCP230xx pinmode from output to input [#11104](https://github.com/arendst/Tasmota/issues/11104)
 - Berry improvements [#11163](https://github.com/arendst/Tasmota/issues/11163)
 - Extent compile time SetOptions support [#11204](https://github.com/arendst/Tasmota/issues/11204)
@@ -104,10 +108,12 @@ The attached binaries can also be downloaded from http://ota.tasmota.com/tasmota
 - TasmotaSerial library from v3.2.0 to v3.3.0
 - PubSubClient library from EspEasy v2.7.12 to Tasmota v2.8.12
 - IRremoteESP8266 library from v2.7.15 to v2.7.16
-- ESP32 core library from v1.0.5-rc6 to v1.0.5
+- ESP32 core library from v1.0.5-rc6 to v1.0.6
 - TuyaMcu dimmer timeout [#11121](https://github.com/arendst/Tasmota/issues/11121)
 - Rename epaper 42 commands [#11222](https://github.com/arendst/Tasmota/issues/11222)
 - DeepSleep announcement topic [#11223](https://github.com/arendst/Tasmota/issues/11223)
+- Limit number of relay/button columns in GUI to 8 [#11546](https://github.com/arendst/Tasmota/issues/11546)
+- ADC range result from int to float using command ``FreqRes`` for decimal resolution selection [#11545](https://github.com/arendst/Tasmota/issues/11545)
 
 ### Fixed
 - PN532 on ESP32 Serial flush both Tx and Rx buffers [#10910](https://github.com/arendst/Tasmota/issues/10910)
@@ -120,4 +126,5 @@ The attached binaries can also be downloaded from http://ota.tasmota.com/tasmota
 - Zigbee exception when bad frame is received [#11192](https://github.com/arendst/Tasmota/issues/11192)
 - ESP32 flash script for Odroid and Core2 [#11227](https://github.com/arendst/Tasmota/issues/11227)
 - ESP32 WS2812 bitbang support [#11248](https://github.com/arendst/Tasmota/issues/11248)
-- DS18x20 driver timing issue (#11270)
+- DS18x20 driver timing issue [#11270](https://github.com/arendst/Tasmota/issues/11270)
+- HC-SR04 on ESP32 release serial interface if not used [#11507](https://github.com/arendst/Tasmota/issues/11507)

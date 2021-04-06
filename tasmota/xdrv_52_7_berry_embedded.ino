@@ -94,42 +94,52 @@ const char berry_prog[] =
     //   "if !self._rules "
     //     "self._rules={} "
     //   "end "
-    //   "self._rules[pat] = f "
+    //   "if type(f) == 'function' "
+    //     "self._rules[pat] = f "
+    //   "else "
+    //     "raise 'value_error', 'the second argument is not a function' "
+    //   "end "
+    // "end "
+
+    // "def remove_rule(pat) "
+    //   "if self._rules "
+    //     "self._rules.remove(pat) "
+    //   "end "
     // "end "
   
     // // Rules trigger if match. return true if match, false if not
-    // "def try_rule(ev, rule, f) "
+    // "def try_rule(event, rule, f) "
     //   "import string "
     //   "var rl_list = self.find_op(rule) "
-    //   "var e=ev "
-    //   "var rl=string.split(rl_list[0],'#') "
+    //   "var sub_event = event "
+    //   "var rl = string.split(rl_list[0],'#') "
     //   "for it:rl "
-    //     "found=self.find_key_i(e,it) "
+    //     "found=self.find_key_i(sub_event,it) "
     //     "if found == nil return false end "
-    //     "e=e[found] "
+    //     "sub_event = sub_event[found] "
     //   "end "
     //   "var op=rl_list[1]"
     //   "var op2=rl_list[2]"
     //   "if op "
     //     "if   op=='==' "
-    //       "if str(e) != str(op2)   return false end "
+    //       "if str(sub_event) != str(op2)   return false end "
     //     "elif op=='!==' "
-    //       "if str(e) == str(op2)   return false end "
+    //       "if str(sub_event) == str(op2)   return false end "
     //     "elif op=='=' "
-    //       "if real(e) != real(op2) return false end "
+    //       "if real(sub_event) != real(op2) return false end "
     //     "elif op=='!=' "
-    //       "if real(e) == real(op2) return false end "
+    //       "if real(sub_event) == real(op2) return false end "
     //     "elif op=='>' "
-    //       "if real(e) <= real(op2) return false end "
+    //       "if real(sub_event) <= real(op2) return false end "
     //     "elif op=='>=' "
-    //       "if real(e) < real(op2)  return false end "
+    //       "if real(sub_event) < real(op2)  return false end "
     //     "elif op=='<' "
-    //       "if real(e) >= real(op2) return false end "
+    //       "if real(sub_event) >= real(op2) return false end "
     //     "elif op=='<=' "
-    //       "if real(e) > real(op2)  return false end "
+    //       "if real(sub_event) > real(op2)  return false end "
     //     "end "
     //   "end "
-    //   "f(e,ev) "
+    //   "f(sub_event, rl_list[0], event) "
     //   "return true "
     // "end "
 
@@ -183,20 +193,32 @@ const char berry_prog[] =
 
     // // Add command to list
     // "def add_cmd(c,f) "
-    //   "if !self._cmd "
-    //     "self._cmd={} "
+    //   "if !self._ccmd "
+    //     "self._ccmd={} "
     //   "end "
-    //   "self._cmd[c]=f "
+    //   "if type(f) == 'function' "
+    //     "self._ccmd[c]=f "
+    //   "else "
+    //     "raise 'value_error', 'the second argument is not a function' "
+    //   "end "
     // "end "
 
+    // // Remove command from list
+    // "def remove_cmd(c) "
+    //   "if self._ccmd "
+    //     "self._ccmd.remove(c) "
+    //   "end "
+    // "end "
+
+    // // Execute custom command
     // "def exec_cmd(cmd, idx, payload) "
-    //   "if self._cmd "
+    //   "if self._ccmd "
     //     "import json "
     //     "var payload_json = json.load(payload) "
-    //     "var cmd_found = self.find_key_i(self._cmd, cmd) "
+    //     "var cmd_found = self.find_key_i(self._ccmd, cmd) "
     //     "if cmd_found != nil "
     //       "self.resolvecmnd(cmd_found) "  // set the command name in XdrvMailbox.command
-    //       "self._cmd[cmd_found](cmd_found, idx, payload, payload_json) "
+    //       "self._ccmd[cmd_found](cmd_found, idx, payload, payload_json) "
     //       "return true "
     //     "end "
     //   "end "
@@ -284,6 +306,50 @@ const char berry_prog[] =
     //   "end "
     // "end "
 
+    // // tasmota.wire_scan(addr:int [, index:int]) -> wire1 or wire2 or nil
+    // // scan for the first occurrence of the addr, starting with bus1 then bus2
+    // // optional: skip if index is disabled via I2CEnable
+    // "def wire_scan(addr,idx) "
+    //   // skip if the I2C index is disabled
+    //   "if idx != nil && !self.i2c_enabled(idx) return nil end "
+    //   "if self.wire1.detect(addr) return self.wire1 end "
+    //   "if self.wire2.detect(addr) return self.wire2 end "
+    //   "return nil "
+    // "end "
+
+    // // set_light and get_light deprecetaion
+    // "def set_light(v,l) "
+    //   "print('tasmota.set_light() is deprecated, use light.set()') "
+    //   "import light "
+    //   "if l != nil "
+    //     "return light.set(v,l) "
+    //   "else "
+    //     "return light.set(v) "
+    //   "end "
+    // "end "
+
+    // "def get_light(l) "
+    //   "print('tasmota.get_light() is deprecated, use light.get()') "
+    //   "import light "
+    //   "if l != nil "
+    //     "return light.get(l) "
+    //   "else "
+    //     "return light.get() "
+    //   "end "
+    // "end "
+
+    // // cmd high-level function
+    // "def cmd(command) "
+    //   "import json "
+    //   "var ret = self._cmd(command) "
+    //   "var j = json.load(ret) "
+    //   "if type(j) == 'instance' "
+    //     "return j "
+    //   "else "
+    //     "return {'response':j} "
+    //   "end "
+    // "end "
+
   "end "
 
   // Instantiate tasmota object
@@ -314,12 +380,15 @@ const char berry_prog[] =
   //   "end "
   // "end "
 
-  "wire = Wire(0) "
-  "wire1 = wire "
-  "wire2 = Wire(1) "
-
-  // try to load "/autoexec.be"
-  // "try compile('/autoexec.be','file')() except .. log('BRY: no /autoexec.bat file') end "
+  "tasmota.wire1 = Wire(1) "
+  "tasmota.wire2 = Wire(2) "
+  "wire1 = tasmota.wire1 "
+  "wire2 = tasmota.wire2 "
+  // auto-import gpio
+  "import gpio "
+#ifdef USE_LIGHT
+  "import light "
+#endif // USE_LIGHT
   ;
 
 const char berry_autoexec[] =

@@ -334,6 +334,7 @@
 #define D_CMND_DEVGROUP_SHARE "DevGroupShare"
 #define D_CMND_DEVGROUPSTATUS "DevGroupStatus"
 #define D_CMND_DEVGROUP_TIE "DevGroupTie"
+#define D_CMND_SERIALBUFFER "SerialBuffer"
 #define D_CMND_SERIALSEND "SerialSend"
 #define D_CMND_SERIALDELIMITER "SerialDelimiter"
 #define D_CMND_BAUDRATE "Baudrate"
@@ -825,6 +826,7 @@ const char HTTP_SNS_CO2EAVG[]       PROGMEM = "{s}%s "  D_ECO2                "{
 const char HTTP_SNS_GALLONS[]       PROGMEM = "{s}%s "  D_TOTAL_USAGE         "{m}%s " D_UNIT_GALLONS             "{e}";
 const char HTTP_SNS_GPM[]           PROGMEM = "{s}%s "  D_FLOW_RATE           "{m}%s " D_UNIT_GALLONS_PER_MIN     "{e}";
 const char HTTP_SNS_MOISTURE[]      PROGMEM = "{s}%s "  D_MOISTURE            "{m}%d " D_UNIT_PERCENT             "{e}";
+const char HTTP_SNS_RANGE_CHR[]     PROGMEM = "{s}%s "  D_RANGE               "{m}%s"                             "{e}";
 const char HTTP_SNS_RANGE[]         PROGMEM = "{s}%s "  D_RANGE               "{m}%d"                             "{e}";
 const char HTTP_SNS_DISTANCE[]      PROGMEM = "{s}%s "  D_DISTANCE            "{m}%d " D_UNIT_MILLIMETER          "{e}";
 const char HTTP_SNS_DISTANCE_CM[]   PROGMEM = "{s}%s "  D_DISTANCE            "{m}%s " D_UNIT_CENTIMETER          "{e}";
@@ -843,6 +845,7 @@ const char HTTP_SNS_COLOR_RED[]     PROGMEM = "{s}%s "  D_COLOR_RED           "{
 const char HTTP_SNS_COLOR_GREEN[]   PROGMEM = "{s}%s "  D_COLOR_GREEN         "{m}%u "                            "{e}";
 const char HTTP_SNS_COLOR_BLUE[]    PROGMEM = "{s}%s "  D_COLOR_BLUE          "{m}%u "                            "{e}";
 const char HTTP_SNS_MILLILITERS[]   PROGMEM = "{s}%s "  D_VOLUME              "{m}%s " D_UNIT_MILLILITERS         "{e}";
+const char HTTP_SNS_GAS[]           PROGMEM = "{s}%s "  D_GAS                 "{m}%d " D_UNIT_PERCENT          "LEL{e}";
 #endif  // USE_WEBSERVER
 
 #endif  // _I18N_H_
