@@ -35,7 +35,7 @@ static unsigned long oswatch_last_loop_time;
 uint8_t oswatch_blocked_loop = 0;
 
 #ifndef USE_WS2812_DMA  // Collides with Neopixelbus but solves exception
-//void OsWatchTicker() ICACHE_RAM_ATTR;
+//void OsWatchTicker() IRAM_ATTR;
 #endif  // USE_WS2812_DMA
 
 #ifdef USE_KNX
@@ -1295,7 +1295,7 @@ void DumpConvertTable(void) {
     jsflg = true;
     if ((ResponseAppend_P(PSTR("\"%d\":\"%d\""), i, data) > (MAX_LOGSZ - TOPSZ)) || (i == nitems(kGpioConvert) -1)) {
       ResponseJsonEndEnd();
-      MqttPublishPrefixTopic_P(RESULT_OR_STAT, XdrvMailbox.command);
+      MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, XdrvMailbox.command);
       jsflg = false;
       lines++;
     }
@@ -1310,7 +1310,7 @@ void DumpConvertTable(void) {
     jsflg = true;
     if ((ResponseAppend_P(PSTR("\"%d\":\"%d\""), i, data) > (MAX_LOGSZ - TOPSZ)) || (i == nitems(kAdcNiceList) -1)) {
       ResponseJsonEndEnd();
-      MqttPublishPrefixTopic_P(RESULT_OR_STAT, XdrvMailbox.command);
+      MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, XdrvMailbox.command);
       jsflg = false;
       lines++;
     }
@@ -1320,8 +1320,8 @@ void DumpConvertTable(void) {
 */
 #endif  // ESP8266
 
-int ICACHE_RAM_ATTR Pin(uint32_t gpio, uint32_t index = 0);
-int ICACHE_RAM_ATTR Pin(uint32_t gpio, uint32_t index) {
+int IRAM_ATTR Pin(uint32_t gpio, uint32_t index = 0);
+int IRAM_ATTR Pin(uint32_t gpio, uint32_t index) {
   uint16_t real_gpio = gpio << 5;
   uint16_t mask = 0xFFE0;
   if (index < GPIO_ANY) {

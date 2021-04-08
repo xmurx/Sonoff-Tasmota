@@ -180,7 +180,8 @@ a_setoption = [[
     "(Wiegand) switch tag number output to hex format (1)",
     "(Wiegand) send key pad stroke as single char (0) or one tag (ending char #) (1)",
     "(Zigbee) Hide bridge topic from zigbee topic (use with SetOption89) (1)",
-    "","","","",
+    "(DS18x20) Enable arithmetic mean over teleperiod for JSON temperature (1)",
+    "","","",
     "","","","",
     "","","","",
     "","","","",
@@ -252,7 +253,7 @@ a_features = [[
     "USE_TOF10120","USE_SDM72","USE_DISPLAY_TM1637","USE_PROJECTOR_CTRL"
     ],[
     "USE_MPU6886","USE_TFMINIPLUS","USE_CSE7761","USE_BERRY",
-    "USE_HALLEFFECT","","","",
+    "USE_HALLEFFECT","USE_ENERGY_DUMMY","","",
     "","","","",
     "","","","",
     "","","","",
@@ -286,7 +287,7 @@ else:
         obj = json.load(fp)
 
 def StartDecode():
-    print ("\n*** decode-status.py v20210327 by Theo Arends and Jacek Ziolkowski ***")
+    print ("\n*** decode-status.py v20210406 by Theo Arends and Jacek Ziolkowski ***")
 
 #    print("Decoding\n{}".format(obj))
 

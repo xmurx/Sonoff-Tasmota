@@ -424,7 +424,7 @@ void MqttPublishPrefixTopic_P(uint32_t prefix, const char* subtopic) {
 
 void MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic, bool retained) {
   MqttPublishPrefixTopic_P(prefix, subtopic, retained);
-  XdrvRulesProcess();
+  XdrvRulesProcess(0);
 }
 
 void MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic) {
@@ -487,7 +487,7 @@ void MqttPublishPowerBlinkState(uint32_t device) {
   Response_P(PSTR("{\"%s\":\"" D_JSON_BLINK " %s\"}"),
     GetPowerDevice(scommand, device, sizeof(scommand), Settings.flag.device_index_enable), GetStateText(bitRead(TasmotaGlobal.blink_mask, device -1)));  // SetOption26 - Switch between POWER or POWER1
 
-  MqttPublishPrefixTopic_P(RESULT_OR_STAT, S_RSLT_POWER);
+  MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, S_RSLT_POWER);
 }
 
 /*********************************************************************************************/
@@ -551,29 +551,29 @@ void MqttConnected(void) {
   if (Mqtt.initial_connection_state) {
     if (ResetReason() != REASON_DEEP_SLEEP_AWAKE) {
       char stopic2[TOPSZ];
-      Response_P(PSTR("{\"" D_CMND_MODULE "\":\"%s\",\"" D_JSON_VERSION "\":\"%s%s\",\"" D_JSON_FALLBACKTOPIC "\":\"%s\",\"" D_CMND_GROUPTOPIC "\":\"%s\"}"),
+      Response_P(PSTR("{\"Info1\":{\"" D_CMND_MODULE "\":\"%s\",\"" D_JSON_VERSION "\":\"%s%s\",\"" D_JSON_FALLBACKTOPIC "\":\"%s\",\"" D_CMND_GROUPTOPIC "\":\"%s\"}}"),
         ModuleName().c_str(), TasmotaGlobal.version, TasmotaGlobal.image_name, GetFallbackTopic_P(stopic, ""), GetGroupTopic_P(stopic2, "", SET_MQTT_GRP_TOPIC));
-      MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "1"), Settings.flag5.mqtt_info_retain);
+      MqttPublishPrefixTopicRulesProcess_P(TELE, PSTR(D_RSLT_INFO "1"), Settings.flag5.mqtt_info_retain);
 #ifdef USE_WEBSERVER
       if (Settings.webserver) {
 #if LWIP_IPV6
-        Response_P(PSTR("{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\",\"IPv6Address\":\"%s\"}"),
+        Response_P(PSTR("{\"Info2\":{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\",\"IPv6Address\":\"%s\"}}"),
           (2 == Settings.webserver) ? PSTR(D_ADMIN) : PSTR(D_USER), NetworkHostname(), NetworkAddress().toString().c_str(), WifiGetIPv6().c_str(), Settings.flag5.mqtt_info_retain);
 #else
-        Response_P(PSTR("{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\"}"),
+        Response_P(PSTR("{\"Info2\":{\"" D_JSON_WEBSERVER_MODE "\":\"%s\",\"" D_CMND_HOSTNAME "\":\"%s\",\"" D_CMND_IPADDRESS "\":\"%s\"}}"),
           (2 == Settings.webserver) ? PSTR(D_ADMIN) : PSTR(D_USER), NetworkHostname(), NetworkAddress().toString().c_str(), Settings.flag5.mqtt_info_retain);
 #endif // LWIP_IPV6 = 1
-        MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "2"), Settings.flag5.mqtt_info_retain);
+        MqttPublishPrefixTopicRulesProcess_P(TELE, PSTR(D_RSLT_INFO "2"), Settings.flag5.mqtt_info_retain);
       }
 #endif  // USE_WEBSERVER
-      Response_P(PSTR("{\"" D_JSON_RESTARTREASON "\":"));
+      Response_P(PSTR("{\"Info3\":{\"" D_JSON_RESTARTREASON "\":"));
       if (CrashFlag()) {
         CrashDump();
       } else {
         ResponseAppend_P(PSTR("\"%s\""), GetResetReason().c_str());
       }
-      ResponseJsonEnd();
-      MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_INFO "3"), Settings.flag5.mqtt_info_retain);
+      ResponseJsonEndEnd();
+      MqttPublishPrefixTopicRulesProcess_P(TELE, PSTR(D_RSLT_INFO "3"), Settings.flag5.mqtt_info_retain);
     }
 
     MqttPublishAllPowerState();
@@ -1138,15 +1138,20 @@ void CmndStateRetain(void) {
 \*********************************************************************************************/
 #if defined(USE_MQTT_TLS) && defined(USE_MQTT_AWS_IOT)
 
+#ifdef ESP32
+static uint8_t * tls_spi_start = nullptr;
+const static size_t   tls_spi_len      = 0x0400;  // 1kb blocs
+const static size_t   tls_block_offset = 0x0000;  // don't need offset in FS
+#else
 // const static uint16_t tls_spi_start_sector = EEPROM_LOCATION + 4;  // 0xXXFF
 // const static uint8_t* tls_spi_start    = (uint8_t*) ((tls_spi_start_sector * SPI_FLASH_SEC_SIZE) + 0x40200000);  // 0x40XFF000
 const static uint16_t tls_spi_start_sector = 0xFF;  // Force last bank of first MB
 const static uint8_t* tls_spi_start    = (uint8_t*) 0x402FF000;  // 0x402FF000
 const static size_t   tls_spi_len      = 0x1000;  // 4kb blocs
 const static size_t   tls_block_offset = 0x0400;
+#endif
 const static size_t   tls_block_len    = 0x0400;   // 1kb
 const static size_t   tls_obj_store_offset = tls_block_offset + sizeof(tls_dir_t);
-
 
 inline void TlsEraseBuffer(uint8_t *buffer) {
   memset(buffer + tls_block_offset, 0xFF, tls_block_len);
@@ -1166,6 +1171,22 @@ static br_x509_certificate CHAIN[] = {
 // load a copy of the tls_dir from flash into ram
 // and calculate the appropriate data structures for AWS_IoT_Private_Key and AWS_IoT_Client_Certificate
 void loadTlsDir(void) {
+#ifdef ESP32
+  // We load the file in RAM and use it as if it was in Flash. The buffer is never deallocated once we loaded TLS keys
+  AWS_IoT_Private_Key = nullptr;
+  AWS_IoT_Client_Certificate = nullptr;
+  if (TfsFileExists(TASM_FILE_TLSKEY)) {
+    if (tls_spi_start == nullptr){
+      tls_spi_start = (uint8_t*) malloc(tls_block_len);
+      if (tls_spi_start == nullptr) {
+        return;
+      }
+    }
+    TfsLoadFile(TASM_FILE_TLSKEY, tls_spi_start, tls_block_len);
+  } else {
+    return;   // file does not exist, do nothing
+  }
+#endif
   memcpy_P(&tls_dir, tls_spi_start + tls_block_offset, sizeof(tls_dir));
 
   // calculate the addresses for Key and Cert in Flash
@@ -1204,7 +1225,11 @@ void CmndTlsKey(void) {
         AddLog(LOG_LEVEL_ERROR, ALLOCATE_ERROR);
         return;
       }
-      memcpy_P(spi_buffer, tls_spi_start, tls_spi_len);
+      if (tls_spi_start != nullptr) {  // safeguard for ESP32
+        memcpy_P(spi_buffer, tls_spi_start, tls_spi_len);
+      } else {
+        memset(spi_buffer, 0, tls_spi_len);   // safeguard for ESP32, removed by compiler for ESP8266
+      }
 
       // remove any white space from the base64
       RemoveSpace(XdrvMailbox.data);
@@ -1229,10 +1254,17 @@ void CmndTlsKey(void) {
       // address of writable tls_dir in buffer
       tls_dir_write = (tls_dir_t*) (spi_buffer + tls_block_offset);
 
+      bool save_file = false;   // for ESP32, do we need to write file
       if (1 == XdrvMailbox.index) {
         // Try to write Private key
         // Start by erasing all
+#ifdef ESP32
+        if (TfsFileExists(TASM_FILE_TLSKEY)) {
+          TfsDeleteFile(TASM_FILE_TLSKEY);  // delete file
+        }
+#else
         TlsEraseBuffer(spi_buffer);   // Erase any previously stored data
+#endif
         if (bin_len > 0) {
           if (bin_len != 32) {
             // no private key was previously stored, abort
@@ -1246,6 +1278,7 @@ void CmndTlsKey(void) {
           entry->start = 0;
           entry->len = bin_len;
           memcpy(spi_buffer + tls_obj_store_offset + entry->start, bin_buf, entry->len);
+          save_file = true;
         } else {
           // if lenght is zero, simply erase this SPI flash area
         }
@@ -1270,11 +1303,18 @@ void CmndTlsKey(void) {
         entry->start = (tls_dir_write->entry[0].start + tls_dir_write->entry[0].len + 3) & ~0x03; // align to 4 bytes boundary
         entry->len = bin_len;
         memcpy(spi_buffer + tls_obj_store_offset + entry->start, bin_buf, entry->len);
+        save_file = true;
       }
 
+#ifdef ESP32
+      if (save_file) {
+        TfsSaveFile(TASM_FILE_TLSKEY, spi_buffer, tls_spi_len);
+      }
+#else
       if (ESP.flashEraseSector(tls_spi_start_sector)) {
         ESP.flashWrite(tls_spi_start_sector * SPI_FLASH_SEC_SIZE, (uint32_t*) spi_buffer, SPI_FLASH_SEC_SIZE);
       }
+#endif
       free(spi_buffer);
       free(bin_buf);
     }
@@ -1295,6 +1335,7 @@ uint32_t bswap32(uint32_t x) {
 		((x >> 24) & 0x000000ff );
 }
 void CmndTlsDump(void) {
+  if (tls_spi_start == nullptr) { return; }   // safeguard for ESP32, removed by compiler for ESP8266
   uint32_t start = (uint32_t)tls_spi_start + tls_block_offset;
   uint32_t end   = start + tls_block_len -1;
   for (uint32_t pos = start; pos < end; pos += 0x10) {

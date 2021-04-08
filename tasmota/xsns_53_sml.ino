@@ -2114,7 +2114,7 @@ struct SML_COUNTER {
 uint8_t sml_counter_pinstate;
 
 uint8_t sml_cnt_index[MAX_COUNTERS] =  { 0, 1, 2, 3 };
-void ICACHE_RAM_ATTR SML_CounterIsr(void *arg) {
+void IRAM_ATTR SML_CounterIsr(void *arg) {
 uint32_t index = *static_cast<uint8_t*>(arg);
 
 uint32_t time = micros();
@@ -2293,8 +2293,26 @@ dddef_exit:
           script_meter_desc[index].type = *lp;
           lp++;
           if (*lp != ',') {
-            script_meter_desc[index].sopt = *lp&7;
-            lp++;
+            switch (*lp) {
+              case 'N':
+                lp++;
+                script_meter_desc[index].sopt = 0x10 | (*lp & 3);
+                lp++;
+                break;
+              case 'E':
+                lp++;
+                script_meter_desc[index].sopt = 0x20 | (*lp & 3);
+                lp++;
+                break;
+              case 'O':
+                lp++;
+                script_meter_desc[index].sopt = 0x30 | (*lp & 3);
+                lp++;
+                break;
+              default:
+                script_meter_desc[index].sopt = *lp&7;
+                lp++;
+            }
           } else {
             script_meter_desc[index].sopt = 0;
           }
@@ -2491,15 +2509,36 @@ init10:
 #endif
 
         SerialConfig smode = SERIAL_8N1;
-        if (meter_desc_p[meters].sopt == 2) {
-          smode = SERIAL_8N2;
-        }
-        if (meter_desc_p[meters].type=='M') {
-          smode = SERIAL_8E1;
+
+        if (meter_desc_p[meters].sopt & 0xf0) {
+          // new serial config
+          switch (meter_desc_p[meters].sopt >> 4) {
+            case 1:
+              if ((meter_desc_p[meters].sopt & 1) == 1) smode = SERIAL_8N1;
+              else smode = SERIAL_8N2;
+              break;
+            case 2:
+              if ((meter_desc_p[meters].sopt & 1) == 1) smode = SERIAL_8E1;
+              else smode = SERIAL_8E2;
+              break;
+            case 3:
+              if ((meter_desc_p[meters].sopt & 1) == 1) smode = SERIAL_8O1;
+              else smode = SERIAL_8O2;
+              break;
+          }
+        } else {
+          // depecated serial config
           if (meter_desc_p[meters].sopt == 2) {
-            smode = SERIAL_8E2;
+            smode = SERIAL_8N2;
+          }
+          if (meter_desc_p[meters].type=='M') {
+            smode = SERIAL_8E1;
+            if (meter_desc_p[meters].sopt == 2) {
+              smode = SERIAL_8E2;
+            }
           }
         }
+
 #ifdef ESP8266
         if (meter_ss[meters]->begin(meter_desc_p[meters].params)) {
           meter_ss[meters]->flush();

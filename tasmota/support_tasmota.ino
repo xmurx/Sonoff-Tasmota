@@ -194,7 +194,7 @@ void ZeroCrossMomentEnd(void) {
 #endif
 }
 
-void ICACHE_RAM_ATTR ZeroCrossIsr(void) {
+void IRAM_ATTR ZeroCrossIsr(void) {
   uint32_t time = micros();
   TasmotaGlobal.zc_interval = ((int32_t) (time - TasmotaGlobal.zc_time));
   TasmotaGlobal.zc_time = time;
@@ -550,7 +550,7 @@ bool SendKey(uint32_t key, uint32_t device, uint32_t state)
     result = !Settings.flag3.button_switch_force_local;  // SetOption61 - Force local operation when button/switch topic is set
   } else {
     Response_P(PSTR("{\"%s%d\":{\"State\":%d}}"), (key) ? PSTR("Switch") : PSTR("Button"), device, state);
-    result = XdrvRulesProcess();
+    result = XdrvRulesProcess(0);
   }
 #ifdef USE_PWM_DIMMER
   if (PWM_DIMMER != TasmotaGlobal.module_type || !result) {
@@ -781,14 +781,7 @@ void MqttPublishTeleState(void)
   ResponseClear();
   MqttShowState();
   MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_STATE), Settings.flag5.mqtt_state_retain);
-
-#ifdef USE_DT_VARS
-  DTVarsTeleperiod();
-#endif // USE_DT_VARS
-
-#if defined(USE_RULES) || defined(USE_SCRIPT)
-  RulesTeleperiod();  // Allow rule based HA messages
-#endif  // USE_SCRIPT
+  XdrvRulesProcess(1);
 }
 
 void TempHumDewShow(bool json, bool pass_on, const char *types, float f_temperature, float f_humidity)
@@ -860,11 +853,18 @@ bool MqttShowSensor(void)
   return json_data_available;
 }
 
-void MqttPublishSensor(void)
-{
+void MqttPublishSensor(void) {
   ResponseClear();
   if (MqttShowSensor()) {
     MqttPublishTeleSensor();
+  }
+}
+
+void MqttPublishTeleperiodSensor(void) {
+  ResponseClear();
+  if (MqttShowSensor()) {
+    MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_SENSOR), Settings.flag.mqtt_sensor_retain);  // CMND_SENSORRETAIN
+    XdrvRulesProcess(1);
   }
 }
 
@@ -941,14 +941,7 @@ void PerformEverySecond(void)
         TasmotaGlobal.tele_period = 0;
 
         MqttPublishTeleState();
-
-        ResponseClear();
-        if (MqttShowSensor()) {
-          MqttPublishPrefixTopic_P(TELE, PSTR(D_RSLT_SENSOR), Settings.flag.mqtt_sensor_retain);  // CMND_SENSORRETAIN
-#if defined(USE_RULES) || defined(USE_SCRIPT)
-          RulesTeleperiod();  // Allow rule based HA messages
-#endif  // USE_RULES
-        }
+        MqttPublishTeleperiodSensor();
 
         XsnsCall(FUNC_AFTER_TELEPERIOD);
         XdrvCall(FUNC_AFTER_TELEPERIOD);
@@ -1195,7 +1188,7 @@ void Every250mSeconds(void)
         }
         ResponseAppend_P(PSTR("\"}"));
 //        TasmotaGlobal.restart_flag = 2;                   // Restart anyway to keep memory clean webserver
-        MqttPublishPrefixTopic_P(STAT, PSTR(D_CMND_UPGRADE));
+        MqttPublishPrefixTopicRulesProcess_P(STAT, PSTR(D_CMND_UPGRADE));
 #ifdef USE_COUNTER
         CounterInterruptDisable(false);
 #endif  // USE_COUNTER
@@ -1565,6 +1558,10 @@ void SerialInput(void)
     TasmotaGlobal.serial_in_buffer[TasmotaGlobal.serial_in_byte_counter] = 0;                  // Serial data completed
     bool assume_json = (!Settings.flag.mqtt_serial_raw && (TasmotaGlobal.serial_in_buffer[0] == '{'));
 
+    if (serial_buffer_overrun) {
+      AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_COMMAND "Serial buffer overrun"));
+    }
+
     Response_P(PSTR("{\"" D_JSON_SERIALRECEIVED "\":"));
     if (assume_json) {
       ResponseAppend_P(TasmotaGlobal.serial_in_buffer);
@@ -1900,15 +1897,6 @@ void GpioInit(void)
   if (PWM_DIMMER == TasmotaGlobal.module_type && PinUsed(GPIO_REL1)) { TasmotaGlobal.devices_present--; }
 #endif  // USE_PWM_DIMMER
 
-  ButtonInit();
-  SwitchInit();
-#ifdef ROTARY_V1
-  RotaryInit();
-#endif
-
   SetLedPower(Settings.ledstate &8);
   SetLedLink(Settings.ledstate &8);
-
-  XdrvCall(FUNC_PRE_INIT);
-  XsnsCall(FUNC_PRE_INIT);
 }

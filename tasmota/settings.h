@@ -151,7 +151,7 @@ typedef union {                            // Restricted by MISRA-C Rule 18.4 bu
     uint32_t wiegand_hex_output : 1;       // bit 9 (v9.3.1.1)   - SetOption123 - (Wiegand) switch tag number output to hex format (1)
     uint32_t wiegand_keypad_to_tag : 1;    // bit 10 (v9.3.1.1)  - SetOption124 - (Wiegand) send key pad stroke as single char (0) or one tag (ending char #) (1)
     uint32_t zigbee_hide_bridge_topic : 1; // bit 11 (v9.3.1.1)  - SetOption125 - (Zigbee) Hide bridge topic from zigbee topic (use with SetOption89) (1)
-    uint32_t spare12 : 1;                  // bit 12
+    uint32_t ds18x20_mean : 1;             // bit 12 (v9.3.1.2)  - SetOption126 - (DS18x20) Enable arithmetic mean over teleperiod for JSON temperature (1)
     uint32_t spare13 : 1;                  // bit 13
     uint32_t spare14 : 1;                  // bit 14
     uint32_t spare15 : 1;                  // bit 15
@@ -312,6 +312,20 @@ typedef union {
   uint16_t spare3 : 4;
   };
 } As3935Param;
+
+typedef union {
+  uint32_t data;
+  struct {
+  uint32_t raw_skip : 8;               // raw frame to skip when sending raw data (set to 2 means send 1 frame, then skip 2, ...)
+  uint32_t raw_report_changed : 1;     // Report only changed values in raw frames (only valid if raw_skip=0)
+  uint32_t raw_send : 1;               // Enable sending also real time raw data over MQTT
+  uint32_t raw_limit : 1;              // Limit raw data to minimal relevant fields (the ones moving quickly)
+  uint32_t mode_standard : 1;          // Set Linky Standard Mode (9600 bps stream) else legacy (1200 bps)
+  uint32_t spare4_1 : 4;               // Keep some spares for future uses
+  uint32_t spare8_1 : 8;               // Keep some spares for future uses
+  uint32_t spare8_2 : 8;               // Keep some spares for future uses
+  };
+} TeleinfoCfg;
 
 typedef struct {
   uint32_t usage1_kWhtotal;
@@ -643,10 +657,11 @@ struct {
   uint16_t      shd_warmup_brightness;     // F5C
   uint8_t       shd_warmup_time;           // F5E
 
-  uint8_t       free_f5e[72];              // F5E - Decrement if adding new Setting variables just above and below
+  uint8_t       free_f5f[69];              // F5F - Decrement if adding new Setting variables just above and below
 
   // Only 32 bit boundary variables below
 
+  TeleinfoCfg   teleinfo;                  // FA4
   uint64_t      rf_protocol_mask;          // FA8
   uint8_t       device_group_tie[4];       // FB0
   SysBitfield5  flag5;                     // FB4
