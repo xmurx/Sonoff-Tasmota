@@ -7,41 +7,41 @@ namespace xControl
 {
   //------------------------------------------------------
   // label -> FontSize
-  //------------------------------------------------------  
-  Label::FontSize::FontSize(uint32_t widht, uint32_t hight)
-  : _widht(widht),
-    _hight(hight)
+  //------------------------------------------------------
+  Label::FontSize::FontSize(uint32_t widht, uint32_t hight) :
+  _widht(widht),
+  _hight(hight)
   {
   }
 
-  Label::FontSize::FontSize()
-  : _widht(0),
-    _hight(0)
+  Label::FontSize::FontSize() :
+  _widht(0),
+  _hight(0)
   {
   }
 
   //------------------------------------------------------
   // label -> CursorPosition
-  //------------------------------------------------------  
+  //------------------------------------------------------
 
-  Label::CursorPosition::CursorPosition()
-  : x(0),
-    y(0)
+  Label::CursorPosition::CursorPosition() :
+  x(0),
+  y(0)
   {
   }
 
   //------------------------------------------------------
   // label
-  //------------------------------------------------------  
+  //------------------------------------------------------
 
-  Label::Label()
-  : Viewable()
+  Label::Label() :
+  Viewable()
   {
     SetDefaultValues();
   }
 
-  Label::Label(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation)
-  : Viewable(renderer, width, height)
+  Label::Label(Renderer* renderer, uint32_t width, uint32_t height, Orientation orientation) :
+  Viewable(renderer, width, height)
   {
     SetDefaultValues();
     _orientation = orientation;
@@ -60,7 +60,7 @@ namespace xControl
   void Label::SetDefaultValues()
   {
     _orientation = Centered;
-    _defaultFontSize = {6,8};
+    _defaultFontSize = {6, 8};
     _scaleFactor = 2;
     _icon = &_defaultEmptyImage;
     memset(_text, 0, sizeof(_text));
@@ -83,11 +83,11 @@ namespace xControl
 
   void Label::Show()
   {
-    if(_renderer)
+    if (_renderer)
     {
       CalculatePosition();
-      _renderer->clearDisplay();      
-      if(_icon->IsValid())
+      _renderer->clearDisplay();
+      if (_icon->IsValid())
       {
         _renderer->drawBitmap(0, 0, _icon->Data(), _icon->Width(), _icon->Height(), 1);
       }
@@ -101,8 +101,8 @@ namespace xControl
   void Label::Text(const char* text)
   {
     size_t textSize = strlen(text);
-    memset( _text, 0, BufferSize);
-    strncpy(_text, text, ((textSize > BufferSize) ? BufferSize-1 : textSize));
+    memset(_text, 0, BufferSize);
+    strncpy(_text, text, ((textSize > BufferSize) ? BufferSize - 1 : textSize));
     Show();
   }
 
@@ -119,32 +119,35 @@ namespace xControl
   {
     switch (_orientation)
     {
-      case Centered:
+    case Centered:
+    {
+      enum
       {
-        enum{IncreasedAccuracy = 10};
-        int32_t halfNumberOfChars = (int32_t)(strlen(_text)*IncreasedAccuracy/2);
-        int32_t singleCharWidht = _defaultFontSize._widht * _scaleFactor;
-        _cursor.x = VerticalCenterLine() - (halfNumberOfChars * singleCharWidht / IncreasedAccuracy);
-        _cursor.y = HorizontalCenterLine() - (_defaultFontSize._hight * _scaleFactor * IncreasedAccuracy / 2 / IncreasedAccuracy);
+        IncreasedAccuracy = 10
+      };
+      int32_t halfNumberOfChars = (int32_t)(strlen(_text) * IncreasedAccuracy / 2);
+      int32_t singleCharWidht = _defaultFontSize._widht * _scaleFactor;
+      _cursor.x = VerticalCenterLine() - (halfNumberOfChars * singleCharWidht / IncreasedAccuracy);
+      _cursor.y = HorizontalCenterLine() - (_defaultFontSize._hight * _scaleFactor * IncreasedAccuracy / 2 / IncreasedAccuracy);
 
-        if( _cursor.x < 0 || _cursor.y < 0)
-        {
-          _cursor.x = 0;
-          _cursor.y = 0;
-        }
-
-        if(_icon->IsValid())
-        {
-          _cursor.x = _icon->Width() + 1;
-        }
-        break;
-      } 
-      default:
+      if (_cursor.x < 0 || _cursor.y < 0)
       {
         _cursor.x = 0;
         _cursor.y = 0;
-        break;
       }
-    } 
+
+      if (_icon->IsValid())
+      {
+        _cursor.x = _icon->Width() + 1;
+      }
+      break;
+    }
+    default:
+    {
+      _cursor.x = 0;
+      _cursor.y = 0;
+      break;
+    }
+    }
   }
-} // end of namespace
+} // namespace xControl

@@ -16,4 +16,4 @@ namespace xControl
     unsigned long difference = end - start;
     EXPECT_TRUE((difference >= 100));
   }
-} //end of namespace
+} // namespace xControl

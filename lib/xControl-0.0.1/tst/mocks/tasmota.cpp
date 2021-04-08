@@ -14,7 +14,6 @@ unsigned long millis()
   return xControl::TasmotaFixture::_time->Millis();
 }
 
-
 namespace xControl
 {
 
@@ -29,4 +28,4 @@ namespace xControl
   {
     _time.reset();
   }
-}
+} // namespace xControl

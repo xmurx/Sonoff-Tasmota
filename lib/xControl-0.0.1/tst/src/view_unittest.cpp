@@ -1,15 +1,15 @@
-#include "gmock/gmock.h"
-#include "view.h"
-#include "mock_renderer.h"
 #include "mock_StateControl.h"
+#include "mock_renderer.h"
+#include "view.h"
+#include "gmock/gmock.h"
 
-using ::testing::AtLeast;
-using ::testing::NiceMock;
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::AtLeast;
 using ::testing::Eq;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::Sequence;
-using ::testing::AnyNumber;
 
 namespace xControl
 {
@@ -19,7 +19,7 @@ namespace xControl
     SSD1306ViewFixture()
     {
       _renderer.reset(new testing::NiceMock<MockRenderer>());
-      _stateControl.reset( new testing::NiceMock<MockStateControl<xControl::State>>());
+      _stateControl.reset(new testing::NiceMock<MockStateControl<xControl::State>>());
     }
 
     virtual ~SSD1306ViewFixture()
@@ -36,7 +36,7 @@ namespace xControl
   std::unique_ptr<MockStateControl<State>> SSD1306ViewFixture::_stateControl;
 
   TEST_F(SSD1306ViewFixture, CheckStateHandling)
-  { 
+  {
     xControl::SSD1306View view{};
     view.Init(SSD1306ViewFixture::_renderer.get(), SSD1306ViewFixture::_stateControl.get(), 132, 28);
 
@@ -47,10 +47,10 @@ namespace xControl
 
     Sequence s;
     EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowTemp)).InSequence(s);
-    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowHumidity)).InSequence(s); 
-    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowLevel)).InSequence(s); 
-    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowTemp)).InSequence(s); 
-    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowHumidity)).InSequence(s); 
+    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowHumidity)).InSequence(s);
+    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowLevel)).InSequence(s);
+    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowTemp)).InSequence(s);
+    EXPECT_CALL(*SSD1306ViewFixture::_stateControl, SetState(State::ShowHumidity)).InSequence(s);
 
     view.Step();
     view.Step();
@@ -58,4 +58,4 @@ namespace xControl
     view.Step();
     view.Step();
   }
-} // end of namespace
+} // namespace xControl

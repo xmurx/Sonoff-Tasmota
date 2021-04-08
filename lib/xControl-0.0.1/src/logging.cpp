@@ -1,3 +1,2 @@
-#include "Arduino.h"
 #include "logging.h"
-
+#include "Arduino.h"

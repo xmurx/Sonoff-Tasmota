@@ -6,14 +6,13 @@
 class String : public std::string
 {
 public:
-
-  String(const char* str)
-  : std::string(str)
+  String(const char* str) :
+  std::string(str)
   {
   }
 
-  String(float value)
-  : std::string(std::to_string(value))
+  String(float value) :
+  std::string(std::to_string(value))
   {
   }
 

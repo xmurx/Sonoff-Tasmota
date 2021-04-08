@@ -8,7 +8,6 @@ namespace xControl
   class Viewable
   {
   public:
-
     Viewable();
     Viewable(Renderer* renderer, uint32_t width, uint32_t height);
     virtual ~Viewable();
@@ -17,7 +16,6 @@ namespace xControl
     virtual void Show();
 
   protected:
-
     Renderer* _renderer;
     uint32_t _width;
     uint32_t _height;

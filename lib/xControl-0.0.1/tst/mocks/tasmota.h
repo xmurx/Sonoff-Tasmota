@@ -34,6 +34,6 @@ namespace xControl
 
     static std::unique_ptr<TimeMock> _time;
   };
-}
+} // namespace xControl
 
 #endif

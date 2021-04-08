@@ -6,7 +6,7 @@
 extern "C" unsigned long millis();
 namespace xControl
 {
-  template<typename T>
+  template <typename T>
   class StateControlBase
   {
   public:
@@ -20,21 +20,23 @@ namespace xControl
     virtual void ResetDelay() = 0;
     virtual bool OnEnter() = 0;
   };
-  
-  template<typename T>
-  struct StateTrait{ static const T initialValue; };
 
-  template<typename T>
+  template <typename T>
+  struct StateTrait
+  {
+    static const T initialValue;
+  };
+
+  template <typename T>
   class StateControl : public StateControlBase<T>
   {
-    public:
-
-    StateControl()
-    : _state(StateTrait<T>::initialValue),
-      _startTime(0),
-      _delayTime(0),
-      _onEnter(false)
-    { 
+  public:
+    StateControl() :
+    _state(StateTrait<T>::initialValue),
+    _startTime(0),
+    _delayTime(0),
+    _onEnter(false)
+    {
     }
 
     virtual T GetState()
@@ -44,7 +46,7 @@ namespace xControl
 
     virtual void SetState(T state)
     {
-      if(_state != state)
+      if (_state != state)
         _onEnter = true;
 
       _state = state;
@@ -59,7 +61,7 @@ namespace xControl
     virtual bool DelayExpired()
     {
       bool ret = ((::millis() - _startTime) >= _delayTime);
-      if(ret)
+      if (ret)
       {
         ResetDelay();
       }
@@ -74,7 +76,7 @@ namespace xControl
 
     virtual bool OnEnter()
     {
-      if(_onEnter == true)
+      if (_onEnter == true)
       {
         _onEnter = false;
         return true;
@@ -83,7 +85,6 @@ namespace xControl
     }
 
   private:
-
     T _state;
     uint32_t _startTime;
     uint32_t _delayTime;
