@@ -16,4 +16,5 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 0
 IndentPPDirectives: BeforeHash
 PointerAlignment: Left
+IndentCaseLabels: true
 ---

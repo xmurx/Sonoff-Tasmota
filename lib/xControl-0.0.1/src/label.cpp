@@ -119,35 +119,35 @@ namespace xControl
   {
     switch (_orientation)
     {
-    case Centered:
-    {
-      enum
+      case Centered:
       {
-        IncreasedAccuracy = 10
-      };
-      int32_t halfNumberOfChars = (int32_t)(strlen(_text) * IncreasedAccuracy / 2);
-      int32_t singleCharWidht = _defaultFontSize._widht * _scaleFactor;
-      _cursor.x = VerticalCenterLine() - (halfNumberOfChars * singleCharWidht / IncreasedAccuracy);
-      _cursor.y = HorizontalCenterLine() - (_defaultFontSize._hight * _scaleFactor * IncreasedAccuracy / 2 / IncreasedAccuracy);
+        enum
+        {
+          IncreasedAccuracy = 10
+        };
+        int32_t halfNumberOfChars = (int32_t)(strlen(_text) * IncreasedAccuracy / 2);
+        int32_t singleCharWidht = _defaultFontSize._widht * _scaleFactor;
+        _cursor.x = VerticalCenterLine() - (halfNumberOfChars * singleCharWidht / IncreasedAccuracy);
+        _cursor.y = HorizontalCenterLine() - (_defaultFontSize._hight * _scaleFactor * IncreasedAccuracy / 2 / IncreasedAccuracy);
 
-      if (_cursor.x < 0 || _cursor.y < 0)
+        if (_cursor.x < 0 || _cursor.y < 0)
+        {
+          _cursor.x = 0;
+          _cursor.y = 0;
+        }
+
+        if (_icon->IsValid())
+        {
+          _cursor.x = _icon->Width() + 1;
+        }
+        break;
+      }
+      default:
       {
         _cursor.x = 0;
         _cursor.y = 0;
+        break;
       }
-
-      if (_icon->IsValid())
-      {
-        _cursor.x = _icon->Width() + 1;
-      }
-      break;
-    }
-    default:
-    {
-      _cursor.x = 0;
-      _cursor.y = 0;
-      break;
-    }
     }
   }
 } // namespace xControl
