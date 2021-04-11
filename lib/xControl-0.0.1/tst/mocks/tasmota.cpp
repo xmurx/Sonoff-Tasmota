@@ -1,10 +1,11 @@
-#include <chrono>
-
+#include "common.h"
+#include "logging.h"
 #include "tasmota.h"
 
 unsigned long millis()
 {
   /*
+  #include <chrono>
   using namespace std::chrono;
   static auto start = system_clock::now();
   auto now = time_point_cast<milliseconds>(system_clock::now());
@@ -14,18 +15,28 @@ unsigned long millis()
   return xControl::TasmotaFixture::_time->Millis();
 }
 
+void ExecuteCommand(const char* cmnd, uint32_t source)
+{
+}
+
 namespace xControl
 {
-
   std::unique_ptr<TimeMock> TasmotaFixture::_time;
+  std::unique_ptr<CommandMock> TasmotaFixture::_command;
 
   TasmotaFixture::TasmotaFixture()
   {
     _time.reset(new testing::NiceMock<TimeMock>());
+    _command.reset(new testing::NiceMock<CommandMock>());
   }
 
   TasmotaFixture::~TasmotaFixture()
   {
     _time.reset();
+    _command.reset();
+  }
+
+  void LogWrapper(LogLevel level, PGM_P formatP, ...)
+  {
   }
 } // namespace xControl
