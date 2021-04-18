@@ -1,6 +1,7 @@
 #ifndef __MOCK_RENDERER_H__
 #define __MOCK_RENDERER_H__
 
+#include "renderer.h"
 class MockRenderer : public Renderer
 {
 public:

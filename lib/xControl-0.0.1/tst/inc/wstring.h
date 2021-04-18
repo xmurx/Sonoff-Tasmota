@@ -16,6 +16,11 @@ public:
   {
   }
 
+  String(const String& str) :
+  std::string(str)
+  {
+  }
+
   virtual ~String()
   {
   }

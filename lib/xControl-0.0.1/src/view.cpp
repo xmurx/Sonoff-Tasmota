@@ -113,7 +113,8 @@ namespace xControl
           {
             if (levelInPercent < 20)
             {
-              String cmd = "TmSend Remaining tank level is only: " + String(levelInPercent) + String("%.");
+              String cmd = String("TmSend Remaining tank level is only: ");
+              cmd += String(levelInPercent) + String("%.");
               Logging::Debug("Telegram command: %s", cmd.c_str());
               ::ExecuteCommand(cmd.c_str(), 0);
             }
