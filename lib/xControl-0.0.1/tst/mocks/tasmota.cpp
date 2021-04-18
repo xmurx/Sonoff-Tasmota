@@ -1,7 +1,7 @@
+#include "tasmota.h"
 #include "common.h"
 #include "logging.h"
-#include "tasmota.h"
-
+#include "stdarg.h"
 unsigned long millis()
 {
   /*
@@ -38,5 +38,9 @@ namespace xControl
 
   void LogWrapper(LogLevel level, PGM_P formatP, ...)
   {
+    va_list argptr;
+    va_start(argptr, formatP);
+    vfprintf(stdout, formatP, argptr);
+    va_end(argptr);
   }
 } // namespace xControl

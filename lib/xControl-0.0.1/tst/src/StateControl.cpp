@@ -37,7 +37,7 @@ namespace xControl
 
   TEST_F(TasmotaFixture, ChangeStateAfterTimeOutAndCallOnEnterOnce)
   {
-    EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(1).WillOnce(Return(0)).WillOnce(Return(2001));
+    EXPECT_CALL(*TasmotaFixture::_time, Millis()).Times(1).WillOnce(Return(0));
     StateControl<TestStates> stateControl;
     TestStates initialState = stateControl.GetState();
 
