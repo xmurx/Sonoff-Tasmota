@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.2)
+cmake_minimum_required(VERSION 3.2.0)
 
 project(xControl-Unittest)
 add_executable(xControl-Unittest ./src/label.cpp
