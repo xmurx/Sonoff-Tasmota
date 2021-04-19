@@ -1,5 +1,17 @@
 cmake_minimum_required(VERSION 3.2.0)
 
+# project(xArduinoSupport)
+# file( TO_CMAKE_PATH "$ENV{USERPROFILE}/.platformio/packages/framework-arduinoespressif8266/cores/esp8266" ArduinoCoreDir )
+# file( TO_CMAKE_PATH "$ENV{USERPROFILE}/..platformio/packages/framework-arduinoespressif8266/tools/sdk/" ArduinoSDKDir )
+# message( "Full Arduino Path: ${ArduinoCoreDir}")
+# message( "Full ArduinoSDKDir Path: ${ArduinoSDKDir}")
+# add_library(xArduinoSupport ${ArduinoCoreDir}/WString.h
+#                             ${ArduinoCoreDir}/WString.cpp )
+# set_property(TARGET xArduinoSupport PROPERTY CXX_STANDARD 11)
+# target_include_directories(xArduinoSupport PUBLIC ${ArduinoCoreDir}
+#                                                   ${ArduinoSDKDir}/include
+#                                                   ${ArduinoSDKDir}/libc/xtensa-lx106-elf/include/ )
+
 project(xControl-Unittest)
 add_executable(xControl-Unittest ./src/label.cpp
                                  ./src/time.cpp

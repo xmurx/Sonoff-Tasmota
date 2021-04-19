@@ -113,6 +113,7 @@ namespace xControl
           {
             if (levelInPercent < 20)
             {
+              // TODO: remove String class from google test configuration - try to include arduion WString to google test configuration
               String cmd = String("TmSend Remaining tank level is only: ");
               cmd += String(levelInPercent) + String("%.");
               Logging::Debug("Telegram command: %s", cmd.c_str());
